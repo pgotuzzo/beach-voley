@@ -1,0 +1,18 @@
+NAME
+     beach-voley -- Beach Voley Tournament
+
+SYNOPSIS
+     beach-voley [-debug]
+     beach-voley [-player name1 name2 name3 ...] [-debug]
+     beach-voley [-h]
+
+DESCRIPTION
+     By default the TOURNAMENT mode is launched, creating all the infrastructure necessary for the tournament.
+
+     The options are as follows:
+
+     -h          Displays the help
+
+     -debug      Enables the debugging logs though console/files to trace the execution
+
+     -player     Creates a new player for the tournament with the @name introduced
