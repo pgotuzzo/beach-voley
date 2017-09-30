@@ -1,0 +1,6 @@
+#ifndef BEACH_VOLEY_CONSTANTS_H
+#define BEACH_VOLEY_CONSTANTS_H
+
+const char* FIFO_FILE_TOURNAMENT = "tournament";
+
+#endif //BEACH_VOLEY_CONSTANTS_H

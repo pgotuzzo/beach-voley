@@ -1,5 +1,6 @@
 #include <iostream>
 #include "config/Config.h"
+#include "player/Player.h"
 
 using namespace std;
 
@@ -36,7 +37,6 @@ int main(int argc, char *argv[]) {
     try {
         config = parseConfig(vParams);
     } catch (ParseException &e) {
-        const char *error = e.what();
         cout << e.what() << endl;
         return 1;
     }
@@ -44,6 +44,11 @@ int main(int argc, char *argv[]) {
 
     if (config.mode == MANUAL) {
         showHelp();
+    } else if (config.mode == PLAYER) {
+        string name;
+        name = config.parameters.front();
+        Player player = Player(name);
+        player.subscribe();
     }
 
     return 0;
