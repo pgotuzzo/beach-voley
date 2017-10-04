@@ -8,14 +8,20 @@ using namespace std;
 
 enum Mode {
     TOURNAMENT,
-    PLAYER,
     MANUAL
+};
+
+struct TournamentParams {
+    int columns;
+    int rows;
+    int capacity;
+    vector<string> players;
+    bool debugEnable;
 };
 
 struct Config {
     Mode mode;
-    vector<string> parameters;
-    bool debugEnable;
+    TournamentParams tournamentParams;
 };
 
 Config parseConfig(vector<string> arguments) throw(ParseException);

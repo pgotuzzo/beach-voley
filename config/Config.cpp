@@ -1,6 +1,6 @@
-#include <vector>
 #include <regex>
 #include "Config.h"
+#include "../util/StringUtils.h"
 
 using namespace std;
 
@@ -15,13 +15,28 @@ struct Option {
 
 const char *REGEX_PATTERN_OPTION = "\\-.*";
 
-// MODES
-const char *MAPPER_MODE_PLAYER = "-player";
+// MODE
 const char *MAPPER_MODE_MANUAL = "-h";
+const int MODES_COUNT = 1;
+const char *MODES[MODES_COUNT] = {MAPPER_MODE_MANUAL};
 
-// FLAGS
-const char *MAPPER_FLAG_DEBUG = "-debug";
+// OPTION
+const char *MAPPER_OPT_PLAYER = "-player";
+const char *MAPPER_OPT_COLUMNS = "-c";
+const char *MAPPER_OPT_ROWS = "-r";
+const char *MAPPER_OPT_CAPACITY = "-m";
+const char *MAPPER_OPT_DEBUG = "-debug";
 
+// TOURNAMENT MODE OPTIONS
+const char *TOURNAMENT_OPT_OPTIONAL[1] = {
+        MAPPER_OPT_DEBUG
+};
+const char *TOURNAMENT_OPT_REQUIRED[4] = {
+        MAPPER_OPT_PLAYER,
+        MAPPER_OPT_COLUMNS,
+        MAPPER_OPT_ROWS,
+        MAPPER_OPT_CAPACITY
+};
 
 bool isOption(const string &argument) {
     regex regOpt = regex(REGEX_PATTERN_OPTION);
@@ -30,6 +45,38 @@ bool isOption(const string &argument) {
 
 bool isParam(const string &argument) {
     return !isOption(argument);
+}
+
+bool validateOption(const Option &option) {
+    if (option.name == MAPPER_OPT_DEBUG) {
+        return option.params.empty();
+    } else if (option.name == MAPPER_OPT_ROWS ||
+               option.name == MAPPER_OPT_COLUMNS ||
+               option.name == MAPPER_OPT_CAPACITY) {
+        try {
+            stoi(option.params.front());
+        } catch (exception &e) {
+            return false;
+        }
+        return option.params.size() == 1;
+    } else if (option.name == MAPPER_OPT_PLAYER) {
+        return !option.params.empty();
+    }
+    return false;
+}
+
+void setOption(Config *config, Option option) {
+    if (option.name == MAPPER_OPT_DEBUG) {
+        config->tournamentParams.debugEnable = true;
+    } else if (option.name == MAPPER_OPT_ROWS) {
+        config->tournamentParams.rows = stoi(option.params.front());
+    } else if (option.name == MAPPER_OPT_COLUMNS) {
+        config->tournamentParams.columns = stoi(option.params.front());
+    } else if (option.name == MAPPER_OPT_CAPACITY) {
+        config->tournamentParams.capacity = stoi(option.params.front());
+    } else if (option.name == MAPPER_OPT_PLAYER) {
+        config->tournamentParams.players = option.params;
+    }
 }
 
 /**
@@ -56,25 +103,13 @@ vector<string> getParameters(vector<string> *arguments) {
 /**
  * Validates mapping from Option to Mode could be achieved
  * Conditions checked:
- *  - PLAYER requires parameters
  *  - MANUAL doesn't allow parameters associated to it
  *
  * @param option
  * @return  true if it is a valid Mode
  */
 bool isMode(Option option) {
-    return (option.name == MAPPER_MODE_PLAYER && !option.params.empty()) ||
-           (option.name == MAPPER_MODE_MANUAL && option.params.empty());
-}
-
-/**
- * Checks if Option matches with DEBUG flag
- *
- * @param option
- * @return  true if matches
- */
-bool isDebugFlag(Option option) {
-    return option.name == MAPPER_FLAG_DEBUG && option.params.empty();
+    return (option.name == MAPPER_MODE_MANUAL && option.params.empty());
 }
 
 /**
@@ -86,8 +121,6 @@ bool isDebugFlag(Option option) {
 Mode parseMode(const string &name) throw(ParseException) {
     if (name == MAPPER_MODE_MANUAL) {
         return MANUAL;
-    } else if (name == MAPPER_MODE_PLAYER) {
-        return PLAYER;
     } else {
         throw ParseException("Parsing error: " + name + " it is NOT a valid Mode!");
     }
@@ -117,48 +150,74 @@ Config parseConfig(vector<string> arguments) throw(ParseException) {
     }
 
     /*
-     * Analise if the generated Option's vector. Expected condition
-     * - Unique options
-     * - One or none Mode can be generated
+     * Analise if the generated Option's vector.
      */
 
-    // Unique condition
     if (!options.empty()) {
-        for (auto it = options.begin(); it != options.end() - 1; ++it) {
+        for (auto it = options.begin(); it != options.end(); ++it) {
+            // Valid Option or Mode
+            if (!isMode(*it) && !validateOption(*it)) {
+                // Invalid - ParseException
+                throw ParseException(
+                        "Unrecognized option:\n\tName: " + it->name + "\n\tParameters: " + toString(it->params)
+                );
+            }
+            // Unique arguments condition
             auto matchPos = find(it + 1, options.end(), *it);
             if (matchPos != options.end()) {
                 throw ParseException("Argument: " + matchPos->name + " appears more than once!");
             }
         }
     }
-    // None or one Mode condition
-    bool modeFound = false;
+
     // Default values
-    Mode mode = TOURNAMENT;
-    vector<string> modeParams;
-    bool enableDebug = false;
+    Config config;
+    config.mode = TOURNAMENT;
+    TournamentParams tournamentParams;
+    tournamentParams.debugEnable = false;
+    config.tournamentParams = tournamentParams;
+
+    // Mode
+    bool modeFound = false;
     for (auto &option : options) {
         if (isMode(option)) {
-            // Mode
             if (modeFound) {
-                throw ParseException("Options are UNIQUE! options: [-h -player]");
+                string error = "Mode are UNIQUE! modes: " + toString(MODES, MODES_COUNT);
+                throw ParseException(error);
             } else {
                 modeFound = true;
-                mode = parseMode(option.name);
-                modeParams = option.params;
+                config.mode = parseMode(option.name);
             }
-        } else if (isDebugFlag(option)) {
-            // Debug Flag
-            enableDebug = true;
-        } else {
-            // Invalid - ParseException
-            string parameters;
-            for (auto &param : option.params) {
-                parameters += " " + param;
-            }
-            throw ParseException("Unrecognized option:\n\tName: " + option.name + "\n\tParameters: " + parameters);
         }
     }
-    Config config = {mode, modeParams, enableDebug};
+
+    // Options for current Mode
+    if (config.mode == MANUAL) {
+        // Manual
+        if (options.size() > 1) {
+            throw ParseException("Manual mode doesn't support options");
+        }
+    } else {
+        // Tournament
+        //      Required
+        for (auto &optionName : TOURNAMENT_OPT_REQUIRED) {
+            Option option = {optionName};
+            auto match = find(options.begin(), options.end(), option);
+            if (match == options.end()) {
+                throw ParseException("Missing required option: " + option.name);
+            } else {
+                setOption(&config, *match);
+            }
+        }
+        //      Optional
+        for (auto &optionName : TOURNAMENT_OPT_OPTIONAL) {
+            Option option = {optionName};
+            auto match = find(options.begin(), options.end(), option);
+            if (match != options.end()) {
+                setOption(&config, *match);
+            }
+        }
+    }
+
     return config;
 }

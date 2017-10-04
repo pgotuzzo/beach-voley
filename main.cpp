@@ -1,6 +1,6 @@
 #include <iostream>
 #include "config/Config.h"
-#include "player/Player.h"
+#include "util/StringUtils.h"
 
 using namespace std;
 
@@ -44,11 +44,13 @@ int main(int argc, char *argv[]) {
 
     if (config.mode == MANUAL) {
         showHelp();
-    } else if (config.mode == PLAYER) {
-        string name;
-        name = config.parameters.front();
-        Player player = Player(name);
-        player.subscribe();
+    } else if (config.mode == TOURNAMENT) {
+        cout << "Configuration" << endl
+             << "Columns: " << config.tournamentParams.columns << endl
+             << "Rows: " << config.tournamentParams.rows << endl
+             << "Capacity: " << config.tournamentParams.capacity << endl
+             << "Players: " << toString(config.tournamentParams.players) << endl
+             << "Debug: " << (config.tournamentParams.debugEnable ? "true" : "false") << endl;
     }
 
     return 0;

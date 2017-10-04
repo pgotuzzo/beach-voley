@@ -2,17 +2,20 @@ NAME
      beach-voley -- Beach Voley Tournament
 
 SYNOPSIS
-     beach-voley [-debug]
-     beach-voley [-player name1 name2 name3 ...] [-debug]
+     beach-voley [-player name1 name2 name3 ...] [-c int] [-r int] [-m int] [-c int] [-debug]
      beach-voley [-h]
 
 DESCRIPTION
-     By default the TOURNAMENT mode is launched, creating all the infrastructure necessary for the tournament.
-
      The options are as follows:
 
      -h          Displays the help
 
-     -debug      Enables the debugging logs though console/files to trace the execution
+     -player     [REQUIRED] Players names
 
-     -player     Creates a new player for the tournament with the @name introduced
+     -m          [REQUIRED] Capacity of the field. Max amount of players that could be inside the field
+
+     -c          [REQUIRED] Columns amount of the beach-pitch matrix
+
+     -r          [REQUIRED] Rows amount of the beach-pitch matrix
+
+     -debug      [OPTIONAL] Enables the debugging logs though console/files to trace the execution
