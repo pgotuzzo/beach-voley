@@ -10,5 +10,7 @@ set(MEMORIA_COMPARTIDA IPCClasses/MemoriaCompartida.cpp IPCClasses/MemoriaCompar
 
 set(LOGGER Logger/Logger.cpp Logger/Logger.h)
 
+set(MONITOR_MAREA src/MonitorMarea.cpp src/MonitorMarea.hpp)
+
 set(SOURCE_FILES main.cpp)
 add_executable(beach-voley ${SOURCE_FILES})

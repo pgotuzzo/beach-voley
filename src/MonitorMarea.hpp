@@ -1,0 +1,10 @@
+#ifndef BEACH_VOLEY_MONITORMAREA_HPP
+#define BEACH_VOLEY_MONITORMAREA_HPP
+
+
+class MonitorMarea {
+
+};
+
+
+#endif //BEACH_VOLEY_MONITORMAREA_HPP
