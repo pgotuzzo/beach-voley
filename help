@@ -18,4 +18,6 @@ DESCRIPTION
 
      -r          [REQUIRED] Rows amount of the beach-pitch matrix
 
+     -k          [REQUIRED] Matches to be played before tournament ends
+
      -debug      [OPTIONAL] Enables the debugging logs though console/files to trace the execution

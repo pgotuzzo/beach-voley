@@ -49,6 +49,7 @@ int main(int argc, char *argv[]) {
              << "Columns: " << config.tournamentParams.columns << endl
              << "Rows: " << config.tournamentParams.rows << endl
              << "Capacity: " << config.tournamentParams.capacity << endl
+             << "Matches count: " << config.tournamentParams.matches << endl
              << "Players: " << toString(config.tournamentParams.players) << endl
              << "Debug: " << (config.tournamentParams.debugEnable ? "true" : "false") << endl;
     }

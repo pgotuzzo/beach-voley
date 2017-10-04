@@ -15,6 +15,7 @@ struct TournamentParams {
     int columns;
     int rows;
     int capacity;
+    int matches;
     vector<string> players;
     bool debugEnable;
 };

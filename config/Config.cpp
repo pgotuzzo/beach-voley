@@ -25,17 +25,19 @@ const char *MAPPER_OPT_PLAYER = "-player";
 const char *MAPPER_OPT_COLUMNS = "-c";
 const char *MAPPER_OPT_ROWS = "-r";
 const char *MAPPER_OPT_CAPACITY = "-m";
+const char *MAPPER_OPT_MATCHES_COUNT = "-k";
 const char *MAPPER_OPT_DEBUG = "-debug";
 
 // TOURNAMENT MODE OPTIONS
 const char *TOURNAMENT_OPT_OPTIONAL[1] = {
         MAPPER_OPT_DEBUG
 };
-const char *TOURNAMENT_OPT_REQUIRED[4] = {
+const char *TOURNAMENT_OPT_REQUIRED[5] = {
         MAPPER_OPT_PLAYER,
         MAPPER_OPT_COLUMNS,
         MAPPER_OPT_ROWS,
-        MAPPER_OPT_CAPACITY
+        MAPPER_OPT_CAPACITY,
+        MAPPER_OPT_MATCHES_COUNT
 };
 
 bool isOption(const string &argument) {
@@ -52,6 +54,7 @@ bool validateOption(const Option &option) {
         return option.params.empty();
     } else if (option.name == MAPPER_OPT_ROWS ||
                option.name == MAPPER_OPT_COLUMNS ||
+               option.name == MAPPER_OPT_MATCHES_COUNT ||
                option.name == MAPPER_OPT_CAPACITY) {
         try {
             stoi(option.params.front());
@@ -74,6 +77,8 @@ void setOption(Config *config, Option option) {
         config->tournamentParams.columns = stoi(option.params.front());
     } else if (option.name == MAPPER_OPT_CAPACITY) {
         config->tournamentParams.capacity = stoi(option.params.front());
+    } else if (option.name == MAPPER_OPT_MATCHES_COUNT) {
+        config->tournamentParams.matches = stoi(option.params.front());
     } else if (option.name == MAPPER_OPT_PLAYER) {
         config->tournamentParams.players = option.params;
     }
