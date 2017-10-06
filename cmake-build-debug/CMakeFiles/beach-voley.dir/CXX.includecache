@@ -1,0 +1,84 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/Constants.h
+
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/InitException.cpp
+InitException.h
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/InitException.h
+
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/InitException.h
+exception
+-
+string
+-
+
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/Tournament.cpp
+Tournament.h
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/Tournament.h
+
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/Tournament.h
+
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/config/Config.cpp
+regex
+-
+Config.h
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/config/Config.h
+../util/StringUtils.h
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/util/StringUtils.h
+
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/config/Config.h
+vector
+-
+ParseException.h
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/config/ParseException.h
+
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/config/ParseException.cpp
+ParseException.h
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/config/ParseException.h
+
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/config/ParseException.h
+exception
+-
+string
+-
+
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/main.cpp
+iostream
+-
+config/Config.h
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/config/Config.h
+util/StringUtils.h
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/util/StringUtils.h
+
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/player/Player.cpp
+fcntl.h
+-
+iostream
+-
+Player.h
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/player/Player.h
+../Constants.h
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/Constants.h
+../InitException.h
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/InitException.h
+
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/player/Player.h
+string
+-
+
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/util/StringUtils.cpp
+StringUtils.h
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/util/StringUtils.h
+
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/util/StringUtils.h
+iostream
+-
+vector
+-
+

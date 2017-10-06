@@ -1,0 +1,3 @@
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/pgotuzzo/Project/Facultad/Tecnicas de Programacion Concurrentes I/Source/beach-voley/cmake-build-debug/CMakeFiles/beach-voley.dir
