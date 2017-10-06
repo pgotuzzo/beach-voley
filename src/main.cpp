@@ -1,6 +1,6 @@
 #include <iostream>
 #include "config/Config.h"
-#include "util/StringUtils.h"
+#include "../util/StringUtils.h"
 
 using namespace std;
 
