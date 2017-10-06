@@ -1,3 +1,4 @@
+#include <cstring>
 #include "InitException.h"
 
 using namespace std;

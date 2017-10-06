@@ -12,6 +12,7 @@ public:
     Player(const string &name);
 
     void subscribe();
+    void partnerRequest();
 };
 
 

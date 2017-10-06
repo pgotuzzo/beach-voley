@@ -1,3 +1,4 @@
+#include <cstring>
 #include "ParseException.h"
 
 using namespace std;

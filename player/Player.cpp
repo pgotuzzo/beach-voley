@@ -1,8 +1,10 @@
 #include <fcntl.h>
 #include <iostream>
+#include <unistd.h>
 #include "Player.h"
 #include "../Constants.h"
 #include "../InitException.h"
+#include "PartnerRequester.h"
 
 using namespace std;
 
@@ -16,4 +18,8 @@ void Player::subscribe() {
         throw InitException("Tournament fifo can't be opened!");
     }
     cout << "Participante " + name + ": pudo conectarse con Tournament" << endl;
+}
+
+void Player::partnerRequest() {
+    PartnerRequester::request(name, getpid());
 }

@@ -2,6 +2,7 @@
 #define BEACH_VOLEY_PARSEEXCEPTION_H
 
 #include <exception>
+#include <cstring>
 #include <string>
 
 using namespace std;
