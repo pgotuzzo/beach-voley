@@ -1,3 +1,0 @@
-/home/sebastian/Documentos/beach-voley/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/sebastian/Documentos/beach-voley/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/sebastian/Documentos/beach-voley/cmake-build-debug/CMakeFiles/beach-voley.dir
