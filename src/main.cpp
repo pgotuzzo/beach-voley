@@ -1,11 +1,7 @@
 #include <iostream>
-#include <unistd.h>
-#include <wait.h>
 #include "config/Config.h"
 #include "../util/StringUtils.h"
-#include "player/Player.h"
-#include "InitException.h"
-#include "../IPCClasses/FifoWrite.h"
+#include "../IPCClasses/Semaforo.h"
 
 using namespace std;
 
@@ -31,6 +27,17 @@ void showHelp() {
     }
 }
 
+void createField(int columns, int rows) {
+    string nameEntrance = "field_entrance";
+    Semaforo entrance("field_entrance", 0, columns * rows);
+    Semaforo exit("field_exit", 0, columns * rows);
+    for (int i = 0; i < columns; i++) {
+        for (int j = 0; j < rows; j++) {
+            // FIXME - Create a Court
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
     // Creates vector of parameters removing the first one because it is the program's name
     vector<string> vParams;
@@ -50,13 +57,16 @@ int main(int argc, char *argv[]) {
     if (config.mode == MANUAL) {
         showHelp();
     } else if (config.mode == TOURNAMENT) {
-        cout << "Configuration" << endl
+        cout << "CONFIGURATION:" << endl
              << "Columns: " << config.tournamentParams.columns << endl
              << "Rows: " << config.tournamentParams.rows << endl
              << "Capacity: " << config.tournamentParams.capacity << endl
              << "Matches count: " << config.tournamentParams.matches << endl
              << "Players: " << toString(config.tournamentParams.players) << endl
              << "Debug: " << (config.tournamentParams.debugEnable ? "true" : "false") << endl;
+
+        createField(config.tournamentParams.columns, config.tournamentParams.rows);
+
     }
 
 
