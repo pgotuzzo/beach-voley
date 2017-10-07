@@ -49,12 +49,12 @@ void Player::organizatorResponse() {
 }
 
 SemaforoInfo Player::getSemaforoInfoEntry() {
-    getCourt().getEntry();
+    return getCourt().getEntry();
 }
 
 
 SemaforoInfo Player::getSemaforoInfoExit() {
-    getCourt().getExit();
+    return getCourt().getExit();
 }
 
 Court Player::getCourt() {
