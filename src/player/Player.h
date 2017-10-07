@@ -22,12 +22,6 @@ private:
     Court getCourt();
 
     SemaforoInfo getSemaforoInfoEntry();
-
-public:
-    Player(const string &name, Field *field);
-
-    void subscribe();
-
     void partnerRequest();
 
     void organizatorResponse();
@@ -37,9 +31,11 @@ public:
     void goToPlayCourt();
 
     void leaveCourt();
-
     SemaforoInfo getSemaforoInfoExit();
+public:
+    Player(const string &name, Field *field);
 
+    void subscribe();
     void play();
 };
 
