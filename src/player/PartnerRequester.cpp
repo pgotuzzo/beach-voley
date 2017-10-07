@@ -6,17 +6,19 @@
 #include "PartnerRequester.h"
 #include "../InitException.h"
 #include "../Constants.h"
-#include "FifoWrite.h"
-#include "FifoRead.h"
+#include "../../IPCClasses/FifoWrite.h"
+#include "../../IPCClasses/FifoRead.h"
 
-ssize_t PartnerRequester::request(const string &name, pid_t pid) {
+ssize_t PartnerRequester::request(const string &name, pid_t pidt) {
     FifoWrite* partnerFifo = new FifoWrite(FIFO_FILE_PARTNER_REQUEST);
     int fd = partnerFifo->openFifo();
     if (fd < 0) {
         throw InitException("Partner request fifo can't be opened!");
     }
 
-    ssize_t out = partnerFifo->writeFifo( static_cast<const void*>(to_string(pid).c_str()), sizeof(to_string(pid)));
+    int *pid = new int(pidt);
+
+    ssize_t out = partnerFifo->writeFifo( static_cast<const void*>(pid), sizeof(pid));
 
     if(out < 0) {
         throw InitException("Partner request fifo can't be write!");
@@ -37,15 +39,15 @@ void PartnerRequester::waitResponse(string name) {
         throw InitException("Partner response fifo can't be opened!");
     }
 
-    char buffer[BUFFSIZE];
+    int *buffer = new int;
 
-    ssize_t out = partnerFifo->readFifo((buffer), BUFFSIZE);
+    ssize_t out = partnerFifo->readFifo((buffer), sizeof(buffer));
 
     if(out < 0) {
         throw InitException("Partner request fifo can't be write!");
     }
 
-    std::string mensaje = buffer;
+    std::string mensaje = to_string(*buffer);
     mensaje.resize ( out );
 
     partnerFifo->closeFifo();

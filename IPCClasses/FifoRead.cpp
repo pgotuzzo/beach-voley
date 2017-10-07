@@ -11,7 +11,7 @@ FifoRead::~FifoRead() {
 }
 
 int FifoRead::openFifo() {
-    fd = open ( name.c_str(),O_RDONLY );
+    fd = open ( name.c_str(),O_RDONLY | O_CREAT );
 
     return fd;
 }

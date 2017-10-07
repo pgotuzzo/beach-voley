@@ -8,7 +8,7 @@
 
 using namespace std;
 
-const int BUFFSIZE = sizeof(pid_t);
+const int BUFFSIZE = sizeof(int);
 
 class PartnerRequester {
 

@@ -23,6 +23,8 @@ public:
     int createTempFile();
 
     int createTempFile(string fileName);
+
+    void removeTmpFile(string basic_string);
 };
 
 

@@ -1,6 +1,11 @@
 #include <iostream>
+#include <unistd.h>
+#include <wait.h>
 #include "config/Config.h"
 #include "../util/StringUtils.h"
+#include "player/Player.h"
+#include "InitException.h"
+#include "../IPCClasses/FifoWrite.h"
 
 using namespace std;
 
@@ -53,6 +58,7 @@ int main(int argc, char *argv[]) {
              << "Players: " << toString(config.tournamentParams.players) << endl
              << "Debug: " << (config.tournamentParams.debugEnable ? "true" : "false") << endl;
     }
+
 
     return 0;
 }

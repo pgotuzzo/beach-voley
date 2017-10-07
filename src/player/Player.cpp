@@ -24,21 +24,17 @@ void Player::partnerRequest() {
 }
 
 void Player::organizatorResponse() {
-    string fileName = FIFO_FILE_PARTNER_RESPONSE + to_string(getpid());
-    int fd = createTempFile(fileName);
-    PartnerRequester::waitResponse(fileName);
-
+    string fileName =  FIFO_FILE_PARTNER_RESPONSE + getpid();
+    string path = "/tmp/" + fileName;
+    PartnerRequester::waitResponse(path);
+    removeTmpFile(path);
 }
 
-int Player::createTempFile(string fileName) {
+void Player::removeTmpFile(string fileName) {
 
-    FILE * pFile;
-    pFile = fopen ("/tmp/" + fileName,"w");
-    if (pFile!=NULL) {
-        fclose (pFile);
-    } else {
-        throw InitException( fileName + " fifo can't be opened!");
+    if( remove( fileName ) != 0 ) {
+        throw InitException("No se pudo eliminar el archivo temporal " + fileName);
     }
 
-    return 1;
 }
+
