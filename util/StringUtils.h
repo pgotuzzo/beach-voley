@@ -1,5 +1,5 @@
-#ifndef BEACH_VOLEY_ARRAYUTILS_H
-#define BEACH_VOLEY_ARRAYUTILS_H
+#ifndef BEACH_VOLEY_STRINGUTILS_H
+#define BEACH_VOLEY_STRINGUTILS_H
 
 #include <iostream>
 #include <vector>
@@ -10,4 +10,4 @@ string toString(const char *aCharPtr[], int count);
 
 string toString(const vector<string> v);
 
-#endif //BEACH_VOLEY_ARRAYUTILS_H
+#endif //BEACH_VOLEY_STRINGUTILS_H
