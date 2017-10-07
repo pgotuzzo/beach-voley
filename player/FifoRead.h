@@ -10,7 +10,7 @@
 #include "Fifo.h"
 
 class FifoRead : public Fifo {
-
+public:
     FifoRead(const std::string name);
     ~FifoRead();
 

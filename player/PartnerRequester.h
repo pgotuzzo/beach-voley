@@ -8,11 +8,14 @@
 
 using namespace std;
 
+const int BUFFSIZE = sizeof(pid_t);
+
 class PartnerRequester {
 
 public:
     static ssize_t request(const string &name, pid_t pid);
 
+    static void waitResponse(string name);
 };
 
 

@@ -14,7 +14,7 @@ public:
     ~FifoWrite();
 
     int openFifo();
-    ssize_t writeFifo(const void* buffer,const ssize_t buffsize) const;
+    ssize_t writeFifo(const void* buffer, ssize_t buffsize) const;
 };
 
 

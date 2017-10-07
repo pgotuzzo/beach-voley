@@ -2,7 +2,6 @@
 #include <iostream>
 #include <unistd.h>
 #include "Player.h"
-#include "../Constants.h"
 #include "../InitException.h"
 #include "PartnerRequester.h"
 
@@ -22,4 +21,24 @@ void Player::subscribe() {
 
 void Player::partnerRequest() {
     PartnerRequester::request(name, getpid());
+}
+
+void Player::organizatorResponse() {
+    string fileName = FIFO_FILE_PARTNER_RESPONSE + to_string(getpid());
+    int fd = createTempFile(fileName);
+    PartnerRequester::waitResponse(fileName);
+
+}
+
+int Player::createTempFile(string fileName) {
+
+    FILE * pFile;
+    pFile = fopen ("/tmp/" + fileName,"w");
+    if (pFile!=NULL) {
+        fclose (pFile);
+    } else {
+        throw InitException( fileName + " fifo can't be opened!");
+    }
+
+    return 1;
 }

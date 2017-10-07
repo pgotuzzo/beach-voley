@@ -4,8 +4,13 @@
 #include <string>
 
 using namespace std;
+extern const char* FIFO_FILE_TOURNAMENT;
+extern const char* FIFO_FILE_PARTNER_REQUEST;
+extern const char* FIFO_FILE_PARTNER_RESPONSE;
+
 
 class Player {
+
 private:
     string name;
 public:
@@ -13,6 +18,11 @@ public:
 
     void subscribe();
     void partnerRequest();
+    void organizatorResponse();
+
+    int createTempFile();
+
+    int createTempFile(string fileName);
 };
 
 

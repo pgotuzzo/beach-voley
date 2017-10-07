@@ -16,6 +16,6 @@ int  FifoWrite::openFifo() {
     return fd;
 }
 
-ssize_t FifoWrite::writeFifo(const void* buffer,const ssize_t buffsize) const {
+ssize_t FifoWrite::writeFifo(const void* buffer, ssize_t buffsize) const {
     return write ( fd,buffer,buffsize );
 }
