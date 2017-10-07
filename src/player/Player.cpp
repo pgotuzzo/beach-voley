@@ -4,11 +4,13 @@
 #include "Player.h"
 #include "../InitException.h"
 #include "PartnerRequester.h"
+#include "../court/Court.h"
 
 using namespace std;
 
-Player::Player(const string &name) {
+Player::Player(const string &name, Court **courts) {
     this->name = name;
+    this->courts = courts;
 }
 
 void Player::subscribe() {
@@ -19,9 +21,27 @@ void Player::subscribe() {
     cout << "Participante " + name + ": pudo conectarse con Tournament" << endl;
 }
 
+void Player::play() {
+    partnerRequest();
+    if(response->playerAction == ENUM_PLAY) {
+        goToPlayCourt();
+        leaveCourt();
+    }
+}
+
 void Player::partnerRequest() {
     PartnerRequester::request(name, getpid());
     organizatorResponse();
+}
+
+void Player::goToPlayCourt() {
+    SemaforoInfo semInfo = getSemaforoInfoEntry();
+    semInfo.s->p(semInfo.id);
+}
+
+void Player::leaveCourt() {
+    SemaforoInfo semInfo = getSemaforoInfoExit();
+    semInfo.s->p(semInfo.id);
 }
 
 void Player::organizatorResponse() {
@@ -29,6 +49,19 @@ void Player::organizatorResponse() {
     string path = "/tmp/" + fileName;
     response = PartnerRequester::waitResponse(path);
     removeTmpFile(path);
+}
+
+SemaforoInfo Player::getSemaforoInfoEntry() {
+    getCourt().getEntry();
+}
+
+
+SemaforoInfo Player::getSemaforoInfoExit() {
+    getCourt().getExit();
+}
+
+Court Player::getCourt() {
+    return this->courts[response->row][response->column];
 }
 
 void Player::removeTmpFile(string fileName) {
