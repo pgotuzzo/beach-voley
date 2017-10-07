@@ -23,4 +23,9 @@ public:
     void eliminar() const;
 };
 
+struct SemaforoInfo {
+    unsigned short id;
+    Semaforo *s;
+};
+
 #endif /* SEMAFORO_H_ */
