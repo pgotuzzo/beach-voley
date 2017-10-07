@@ -19,6 +19,7 @@ private:
     OrgPlayerResponse *response;
     Field *field;
     static const Logger* logger;
+    const Semaforo* fieldTurnstile;
 
     Court getCourt();
 
@@ -36,10 +37,12 @@ private:
 
     void log(string message);
 
+    void enterField();
+
     SemaforoInfo getSemaforoInfoExit();
 
 public:
-    Player(const string &name, Field *field);
+    Player(const string &name, Field *field, const Semaforo *fieldTurnstile);
 
     void play();
 };

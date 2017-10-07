@@ -9,7 +9,7 @@
 
 using namespace std;
 
-Player::Player(const string &name, Field *field): {
+Player::Player(const string &name, Field *field, const Semaforo *fieldTurnstile): fieldTurnstile(fieldTurnstile) {
     this->name = name;
     this->field = field;
 
@@ -17,6 +17,8 @@ Player::Player(const string &name, Field *field): {
 }
 
 void Player::play() {
+    log("Entrando al predio...");
+    enterField();
     log("Buscando compañero...");
     partnerRequest();
     if (response->playerAction == ENUM_PLAY) {
@@ -74,5 +76,12 @@ void Player::removeTmpFile(string fileName) {
 void Player::log(string message) {
     string aux = "Player " + name + ": " + message;
     this->logger->logMessage(aux.c_str());
+}
+
+/**
+ * It waits till there is place inside the field.
+ */
+void Player::enterField() {
+    fieldTurnstile->p(0);
 }
 

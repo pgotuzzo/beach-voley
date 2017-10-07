@@ -137,9 +137,11 @@ int main(int argc, char *argv[]) {
             exit(0);
         }
 
-        // Players
+        // Players, recieve the
+        static const string FIELD_TURNSTILE_SEMAPHORE_NAME = "/bin/date";
+        Semaforo fieldTurnstile(FIELD_TURNSTILE_SEMAPHORE_NAME, 0, config.tournamentParams.capacity);
         for (const auto &name : config.tournamentParams.players) {
-            Player player(name, &field);
+            Player player(name, &field, &fieldTurnstile);
             isRoot = initPlayers(player);
             if (!isRoot) {
                 // Player completed the expected matches amount
