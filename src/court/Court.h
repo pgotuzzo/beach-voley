@@ -18,6 +18,7 @@ private:
     void play();
 
 public:
+    Court();
 
     Court(string name, Semaforo *entrance, unsigned short entranceId, Semaforo *exit, unsigned short exitId);
 

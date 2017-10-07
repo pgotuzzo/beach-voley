@@ -5,8 +5,9 @@ Court::Court(string name, Semaforo *entrance, unsigned short entranceId, Semafor
     this->name = name;
     this->entrance = {entranceId, entrance};
     this->exit = {exitId, exit};
-    waitForPlayers();
 }
+
+Court::Court() = default;
 
 void Court::waitForPlayers() {
     log("Esperando por los participantes...");
@@ -41,3 +42,4 @@ void Court::log(string message) {
     string aux = "Cancha " + name + " : " + message;
     Logger::getInstance()->loguear(aux.c_str());
 }
+
