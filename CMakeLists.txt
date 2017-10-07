@@ -3,6 +3,13 @@ project(beach-voley)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_FILES main.cpp config/Config.cpp config/ParseException.cpp config/ParseException.h config/Config.h player/Player.cpp player/Player.h Tournament.cpp Tournament.h Constants.h InitException.cpp InitException.h player/PartnerRequester.cpp player/PartnerRequester.h player/Fifo.cpp player/Fifo.h player/FifoWrite.cpp player/FifoWrite.h player/FifoRead.cpp player/FifoRead.h)
+set(LOCK_FILE IPCClasses/LockFile.cpp IPCClasses/LockFile.h)
+set(SEMAFORO IPCClasses/Semaforo.cpp IPCClasses/Semaforo.h)
+set(PIPE IPCClasses/Pipe.cpp IPCClasses/Pipe.h)
+set(MEMORIA_COMPARTIDA IPCClasses/MemoriaCompartida.cpp IPCClasses/MemoriaCompartida.h)
+set(LOGGER Logger/Logger.cpp Logger/Logger.h)
+set(MONITOR_MAREA src/MonitorMarea.cpp src/MonitorMarea.hpp)
+
+set(SOURCE_FILES src/main.cpp src/config/Config.cpp src/config/ParseException.cpp src/config/ParseException.h src/config/Config.h src/player/Player.cpp src/player/Player.h src/Tournament.cpp src/Tournament.h src/Constants.h src/InitException.cpp src/InitException.h util/StringUtils.h util/StringUtils.cpp)
 add_executable(beach-voley ${SOURCE_FILES})
 configure_file(help ${CMAKE_CURRENT_BINARY_DIR}/help COPYONLY)
