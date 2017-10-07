@@ -1,9 +1,8 @@
 #include <iostream>
-#include <sstream>
 #include "config/Config.h"
 #include "../util/StringUtils.h"
-#include "../IPCClasses/Semaforo.h"
-#include "court/Court.h"
+#include "court/Field.h"
+#include "player/Player.h"
 
 using namespace std;
 
@@ -26,20 +25,6 @@ void showHelp() {
             }
         }
         fclose(pHelpFile);
-    }
-}
-
-void createField(Court *field, int columns, int rows) {
-    string nameEntrance = "field_entrance";
-    Semaforo *entrance = new Semaforo("field_entrance", 0, columns * rows);
-    Semaforo *exit = new Semaforo("field_exit", 0, columns * rows);
-    for (int i = 0; i < columns; i++) {
-        for (int j = 0; j < rows; j++) {
-            stringstream name;
-            name << "[" << i << ", " << j << "}";
-            auto id = (unsigned short) (i * rows + j);
-            field[id] = Court(name.str(), entrance, id, exit, id);
-        }
     }
 }
 
@@ -71,8 +56,12 @@ int main(int argc, char *argv[]) {
              << "Debug: " << (config.tournamentParams.debugEnable ? "true" : "false") << endl;
 
         // Create Field = [C X R] Courts
-        Court field[config.tournamentParams.columns * config.tournamentParams.rows];
-        createField(field, config.tournamentParams.columns, config.tournamentParams.rows);
+        Field field(config.tournamentParams.columns, config.tournamentParams.rows);
+
+        // Create Players
+        for (const auto &name : config.tournamentParams.players) {
+            Player(name, &field);
+        }
 
         cout << "FINALIZANDO...";
     }

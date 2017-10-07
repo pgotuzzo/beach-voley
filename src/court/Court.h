@@ -1,9 +1,9 @@
 #ifndef BEACH_VOLEY_COURT_H
 #define BEACH_VOLEY_COURT_H
 
-
 #include "../../IPCClasses/Semaforo.h"
-#include "../player/Player.h"
+
+using namespace std;
 
 class Court {
 private:
@@ -26,6 +26,5 @@ public:
 
     SemaforoInfo getExit();
 };
-
 
 #endif //BEACH_VOLEY_COURT_H

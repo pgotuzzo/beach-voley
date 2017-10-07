@@ -4,13 +4,12 @@
 #include "Player.h"
 #include "../InitException.h"
 #include "PartnerRequester.h"
-#include "../court/Court.h"
 
 using namespace std;
 
-Player::Player(const string &name, Court **courts) {
+Player::Player(const string &name, Field *field) {
     this->name = name;
-    this->courts = courts;
+    this->field = field;
 }
 
 void Player::subscribe() {
@@ -23,7 +22,7 @@ void Player::subscribe() {
 
 void Player::play() {
     partnerRequest();
-    if(response->playerAction == ENUM_PLAY) {
+    if (response->playerAction == ENUM_PLAY) {
         goToPlayCourt();
         leaveCourt();
     }
@@ -36,7 +35,7 @@ void Player::partnerRequest() {
 
 void Player::goToPlayCourt() {
     SemaforoInfo semInfo = getSemaforoInfoEntry();
-    semInfo.s->p(semInfo.id);
+    semInfo.s->v(semInfo.id);
 }
 
 void Player::leaveCourt() {
@@ -45,7 +44,7 @@ void Player::leaveCourt() {
 }
 
 void Player::organizatorResponse() {
-    string fileName =  FIFO_FILE_PARTNER_RESPONSE + getpid();
+    string fileName = FIFO_FILE_PARTNER_RESPONSE + getpid();
     string path = "/tmp/" + fileName;
     response = PartnerRequester::waitResponse(path);
     removeTmpFile(path);
@@ -61,12 +60,12 @@ SemaforoInfo Player::getSemaforoInfoExit() {
 }
 
 Court Player::getCourt() {
-    return this->courts[response->row][response->column];
+    return this->field->getCourt(response->row, response->column);
 }
 
 void Player::removeTmpFile(string fileName) {
 
-    if( remove( fileName.c_str() ) != 0 ) {
+    if (remove(fileName.c_str()) != 0) {
         throw InitException("No se pudo eliminar el archivo temporal " + fileName);
     }
 

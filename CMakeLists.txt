@@ -10,6 +10,6 @@ set(MEMORIA_COMPARTIDA IPCClasses/MemoriaCompartida.h)
 set(LOGGER Logger/Logger.cpp Logger/Logger.h)
 set(MONITOR_MAREA src/MonitorMarea.cpp src/MonitorMarea.hpp)
 
-set(SOURCE_FILES src/. src/main.cpp src/config/Config.cpp src/config/ParseException.cpp src/config/ParseException.h src/config/Config.h src/player/Player.cpp src/player/Player.h src/Tournament.cpp src/Tournament.h src/Constants.h src/InitException.cpp src/InitException.h util/StringUtils.h util/StringUtils.cpp src/court/Court.cpp src/court/Court.h src/player/PartnerRequester.h src/player/PartnerRequester.cpp IPCClasses/FifoRead.cpp IPCClasses/FifoRead.h IPCClasses/FifoWrite.cpp IPCClasses/FifoWrite.h IPCClasses/Fifo.cpp IPCClasses/Fifo.h)
+set(SOURCE_FILES src/. src/main.cpp src/config/Config.cpp src/config/ParseException.cpp src/config/ParseException.h src/config/Config.h src/player/Player.cpp src/player/Player.h src/Tournament.cpp src/Tournament.h src/Constants.h src/InitException.cpp src/InitException.h util/StringUtils.h util/StringUtils.cpp src/court/Court.cpp src/court/Court.h src/player/PartnerRequester.h src/player/PartnerRequester.cpp IPCClasses/FifoRead.cpp IPCClasses/FifoRead.h IPCClasses/FifoWrite.cpp IPCClasses/FifoWrite.h IPCClasses/Fifo.cpp IPCClasses/Fifo.h src/court/Field.cpp src/court/Field.h)
 add_executable(beach-voley ${SOURCE_FILES} ${LOCK_FILE} ${SEMAFORO} ${PIPE} ${MEMORIA_COMPARTIDA} ${LOGGER} ${MONITOR_MAREA})
 configure_file(help ${CMAKE_CURRENT_BINARY_DIR}/help COPYONLY)
