@@ -32,7 +32,7 @@ void Player::organizatorResponse() {
 
 void Player::removeTmpFile(string fileName) {
 
-    if( remove( fileName ) != 0 ) {
+    if( remove( fileName.c_str() ) != 0 ) {
         throw InitException("No se pudo eliminar el archivo temporal " + fileName);
     }
 
