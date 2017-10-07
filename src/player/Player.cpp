@@ -16,16 +16,35 @@ Player::Player(const string &name, Field *field, const Semaforo *fieldTurnstile)
     this->logger = Logger::getInstance();
 }
 
+/**
+ * The player starts playing.
+ * The player will try to enter the stadium as long as the tournament doesn't finish.
+ * Once inside the stadium he will search for a partner, go play the games, and search
+ * for new partners again, till he couldn't have partner or the tournament ends.
+ */
 void Player::play() {
-    log("Entrando al predio...");
-    enterField();
-    log("Buscando compañero...");
-    partnerRequest();
-    if (response->playerAction == ENUM_PLAY) {
-        log("Compañero asignado!");
-        goToPlayCourt();
-        leaveCourt();
+    bool leaveTournament = false;
+    while (!leaveTournament) {
+        log("Entrando al predio...");
+        enterField();
+        log("Buscando compañero...");
+        partnerRequest();
+        while (response->playerAction != ENUM_LEAVE_TOURNAMENT or
+                response->playerAction !=ENUM_LEAVE_STADIUM) {
+            log("Compañero asignado! Yendo a jugar");
+            goToPlayCourt();
+            log("Dejando la cancha");
+            leaveCourt();
+            log("Buscando compañero...");
+            partnerRequest();
+        }
+        if (response->playerAction == ENUM_LEAVE_TOURNAMENT) {
+            leaveTournament = true;
+        }
+        log("Saliendo del predio...");
+        leaveField();
     }
+    log("Saliendo del torneo...");
 }
 
 void Player::partnerRequest() {
@@ -83,5 +102,12 @@ void Player::log(string message) {
  */
 void Player::enterField() {
     fieldTurnstile->p(0);
+}
+
+/**
+ * It leaves the field
+ */
+void Player::leaveField() {
+    fieldTurnstile->v(0);
 }
 

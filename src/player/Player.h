@@ -39,12 +39,15 @@ private:
 
     void enterField();
 
+    void leaveField();
+
     SemaforoInfo getSemaforoInfoExit();
 
 public:
     Player(const string &name, Field *field, const Semaforo *fieldTurnstile);
 
     void play();
+
 };
 
 
