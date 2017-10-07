@@ -11,7 +11,7 @@ private:
     Logger();
 public:
     static Logger* getInstance();
-    void loguear(const char*) ;
+    void logMessage(const char *)const;
 };
 
 

@@ -15,7 +15,7 @@ Logger *Logger::getInstance() {
     return instance;
 }
 
-void Logger::loguear(const char *mensaje) {
+void Logger::logMessage(const char *mensaje)const {
     std::ofstream salida(archivo, std::ios::out | std::ios::app);
     salida << mensaje << std::endl;
     salida.close();

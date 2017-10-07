@@ -5,6 +5,7 @@
 #include "../Definitions.h"
 #include "../court/Court.h"
 #include "../court/Field.h"
+#include "../../Logger/Logger.h"
 
 using namespace std;
 //extern const char *FIFO_FILE_PARTNER_REQUEST;
@@ -17,6 +18,7 @@ private:
     string name;
     OrgPlayerResponse *response;
     Field *field;
+    static const Logger* logger;
 
     Court getCourt();
 
@@ -32,14 +34,14 @@ private:
 
     void leaveCourt();
 
+    void log(string message);
+
     SemaforoInfo getSemaforoInfoExit();
 
 public:
     Player(const string &name, Field *field);
 
     void play();
-
-    void log(string message);
 };
 
 

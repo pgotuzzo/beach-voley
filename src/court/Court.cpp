@@ -6,6 +6,8 @@ Court::Court(string name, Semaforo *entrance, unsigned short entranceId, Semafor
     this->name = name;
     this->entrance = {entranceId, entrance};
     this->exit = {exitId, exit};
+
+    this->logger = Logger::getInstance();
 }
 
 Court::Court() = default;
@@ -41,6 +43,6 @@ SemaforoInfo Court::getExit() {
 
 void Court::log(string message) {
     string aux = "Cancha " + name + ": " + message;
-    Logger::getInstance()->loguear(aux.c_str());
+    this->logger->logMessage(aux.c_str());
 }
 

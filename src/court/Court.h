@@ -2,6 +2,7 @@
 #define BEACH_VOLEY_COURT_H
 
 #include "../../IPCClasses/Semaforo.h"
+#include "../../Logger/Logger.h"
 
 using namespace std;
 
@@ -10,6 +11,7 @@ private:
     string name;
     SemaforoInfo entrance;
     SemaforoInfo exit;
+    static const Logger* logger;
 
     void log(string message);
 

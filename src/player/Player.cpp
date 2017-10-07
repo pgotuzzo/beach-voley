@@ -9,9 +9,11 @@
 
 using namespace std;
 
-Player::Player(const string &name, Field *field) {
+Player::Player(const string &name, Field *field): {
     this->name = name;
     this->field = field;
+
+    this->logger = Logger::getInstance();
 }
 
 void Player::play() {
@@ -71,6 +73,6 @@ void Player::removeTmpFile(string fileName) {
 
 void Player::log(string message) {
     string aux = "Player " + name + ": " + message;
-    Logger::getInstance()->loguear(aux.c_str());
+    this->logger->logMessage(aux.c_str());
 }
 
