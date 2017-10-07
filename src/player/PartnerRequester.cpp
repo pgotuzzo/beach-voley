@@ -1,14 +1,9 @@
-//
-// Created by sebastian on 03/10/17.
-//
-
 #include <iostream>
 #include "PartnerRequester.h"
 #include "../InitException.h"
 #include "../Constants.h"
 #include "../../IPCClasses/FifoWrite.h"
 #include "../../IPCClasses/FifoRead.h"
-#include "../Definitions.h"
 
 ssize_t PartnerRequester::request(const string &name, pid_t pidt) {
     FifoWrite* partnerFifo = new FifoWrite(FIFO_FILE_PARTNER_REQUEST);

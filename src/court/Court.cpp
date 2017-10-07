@@ -1,3 +1,4 @@
+
 #include "Court.h"
 #include "../../Logger/Logger.h"
 
@@ -39,7 +40,7 @@ SemaforoInfo Court::getExit() {
 }
 
 void Court::log(string message) {
-    string aux = "Cancha " + name + " : " + message;
+    string aux = "Cancha " + name + ": " + message;
     Logger::getInstance()->loguear(aux.c_str());
 }
 

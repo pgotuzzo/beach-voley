@@ -13,8 +13,6 @@ private:
 
     void log(string message);
 
-    void waitForPlayers();
-
     void play();
 
 public:
@@ -25,6 +23,8 @@ public:
     SemaforoInfo getEntry();
 
     SemaforoInfo getExit();
+
+    void waitForPlayers();
 };
 
 #endif //BEACH_VOLEY_COURT_H

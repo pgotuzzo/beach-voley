@@ -1,11 +1,10 @@
-//
-// Created by sebastian on 03/10/17.
-//
-
 #ifndef BEACH_VOLEY_PARTNERREQUESTER_H
 #define BEACH_VOLEY_PARTNERREQUESTER_H
 #include <string>
 #include "../Definitions.h"
+
+//extern const char *FIFO_FILE_PARTNER_REQUEST;
+//extern const char *FIFO_FILE_PARTNER_RESPONSE;
 
 using namespace std;
 

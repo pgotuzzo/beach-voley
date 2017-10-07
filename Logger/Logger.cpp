@@ -1,13 +1,12 @@
 #include "Logger.h"
 #include <fstream>
-#include <cstring>
 
-static const std::string archivo = "../logs/log.txt";
+static const std::string archivo = "logs/log.txt";
 
 Logger::Logger() {
 }
 
-Logger* Logger::instance = nullptr;
+Logger *Logger::instance = nullptr;
 
 Logger *Logger::getInstance() {
     if (instance == nullptr) {

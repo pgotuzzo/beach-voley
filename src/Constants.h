@@ -1,8 +1,11 @@
 #ifndef BEACH_VOLEY_CONSTANTS_H
 #define BEACH_VOLEY_CONSTANTS_H
 
-const char* FIFO_FILE_TOURNAMENT = "/home/sebastian/Documentos/beach-voley/tournament";
-const char* FIFO_FILE_PARTNER_REQUEST = "/home/sebastian/Documentos/beach-voley/partner_request";
-const char* FIFO_FILE_PARTNER_RESPONSE = "partener_response";
+// FIFOS
+const char* const FIFO_FILE_PARTNER_REQUEST = "tmp/partner_request";
+const char* const FIFO_FILE_PARTNER_RESPONSE = "tmp/partner_response";
+// SEMAPHORE
+const char* const SEM_FILE_COURT_ENTRANCE = "tmp/field_entrance";
+const char* const SEM_FILE_COURT_EXIT = "tmp/field_exit";
 
 #endif //BEACH_VOLEY_CONSTANTS_H

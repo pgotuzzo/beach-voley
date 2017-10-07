@@ -4,6 +4,8 @@
 #include "Player.h"
 #include "../InitException.h"
 #include "PartnerRequester.h"
+#include "../../Logger/Logger.h"
+#include "../Constants.h"
 
 using namespace std;
 
@@ -12,17 +14,11 @@ Player::Player(const string &name, Field *field) {
     this->field = field;
 }
 
-void Player::subscribe() {
-    int fd = open(FIFO_FILE_TOURNAMENT, O_WRONLY, 0644);
-    if (fd < 0) {
-        throw InitException("Tournament fifo can't be opened!");
-    }
-    cout << "Participante " + name + ": pudo conectarse con Tournament" << endl;
-}
-
 void Player::play() {
+    log("Buscando compañero...");
     partnerRequest();
     if (response->playerAction == ENUM_PLAY) {
+        log("Compañero asignado!");
         goToPlayCourt();
         leaveCourt();
     }
@@ -35,7 +31,10 @@ void Player::partnerRequest() {
 
 void Player::goToPlayCourt() {
     SemaforoInfo semInfo = getSemaforoInfoEntry();
+    string aux = "Yendo a la cancha: " + to_string(semInfo.id);
+    log(aux);
     semInfo.s->v(semInfo.id);
+    log("Adentro de la cancha");
 }
 
 void Player::leaveCourt() {
@@ -44,19 +43,18 @@ void Player::leaveCourt() {
 }
 
 void Player::organizatorResponse() {
-    string fileName = FIFO_FILE_PARTNER_RESPONSE + getpid();
-    string path = "/tmp/" + fileName;
-    response = PartnerRequester::waitResponse(path);
-    removeTmpFile(path);
+    string file = FIFO_FILE_PARTNER_RESPONSE + to_string(getpid());
+    response = PartnerRequester::waitResponse(file);
+    removeTmpFile(file);
 }
 
 SemaforoInfo Player::getSemaforoInfoEntry() {
-    getCourt().getEntry();
+    return getCourt().getEntry();
 }
 
 
 SemaforoInfo Player::getSemaforoInfoExit() {
-    getCourt().getExit();
+    return getCourt().getExit();
 }
 
 Court Player::getCourt() {
@@ -69,5 +67,10 @@ void Player::removeTmpFile(string fileName) {
         throw InitException("No se pudo eliminar el archivo temporal " + fileName);
     }
 
+}
+
+void Player::log(string message) {
+    string aux = "Player " + name + ": " + message;
+    Logger::getInstance()->loguear(aux.c_str());
 }
 

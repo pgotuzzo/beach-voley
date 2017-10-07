@@ -1,14 +1,14 @@
 #include <sstream>
 #include "Field.h"
+#include "../Constants.h"
 
 Field::Field(int columns, int rows) {
     this->columns = columns;
     this->rows = rows;
     this->courts = vector<Court>(rows * columns);
 
-    string nameEntrance = "field_entrance";
-    Semaforo *entrance = new Semaforo("field_entrance", 0, columns * rows);
-    Semaforo *exit = new Semaforo("field_exit", 0, columns * rows);
+    Semaforo *entrance = new Semaforo(SEM_FILE_COURT_ENTRANCE, 0, columns * rows);
+    Semaforo *exit = new Semaforo(SEM_FILE_COURT_EXIT, 0, columns * rows);
     for (int i = 0; i < columns; i++) {
         for (int j = 0; j < rows; j++) {
             stringstream name;
@@ -21,4 +21,12 @@ Field::Field(int columns, int rows) {
 
 Court Field::getCourt(int column, int row) {
     return courts[column * rows + row];
+}
+
+int Field::getColumns() {
+    return columns;
+}
+
+int Field::getRows() {
+    return rows;
 }
