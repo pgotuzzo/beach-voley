@@ -7,9 +7,8 @@
 #include "../court/Field.h"
 
 using namespace std;
-extern const char *FIFO_FILE_TOURNAMENT;
-extern const char *FIFO_FILE_PARTNER_REQUEST;
-extern const char *FIFO_FILE_PARTNER_RESPONSE;
+//extern const char *FIFO_FILE_PARTNER_REQUEST;
+//extern const char *FIFO_FILE_PARTNER_RESPONSE;
 
 
 class Player {
@@ -22,6 +21,7 @@ private:
     Court getCourt();
 
     SemaforoInfo getSemaforoInfoEntry();
+
     void partnerRequest();
 
     void organizatorResponse();
@@ -31,12 +31,15 @@ private:
     void goToPlayCourt();
 
     void leaveCourt();
+
     SemaforoInfo getSemaforoInfoExit();
+
 public:
     Player(const string &name, Field *field);
 
-    void subscribe();
     void play();
+
+    void log(string message);
 };
 
 

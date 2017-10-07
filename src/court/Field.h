@@ -1,7 +1,6 @@
 #ifndef BEACH_VOLEY_FIELD_H
 #define BEACH_VOLEY_FIELD_H
 
-
 #include <vector>
 #include "Court.h"
 
@@ -15,6 +14,10 @@ public:
     Field(int columns, int rows);
 
     Court getCourt(int column, int row);
+
+    int getColumns();
+
+    int getRows();
 };
 
 
