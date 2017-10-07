@@ -21,12 +21,13 @@ void Player::subscribe() {
 
 void Player::partnerRequest() {
     PartnerRequester::request(name, getpid());
+    organizatorResponse();
 }
 
 void Player::organizatorResponse() {
     string fileName =  FIFO_FILE_PARTNER_RESPONSE + getpid();
     string path = "/tmp/" + fileName;
-    PartnerRequester::waitResponse(path);
+    response = PartnerRequester::waitResponse(path);
     removeTmpFile(path);
 }
 

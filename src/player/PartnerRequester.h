@@ -5,6 +5,7 @@
 #ifndef BEACH_VOLEY_PARTNERREQUESTER_H
 #define BEACH_VOLEY_PARTNERREQUESTER_H
 #include <string>
+#include "../Definitions.h"
 
 using namespace std;
 
@@ -15,7 +16,7 @@ class PartnerRequester {
 public:
     static ssize_t request(const string &name, pid_t pid);
 
-    static void waitResponse(string name);
+    static OrgPlayerResponse * waitResponse(string name);
 };
 
 

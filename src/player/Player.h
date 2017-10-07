@@ -2,6 +2,7 @@
 #define BEACH_VOLEY_PLAYER_H
 
 #include <string>
+#include "../Definitions.h"
 
 using namespace std;
 extern const char* FIFO_FILE_TOURNAMENT;
@@ -13,6 +14,7 @@ class Player {
 
 private:
     string name;
+    OrgPlayerResponse *response;
 public:
     Player(const string &name);
 

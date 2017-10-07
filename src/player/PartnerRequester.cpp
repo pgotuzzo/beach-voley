@@ -8,6 +8,7 @@
 #include "../Constants.h"
 #include "../../IPCClasses/FifoWrite.h"
 #include "../../IPCClasses/FifoRead.h"
+#include "../Definitions.h"
 
 ssize_t PartnerRequester::request(const string &name, pid_t pidt) {
     FifoWrite* partnerFifo = new FifoWrite(FIFO_FILE_PARTNER_REQUEST);
@@ -32,14 +33,14 @@ ssize_t PartnerRequester::request(const string &name, pid_t pidt) {
 
 }
 
-void PartnerRequester::waitResponse(string name) {
+OrgPlayerResponse * PartnerRequester::waitResponse(string name) {
     FifoRead* partnerFifo = new FifoRead(name);
     int fd = partnerFifo->openFifo();
     if (fd < 0) {
         throw InitException("Partner response fifo can't be opened!");
     }
 
-    int *buffer = new int;
+    auto *buffer = new OrgPlayerResponse;
 
     ssize_t out = partnerFifo->readFifo((buffer), sizeof(buffer));
 
@@ -49,6 +50,8 @@ void PartnerRequester::waitResponse(string name) {
 
     partnerFifo->closeFifo();
 
-    cout << "Participante " + name + ": recibió un compañero " << *buffer << endl;
+    cout << "Participante " + name + ": recibió un compañero " << buffer->show() << endl;
+
+    return buffer;
 
 }
