@@ -58,10 +58,13 @@ int main(int argc, char *argv[]) {
         // Create Field = [C X R] Courts
         Field field(config.tournamentParams.columns, config.tournamentParams.rows);
 
+        Player *pp;
         // Create Players
         for (const auto &name : config.tournamentParams.players) {
-            Player(name, &field);
+            pp = new Player(name, &field);
         }
+
+        pp->play();
 
         cout << "FINALIZANDO...";
     }

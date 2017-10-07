@@ -22,10 +22,8 @@ void Player::subscribe() {
 
 void Player::play() {
     partnerRequest();
-    if (response->playerAction == ENUM_PLAY) {
-        goToPlayCourt();
-        leaveCourt();
-    }
+    goToPlayCourt();
+    leaveCourt();
 }
 
 void Player::partnerRequest() {
@@ -44,7 +42,7 @@ void Player::leaveCourt() {
 }
 
 void Player::organizatorResponse() {
-    string fileName = FIFO_FILE_PARTNER_RESPONSE + getpid();
+    string fileName = FIFO_FILE_PARTNER_RESPONSE + to_string(getpid());
     string path = "/tmp/" + fileName;
     response = PartnerRequester::waitResponse(path);
     removeTmpFile(path);

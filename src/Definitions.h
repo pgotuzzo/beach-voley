@@ -16,7 +16,7 @@ typedef struct OrgPlayerResponse {
     PlayerAction playerAction;
 
     string show() {
-        return string("Column: ") + to_string(column) + string("row: ") + to_string(row) + string("player action: ") +
+        return string("Column: ") + to_string(column) + string(" row: ") + to_string(row) + string(" player action: ") +
                to_string(playerAction);
     }
 
