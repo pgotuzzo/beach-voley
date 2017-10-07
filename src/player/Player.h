@@ -20,18 +20,16 @@ private:
     Court **courts;
     Court getCourt() ;
     SemaforoInfo getSemaforoInfoEntry();
-public:
-    Player(const string &name, Court **courts);
-
-    void subscribe();
     void partnerRequest();
     void organizatorResponse();
     void removeTmpFile(string basic_string);
     void goToPlayCourt();
     void leaveCourt();
-
     SemaforoInfo getSemaforoInfoExit();
+public:
+    Player(const string &name, Court **courts);
 
+    void subscribe();
     void play();
 };
 
