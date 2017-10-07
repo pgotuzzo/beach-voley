@@ -47,11 +47,8 @@ void PartnerRequester::waitResponse(string name) {
         throw InitException("Partner request fifo can't be write!");
     }
 
-    std::string mensaje = to_string(*buffer);
-    mensaje.resize ( out );
-
     partnerFifo->closeFifo();
 
-    cout << "Participante " + name + ": recibió un compañero " << mensaje << endl;
+    cout << "Participante " + name + ": recibió un compañero " << *buffer << endl;
 
 }
