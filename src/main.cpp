@@ -1,7 +1,6 @@
 #include <iostream>
 #include "config/Config.h"
-#include "util/StringUtils.h"
-#include "player/Player.h"
+#include "../util/StringUtils.h"
 
 using namespace std;
 
@@ -54,9 +53,6 @@ int main(int argc, char *argv[]) {
              << "Players: " << toString(config.tournamentParams.players) << endl
              << "Debug: " << (config.tournamentParams.debugEnable ? "true" : "false") << endl;
     }
-
-    Player *jj = new Player("juan");
-    jj->organizatorResponse();
 
     return 0;
 }
