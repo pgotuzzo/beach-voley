@@ -13,12 +13,6 @@ using namespace std;
 Player::Player(const string &name, Field *field) {
     this->name = name;
     this->field = field;
-    fifo = new FifoWrite(FIFO_FILE_PARTNER_REQUEST);
-    int fd = fifo->openFifo();
-    if (fd < 0) {
-        throw InitException("Partner request fifo can't be opened!");
-    }
-
 }
 
 void Player::play() {
@@ -81,5 +75,13 @@ void Player::removeTmpFile(string fileName) {
 void Player::log(string message) {
     string aux = "Player " + name + ": " + message;
     Logger::getInstance()->loguear(aux.c_str());
+}
+
+void Player::init() {
+    fifo = new FifoWrite(FIFO_FILE_PARTNER_REQUEST);
+    int fd = fifo->openFifo();
+    if (fd < 0) {
+        throw InitException("Partner request fifo can't be opened!");
+    }
 }
 

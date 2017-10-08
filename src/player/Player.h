@@ -43,6 +43,8 @@ public:
     void play();
 
     void log(string message);
+
+    void init();
 };
 
 

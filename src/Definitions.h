@@ -32,6 +32,10 @@ typedef struct TaskRequest {
     int resultVisitant;
     bool marea;
     TaskType task;
+    string show() {
+        return string("pid: ") + to_string(pid) + string(" resultLocal: ") + to_string(resultLocal) + string(" resultVisitant: ") +
+               to_string(resultVisitant) + string(" task: ") + to_string(task);
+    }
 };
 
 #endif //BEACH_VOLEY_DEFINITIOS_H

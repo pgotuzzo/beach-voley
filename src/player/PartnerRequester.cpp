@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 #include "PartnerRequester.h"
 #include "../InitException.h"
 #include "../Constants.h"
@@ -19,7 +20,17 @@ ssize_t PartnerRequester::request(const string &name, FifoWrite *fifo,  pid_t pi
     ssize_t out = fifo->writeFifo( static_cast<const void*>(&task), sizeof(TaskRequest));
 
     if(out < 0) {
-        throw InitException("Partner request lock can't be write!");
+        cout << "PARTNER_REQUESTER error " << to_string(pidt)<< endl;
+        int fd = fifo->openFifo();
+        if (fd < 0) {
+            throw InitException("Partner request fifo can't be opened!");
+        }
+
+        out = fifo->writeFifo( static_cast<const void*>(&task), sizeof(TaskRequest));
+        if(out < 0) {
+
+            throw InitException(string("Partner request fifo can't be write! ") + strerror(errno) + task.show());
+        }
     }
 
     cout << "PARTNER_REQUESTER Participante " + name + ": pidió un compañero" << endl;

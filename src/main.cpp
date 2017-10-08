@@ -60,6 +60,7 @@ bool initManager(Manager manager) {
 bool initPlayers(Player player) {
     int pid = fork();
     if (pid == 0) {
+        player.init();
         player.play();
         return false;
     }
