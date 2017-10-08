@@ -1,12 +1,12 @@
 #include <sstream>
 #include "Field.h"
 #include "../Constants.h"
-#include "../ResourceHandler.h"
+#include "../../util/ResourceHandler.h"
 
 Field::Field(int columns, int rows) {
     this->columns = columns;
     this->rows = rows;
-    this->courts = vector<Court>(rows * columns);
+    this->courts = vector<Court>(static_cast<unsigned long>(rows * columns));
 
     Semaforo *entrance = ResourceHandler::getInstance()->createSemaforo(SEM_FILE_COURT_ENTRANCE, 0, columns * rows);
     Semaforo *exit = ResourceHandler::getInstance()->createSemaforo(SEM_FILE_COURT_EXIT, 0, columns * rows);

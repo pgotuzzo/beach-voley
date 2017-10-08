@@ -1,5 +1,4 @@
 #include <iostream>
-#include <zconf.h>
 #include "config/Config.h"
 #include "../util/StringUtils.h"
 #include "court/Field.h"
@@ -7,6 +6,7 @@
 #include "../IPCClasses/signal/SignalHandler.h"
 #include "../IPCClasses/signal/SIGINT_Handler.h"
 #include "Constants.h"
+#include <sys/wait.h>
 
 using namespace std;
 
@@ -109,9 +109,8 @@ int main(int argc, char *argv[]) {
     SignalHandler::getInstance()->registrarHandler(SIGINT, (EventHandler *) &handler);
 
     // FIXME - DO NOT DO THIS!
-    int k;
     for (int i = 0; i < 20; i++) {
-        wait(&k);
+        wait(nullptr);
     }
 
     cout << "FINALIZANDO...";

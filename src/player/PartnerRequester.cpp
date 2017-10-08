@@ -1,7 +1,7 @@
 #include <iostream>
 #include "PartnerRequester.h"
 #include "../Constants.h"
-#include "../ResourceHandler.h"
+#include "../../util/ResourceHandler.h"
 
 
 PartnerRequester::PartnerRequester(const string &playerName) {

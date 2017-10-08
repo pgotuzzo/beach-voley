@@ -6,11 +6,11 @@
 
 using namespace std;
 
-typedef enum PlayerAction {
+enum PlayerAction {
     ENUM_PLAY, ENUM_LEAVE_STADIUM, ENUM_LEAVE_TOURNAMENT
 };
 
-typedef struct OrgPlayerResponse {
+struct OrgPlayerResponse {
     int column;
     int row;
     PlayerAction playerAction;
