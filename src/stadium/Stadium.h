@@ -11,7 +11,7 @@ private:
     vector<Field> fields;
 
 public:
-    Stadium(int columns, int rows);
+    Stadium(int columns, int rows, int minGameDurationInMicro, int maxGameDurationInMicro);
 
     Field getField(int column, int row);
 

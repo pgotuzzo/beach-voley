@@ -13,9 +13,10 @@ struct MatchResult{
 class Field {
 
 public:
-    Field();
+    Field() = default;
 
-    Field(string name, Semaforo *entrance, unsigned short entranceId, Semaforo *exit, unsigned short exitId);
+    Field(string name, Semaforo *entrance, unsigned short entranceId, Semaforo *exit, unsigned short exitId,
+          int minGameDurationInMicro, int maxGameDurationInMicro);
 
     SemaforoInfo getEntry();
 
@@ -24,8 +25,10 @@ public:
     void waitForPlayers();
 private:
     string name;
-    SemaforoInfo entrance;
-    SemaforoInfo exit;
+    SemaforoInfo entrance{};
+    SemaforoInfo exit{};
+    int minGameDurationInMicro{};
+    int maxGameDurationInMicro{};
 
     void log(string message);
 

@@ -92,8 +92,14 @@ int main(int argc, char *argv[]) {
              << "Players: " << toString(config.tournamentParams.players) << endl
              << "Debug: " << (config.tournamentParams.debugEnable ? "true" : "false") << endl;
 
+
+        //TODO: get this from config
+        int minGameDurationInMili = 100;
+        int maxGameDurationInMili = 500;
+
         // Stadium = [C X R] Fields
-        Stadium stadium(config.tournamentParams.columns, config.tournamentParams.rows);
+        Stadium stadium(config.tournamentParams.columns, config.tournamentParams.rows,
+                        1000*minGameDurationInMili, 1000*maxGameDurationInMili);
         bool isRoot = initStadium(stadium);
         if (!isRoot) {
             // Tournament ended

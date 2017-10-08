@@ -3,13 +3,13 @@
 #include "Field.h"
 #include "../../util/RandomNumber.hpp"
 
-Field::Field(string name, Semaforo *entrance, unsigned short entranceId, Semaforo *exit, unsigned short exitId) {
+Field::Field(string name, Semaforo *entrance, unsigned short entranceId, Semaforo *exit, unsigned short exitId,
+             const int minGameDurationInMicro, const int maxGameDurationInMicro):
+        minGameDurationInMicro(minGameDurationInMicro), maxGameDurationInMicro(maxGameDurationInMicro) {
     this->name = name;
     this->entrance = {entranceId, entrance};
     this->exit = {exitId, exit};
 }
-
-Field::Field() = default;
 
 void Field::waitForPlayers() {
     log("Esperando por los participantes...");
@@ -28,9 +28,12 @@ MatchResult Field::getResult() {
     return MatchResult{teams[0], teams[1]};
 }
 
+/**
+ * The field waits
+ */
 void Field::play() {
     log("Comenzo el partido");
-    usleep(getRandomUnsignedInt(100000, 500000));
+    usleep(getRandomUnsignedInt(minGameDurationInMicro, maxGameDurationInMicro));
     MatchResult result = getResult();
     log("Finalizo el partido");
     for (int i = 0; i < 4; i++) {
