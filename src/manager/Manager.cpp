@@ -40,7 +40,7 @@ void Manager::receiveTask() {
 }
 
 void Manager::findPartner(int pid) {
-    //TODO: find partner + find court
+    //TODO: find partner + find stadium
     if (mFifoWrite.find(pid) == mFifoWrite.end()) {
         FifoWrite *f = ResourceHandler::getInstance()->createFifoWirte(FIFO_FILE_PARTNER_RESPONSE + to_string(pid));
         mFifoWrite.emplace(pid, *f);

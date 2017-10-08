@@ -1,15 +1,15 @@
 
-#include "Court.h"
+#include "Field.h"
 
-Court::Court(string name, Semaforo *entrance, unsigned short entranceId, Semaforo *exit, unsigned short exitId) {
+Field::Field(string name, Semaforo *entrance, unsigned short entranceId, Semaforo *exit, unsigned short exitId) {
     this->name = name;
     this->entrance = {entranceId, entrance};
     this->exit = {exitId, exit};
 }
 
-Court::Court() = default;
+Field::Field() = default;
 
-void Court::waitForPlayers() {
+void Field::waitForPlayers() {
     log("Esperando por los participantes...");
     for (int i = 0; i < 4; i++) {
         entrance.s->p(entrance.id);
@@ -18,7 +18,7 @@ void Court::waitForPlayers() {
     play();
 }
 
-void Court::play() {
+void Field::play() {
     log("Comenzo el partido");
     // TODO - Create result
     log("Finalizo el partido");
@@ -30,15 +30,15 @@ void Court::play() {
     waitForPlayers();
 }
 
-SemaforoInfo Court::getEntry() {
+SemaforoInfo Field::getEntry() {
     return entrance;
 }
 
-SemaforoInfo Court::getExit() {
+SemaforoInfo Field::getExit() {
     return exit;
 }
 
-void Court::log(string message) {
+void Field::log(string message) {
     string aux = "Cancha " + name + ": " + message;
     Logger::getInstance()->logMessage(aux.c_str());
 }

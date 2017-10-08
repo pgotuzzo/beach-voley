@@ -1,7 +1,7 @@
 #include <iostream>
 #include "config/Config.h"
 #include "../util/StringUtils.h"
-#include "court/Field.h"
+#include "stadium/Stadium.h"
 #include "player/Player.h"
 #include "../IPCClasses/signal/SignalHandler.h"
 #include "../IPCClasses/signal/SIGINT_Handler.h"
@@ -33,13 +33,13 @@ void showHelp() {
     }
 }
 
-bool initField(Field field) {
-    for (int i = 0; i < field.getColumns(); i++) {
-        for (int j = 0; j < field.getRows(); j++) {
-            Court court = field.getCourt(i, j);
+bool initStadium(Stadium stadium) {
+    for (int i = 0; i < stadium.getColumns(); i++) {
+        for (int j = 0; j < stadium.getRows(); j++) {
+            Field field = stadium.getField(i, j);
             int pid = fork();
             if (pid == 0) {
-                court.waitForPlayers();
+                field.waitForPlayers();
                 return false;
             }
         }
@@ -92,9 +92,9 @@ int main(int argc, char *argv[]) {
              << "Players: " << toString(config.tournamentParams.players) << endl
              << "Debug: " << (config.tournamentParams.debugEnable ? "true" : "false") << endl;
 
-        // Field = [C X R] Courts
-        Field field(config.tournamentParams.columns, config.tournamentParams.rows);
-        bool isRoot = initField(field);
+        // Stadium = [C X R] Fields
+        Stadium stadium(config.tournamentParams.columns, config.tournamentParams.rows);
+        bool isRoot = initStadium(stadium);
         if (!isRoot) {
             // Tournament ended
             exit(0);
@@ -109,11 +109,11 @@ int main(int argc, char *argv[]) {
         }
 
         // Players
-        Semaforo *fieldTurnstile = ResourceHandler::getInstance()->createSemaforo(
+        Semaforo *stadiumTurnstile = ResourceHandler::getInstance()->createSemaforo(
                 SEM_TURNSTILE, 0, config.tournamentParams.capacity
         );
         for (const auto &name : config.tournamentParams.players) {
-            Player player(name, &field, fieldTurnstile);
+            Player player(name, &stadium, stadiumTurnstile);
             isRoot = initPlayers(player);
             if (!isRoot) {
                 // Player completed the expected matches amount

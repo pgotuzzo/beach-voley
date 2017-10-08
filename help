@@ -12,7 +12,7 @@ DESCRIPTION
 
      -player     [REQUIRED] Players names
 
-     -m          [REQUIRED] Capacity of the field. Max amount of players that could be inside the field
+     -m          [REQUIRED] Capacity of the stadium. Max amount of players that could be inside the stadium
 
      -c          [REQUIRED] Columns amount of the beach-pitch matrix
 

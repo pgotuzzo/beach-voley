@@ -17,7 +17,7 @@ struct OrgPlayerResponse {
 
     string show() {
         stringstream message;
-        message << "Court: (" << column << ", " << row << ") " << endl << "Action: " << playerAction;
+        message << "Field: (" << column << ", " << row << ") " << endl << "Action: " << playerAction;
         return message.str();
     }
 

@@ -1,12 +1,12 @@
-#ifndef BEACH_VOLEY_COURT_H
-#define BEACH_VOLEY_COURT_H
+#ifndef BEACH_VOLEY_FIELD_H
+#define BEACH_VOLEY_FIELD_H
 
 #include "../../IPCClasses/Semaforo.h"
 #include "../../Logger/Logger.h"
 
 using namespace std;
 
-class Court {
+class Field {
 private:
     string name;
     SemaforoInfo entrance;
@@ -17,9 +17,9 @@ private:
     void play();
 
 public:
-    Court();
+    Field();
 
-    Court(string name, Semaforo *entrance, unsigned short entranceId, Semaforo *exit, unsigned short exitId);
+    Field(string name, Semaforo *entrance, unsigned short entranceId, Semaforo *exit, unsigned short exitId);
 
     SemaforoInfo getEntry();
 
@@ -28,4 +28,4 @@ public:
     void waitForPlayers();
 };
 
-#endif //BEACH_VOLEY_COURT_H
+#endif //BEACH_VOLEY_FIELD_H

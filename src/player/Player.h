@@ -3,8 +3,8 @@
 
 #include <string>
 #include "../Definitions.h"
-#include "../court/Court.h"
-#include "../court/Field.h"
+#include "../stadium/Field.h"
+#include "../stadium/Stadium.h"
 #include "../../Logger/Logger.h"
 #include "../../IPCClasses/fifo/FifoRead.h"
 #include "PartnerRequester.h"
@@ -16,31 +16,31 @@ class Player {
 
 private:
     string name;
-    Field *field;
-    const Semaforo *fieldTurnstile;
+    Stadium *stadium;
+    const Semaforo *stadiumTurnstile;
     OrgPlayerResponse *response;
     PartnerRequester *requester;
 
-    Court getCourt();
+    Field getField();
 
     SemaforoInfo getSemaforoInfoEntry();
 
     void partnerRequest();
 
-    void goToPlayCourt();
+    void goToPlayGame();
 
-    void leaveCourt();
+    void leaveField();
 
     void log(string message);
 
-    void enterField();
+    void enterStadium();
 
-    void leaveField();
+    void leaveStadium();
 
     SemaforoInfo getSemaforoInfoExit();
 
 public:
-    Player(const string &name, Field *field, const Semaforo *fieldTurnstile);
+    Player(const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile);
 
     void play();
 

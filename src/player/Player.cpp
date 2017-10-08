@@ -4,9 +4,9 @@
 
 using namespace std;
 
-Player::Player(const string &name, Field *field, const Semaforo *fieldTurnstile) : fieldTurnstile(fieldTurnstile) {
+Player::Player(const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile) : stadiumTurnstile(stadiumTurnstile) {
     this->name = name;
-    this->field = field;
+    this->stadium = stadium;
     this->requester = new PartnerRequester(name);
 }
 
@@ -20,15 +20,15 @@ void Player::play() {
     bool leaveTournament = false;
     while (!leaveTournament) {
         log("Entrando al predio...");
-        enterField();
+        enterStadium();
         log("Buscando compañero...");
         partnerRequest();
         while (response->playerAction != ENUM_LEAVE_TOURNAMENT or
                response->playerAction != ENUM_LEAVE_STADIUM) {
             log("Compañero asignado! Yendo a jugar");
-            goToPlayCourt();
+            goToPlayGame();
             log("Dejando la cancha");
-            leaveCourt();
+            leaveField();
             log("Buscando compañero...");
             partnerRequest();
         }
@@ -36,7 +36,7 @@ void Player::play() {
             leaveTournament = true;
         }
         log("Saliendo del predio...");
-        leaveField();
+        leaveStadium();
     }
     log("Saliendo del torneo...");
 }
@@ -46,7 +46,7 @@ void Player::partnerRequest() {
     response = requester->waitResponse();
 }
 
-void Player::goToPlayCourt() {
+void Player::goToPlayGame() {
     SemaforoInfo semInfo = getSemaforoInfoEntry();
     string aux = "Yendo a la cancha: " + to_string(semInfo.id);
     log(aux);
@@ -54,22 +54,22 @@ void Player::goToPlayCourt() {
     log("Adentro de la cancha");
 }
 
-void Player::leaveCourt() {
+void Player::leaveField() {
     SemaforoInfo semInfo = getSemaforoInfoExit();
     semInfo.s->p(semInfo.id);
 }
 
 SemaforoInfo Player::getSemaforoInfoEntry() {
-    return getCourt().getEntry();
+    return getField().getEntry();
 }
 
 
 SemaforoInfo Player::getSemaforoInfoExit() {
-    return getCourt().getExit();
+    return getField().getExit();
 }
 
-Court Player::getCourt() {
-    return this->field->getCourt(response->row, response->column);
+Field Player::getField() {
+    return this->stadium->getField(response->row, response->column);
 }
 
 void Player::log(string message) {
@@ -78,16 +78,16 @@ void Player::log(string message) {
 }
 
 /**
- * It waits till there is place inside the field.
+ * It waits till there is place inside the stadium.
  */
-void Player::enterField() {
-    fieldTurnstile->p(0);
+void Player::enterStadium() {
+    stadiumTurnstile->p(0);
 }
 
 /**
- * It leaves the field
+ * It leaves the stadium
  */
-void Player::leaveField() {
-    fieldTurnstile->v(0);
+void Player::leaveStadium() {
+    stadiumTurnstile->v(0);
 }
 
