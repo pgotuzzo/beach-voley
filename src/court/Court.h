@@ -14,6 +14,7 @@ private:
     void log(string message);
 
     void play();
+    int contador = 0; //TODO sacar
 
 public:
     Court();
@@ -25,6 +26,8 @@ public:
     SemaforoInfo getExit();
 
     void waitForPlayers();
+
+    void releasePlayers();
 };
 
 #endif //BEACH_VOLEY_COURT_H

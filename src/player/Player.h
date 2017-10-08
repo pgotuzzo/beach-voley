@@ -5,6 +5,7 @@
 #include "../Definitions.h"
 #include "../court/Court.h"
 #include "../court/Field.h"
+#include "../../IPCClasses/FifoWrite.h"
 
 using namespace std;
 //extern const char *FIFO_FILE_PARTNER_REQUEST;
@@ -15,7 +16,7 @@ class Player {
 
 private:
     string name;
-    OrgPlayerResponse *response;
+    OrgPlayerResponse response;
     Field *field;
 
     Court getCourt();
@@ -33,6 +34,8 @@ private:
     void leaveCourt();
 
     SemaforoInfo getSemaforoInfoExit();
+
+    FifoWrite *fifo;
 
 public:
     Player(const string &name, Field *field);

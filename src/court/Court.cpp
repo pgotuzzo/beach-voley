@@ -11,7 +11,10 @@ Court::Court(string name, Semaforo *entrance, unsigned short entranceId, Semafor
 Court::Court() = default;
 
 void Court::waitForPlayers() {
-    log("Esperando por los participantes...");
+    contador++;
+    if (contador > 100)
+        return;
+    log("Esperando por los participantes... " + to_string(contador));
     for (int i = 0; i < 4; i++) {
         entrance.s->p(entrance.id);
         log("Llego un nuevo participante");

@@ -6,26 +6,36 @@
 #include "PartnerRequester.h"
 #include "../../Logger/Logger.h"
 #include "../Constants.h"
+#include "../../IPCClasses/FifoWrite.h"
 
 using namespace std;
 
 Player::Player(const string &name, Field *field) {
     this->name = name;
     this->field = field;
+    fifo = new FifoWrite(FIFO_FILE_PARTNER_REQUEST);
+    int fd = fifo->openFifo();
+    if (fd < 0) {
+        throw InitException("Partner request fifo can't be opened!");
+    }
+
 }
 
 void Player::play() {
     log("Buscando compañero...");
     partnerRequest();
-    if (response->playerAction == ENUM_PLAY) {
+    if (response.playerAction == ENUM_PLAY) {
         log("Compañero asignado!");
         goToPlayCourt();
         leaveCourt();
+        play();
+    } else {
+        log("algo salio mal");
     }
 }
 
 void Player::partnerRequest() {
-    PartnerRequester::request(name, getpid());
+    PartnerRequester::request(name,fifo, getpid());
     organizatorResponse();
 }
 
@@ -45,7 +55,6 @@ void Player::leaveCourt() {
 void Player::organizatorResponse() {
     string file = FIFO_FILE_PARTNER_RESPONSE + to_string(getpid());
     response = PartnerRequester::waitResponse(file);
-    removeTmpFile(file);
 }
 
 SemaforoInfo Player::getSemaforoInfoEntry() {
@@ -58,7 +67,7 @@ SemaforoInfo Player::getSemaforoInfoExit() {
 }
 
 Court Player::getCourt() {
-    return this->field->getCourt(response->row, response->column);
+    return this->field->getCourt(response.row, response.column);
 }
 
 void Player::removeTmpFile(string fileName) {

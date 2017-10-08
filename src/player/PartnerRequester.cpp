@@ -4,48 +4,50 @@
 #include "../Constants.h"
 #include "../../IPCClasses/FifoWrite.h"
 #include "../../IPCClasses/FifoRead.h"
+#include "../../IPCClasses/LockFile.h"
 
-ssize_t PartnerRequester::request(const string &name, pid_t pidt) {
-    FifoWrite* partnerFifo = new FifoWrite(FIFO_FILE_PARTNER_REQUEST);
-    int fd = partnerFifo->openFifo();
-    if (fd < 0) {
-        throw InitException("Partner request fifo can't be opened!");
+ssize_t PartnerRequester::request(const string &name, FifoWrite *fifo,  pid_t pidt) {
+    LockFile* lockFile = new LockFile(LOCK_FILE_PARTNER_REQUEST);
+    int res = lockFile->tomarLock();
+    if (res < 0) {
+        throw InitException("Partner request lock can't be opened!");
     }
 
-    int *pid = new int(pidt);
 
-    ssize_t out = partnerFifo->writeFifo( static_cast<const void*>(pid), sizeof(pid));
+    TaskRequest task = {pidt, 0, 0, false, FIND_PARTNER};
+
+    ssize_t out = fifo->writeFifo( static_cast<const void*>(&task), sizeof(TaskRequest));
 
     if(out < 0) {
-        throw InitException("Partner request fifo can't be write!");
+        throw InitException("Partner request lock can't be write!");
     }
 
-    cout << "Participante " + name + ": pidió un compañero" << endl;
+    cout << "PARTNER_REQUESTER Participante " + name + ": pidió un compañero" << endl;
 
-    partnerFifo->closeFifo();
+    lockFile->liberarLock();
 
     return out;
 
 }
 
-OrgPlayerResponse * PartnerRequester::waitResponse(string name) {
+OrgPlayerResponse PartnerRequester::waitResponse(string name) {
     FifoRead* partnerFifo = new FifoRead(name);
     int fd = partnerFifo->openFifo();
     if (fd < 0) {
         throw InitException("Partner response fifo can't be opened!");
     }
 
-    auto *buffer = new OrgPlayerResponse;
+    OrgPlayerResponse buffer = {};
 
-    ssize_t out = partnerFifo->readFifo((buffer), sizeof(buffer));
+    ssize_t out = partnerFifo->readFifo((&buffer), sizeof(OrgPlayerResponse));
 
     if(out < 0) {
-        throw InitException("Partner request fifo can't be write!");
+        throw InitException("Partner response fifo can't be write!");
     }
 
     partnerFifo->closeFifo();
 
-    cout << "Participante " + name + ": recibió un compañero " << buffer->show() << endl;
+    cout << "PARTNER_REQUESTER Participante " + name + ": recibió un compañero " << buffer.show() << endl;
 
     return buffer;
 

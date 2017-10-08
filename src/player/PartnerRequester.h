@@ -2,6 +2,7 @@
 #define BEACH_VOLEY_PARTNERREQUESTER_H
 #include <string>
 #include "../Definitions.h"
+#include "../../IPCClasses/FifoWrite.h"
 
 //extern const char *FIFO_FILE_PARTNER_REQUEST;
 //extern const char *FIFO_FILE_PARTNER_RESPONSE;
@@ -13,9 +14,10 @@ const int BUFFSIZE = sizeof(int);
 class PartnerRequester {
 
 public:
-    static ssize_t request(const string &name, pid_t pid);
+    static ssize_t request(const string &name, FifoWrite *fifo, pid_t pid);
 
-    static OrgPlayerResponse * waitResponse(string name);
+    static OrgPlayerResponse waitResponse(string name);
+
 };
 
 
