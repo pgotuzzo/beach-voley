@@ -23,11 +23,11 @@ struct OrgPlayerResponse {
 
 };
 
-typedef enum TaskType {
+enum TaskType {
     FIND_PARTNER, MATCH_CANCELLED, MATCH_RESULT
 };
 
-typedef struct TaskRequest {
+struct TaskRequest {
     int pid;
     int resultLocal;
     int resultVisitant;

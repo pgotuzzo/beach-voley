@@ -1,7 +1,6 @@
 #include "Manager.h"
 #include "../Constants.h"
-#include "../Definitions.h"
-#include "../ResourceHandler.h"
+#include "../../util/ResourceHandler.h"
 
 const char *TAG = "Manager: ";
 
