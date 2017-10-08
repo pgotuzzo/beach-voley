@@ -2,7 +2,7 @@
 #define BEACH_VOLEY_PARTNERREQUESTER_H
 
 #include <string>
-#include "../Definitions.h"
+#include "../config/Definitions.h"
 #include "../../IPCClasses/fifo/FifoRead.h"
 #include "../../IPCClasses/fifo/FifoWrite.h"
 
@@ -15,7 +15,7 @@ private:
     FifoWrite *fifoWrite;
 
 public:
-    PartnerRequester(const string &playerName);
+    explicit PartnerRequester(const string &playerName);
 
     void request();
 

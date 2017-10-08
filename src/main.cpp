@@ -5,7 +5,7 @@
 #include "player/Player.h"
 #include "../IPCClasses/signal/SignalHandler.h"
 #include "../IPCClasses/signal/SIGINT_Handler.h"
-#include "Constants.h"
+#include "config/Constants.h"
 #include "manager/Manager.h"
 #include <sys/wait.h>
 

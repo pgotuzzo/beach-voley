@@ -1,6 +1,6 @@
 #include <iostream>
 #include "PartnerRequester.h"
-#include "../Constants.h"
+#include "../config/Constants.h"
 #include "../../util/ResourceHandler.h"
 
 

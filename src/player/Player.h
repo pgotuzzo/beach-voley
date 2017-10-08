@@ -2,7 +2,7 @@
 #define BEACH_VOLEY_PLAYER_H
 
 #include <string>
-#include "../Definitions.h"
+#include "../config/Definitions.h"
 #include "../stadium/Field.h"
 #include "../stadium/Stadium.h"
 #include "../../Logger/Logger.h"

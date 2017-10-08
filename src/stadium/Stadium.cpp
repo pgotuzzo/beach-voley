@@ -1,6 +1,6 @@
 #include <sstream>
 #include "Stadium.h"
-#include "../Constants.h"
+#include "../config/Constants.h"
 #include "../../util/ResourceHandler.h"
 
 Stadium::Stadium(int columns, int rows) {
