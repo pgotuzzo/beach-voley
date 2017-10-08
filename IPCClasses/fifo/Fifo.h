@@ -1,7 +1,3 @@
-//
-// Created by sebastian on 03/10/17.
-//
-
 #ifndef BEACH_VOLEY_FIFO_H
 #define BEACH_VOLEY_FIFO_H
 
@@ -13,10 +9,16 @@
 
 class Fifo {
 public:
+    Fifo();
+
     Fifo(const std::string name);
+
     virtual ~Fifo();
+
     virtual int openFifo() = 0;
+
     void closeFifo();
+
     void deleteFifo() const;
 
 protected:

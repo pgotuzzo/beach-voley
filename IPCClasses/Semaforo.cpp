@@ -1,6 +1,8 @@
 #include "Semaforo.h"
 #include <iostream>
 
+Semaforo::Semaforo() = default;
+
 Semaforo::Semaforo(const std::string &nombre, const int valorInicial, const int cantidadSemaforos) : valorInicial(
         valorInicial) {
     key_t clave = ftok(nombre.c_str(), 'a');

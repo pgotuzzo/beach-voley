@@ -11,7 +11,6 @@ private:
     string name;
     SemaforoInfo entrance;
     SemaforoInfo exit;
-    static const Logger* logger;
 
     void log(string message);
 

@@ -4,9 +4,8 @@
 #include "../util/StringUtils.h"
 #include "court/Field.h"
 #include "player/Player.h"
-#include "../IPCClasses/FifoWrite.h"
-#include "InitException.h"
-#include "../IPCClasses/FifoRead.h"
+#include "../IPCClasses/signal/SignalHandler.h"
+#include "../IPCClasses/signal/SIGINT_Handler.h"
 #include "Constants.h"
 
 using namespace std;
@@ -56,52 +55,6 @@ bool initPlayers(Player player) {
     return true;
 }
 
-void mock() {
-    cout << "MOCK!" << std::endl;
-
-
-    FifoRead *partnerFifoR = new FifoRead(FIFO_FILE_PARTNER_REQUEST);
-    int fd = partnerFifoR->openFifo();
-    if (fd < 0) {
-        throw InitException("Partner response fifo can't be opened!");
-    }
-
-    auto *pid = new int;
-
-    ssize_t out1 = partnerFifoR->readFifo((pid), sizeof(pid));
-
-    if (out1 < 0) {
-        throw InitException("Partner request fifo can't be write!");
-    }
-
-    partnerFifoR->closeFifo();
-
-    cout << FIFO_FILE_PARTNER_RESPONSE + to_string(*pid) << endl;
-    FifoWrite *partnerFifo = new FifoWrite(FIFO_FILE_PARTNER_RESPONSE + to_string(*pid));
-    fd = partnerFifo->openFifo();
-    int ss = sizeof(to_string(getpid()));
-
-    if (fd < 0) {
-        throw InitException("Partner request fifo can't be opened!");
-    }
-
-    auto *response = new OrgPlayerResponse;
-
-    response->column = 0;
-    response->row = 0;
-    response->playerAction = ENUM_PLAY;
-
-    ssize_t out = partnerFifo->writeFifo(static_cast<const void *> (response), sizeof(OrgPlayerResponse));
-
-    if (out < 0) {
-        throw InitException("Partner request fifo can't be write!");
-    }
-
-    cout << "Participante: pidió un compañero" << endl;
-
-    partnerFifo->closeFifo();
-}
-
 int main(int argc, char *argv[]) {
     // Creates vector of parameters removing the first one because it is the program's name
     vector<string> vParams;
@@ -137,24 +90,23 @@ int main(int argc, char *argv[]) {
             exit(0);
         }
 
-        // Players, recieve the
-        static const string FIELD_TURNSTILE_SEMAPHORE_NAME = "/bin/date";
-        Semaforo fieldTurnstile(FIELD_TURNSTILE_SEMAPHORE_NAME, 0, config.tournamentParams.capacity);
+        // Players
+        Semaforo *fieldTurnstile = ResourceHandler::getInstance()->createSemaforo(
+                SEM_TURNSTILE, 0, config.tournamentParams.capacity
+        );
         for (const auto &name : config.tournamentParams.players) {
-            Player player(name, &field, &fieldTurnstile);
+            Player player(name, &field, fieldTurnstile);
             isRoot = initPlayers(player);
             if (!isRoot) {
                 // Player completed the expected matches amount
                 exit(0);
             }
         }
-
-        // FIXME - REMOVE MOCK
-        sleep(5);
-        mock();
-
     }
 
+    // Interrumption handler
+    SIGINT_Handler handler;
+    SignalHandler::getInstance()->registrarHandler(SIGINT, (EventHandler *) &handler);
 
     // FIXME - DO NOT DO THIS!
     int k;
@@ -163,5 +115,6 @@ int main(int argc, char *argv[]) {
     }
 
     cout << "FINALIZANDO...";
+
     return 0;
 }

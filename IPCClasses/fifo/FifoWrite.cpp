@@ -1,5 +1,7 @@
 #include "FifoWrite.h"
 
+FifoWrite::FifoWrite() = default;
+
 FifoWrite::FifoWrite(const std::string nombre) : Fifo(nombre) {
 }
 

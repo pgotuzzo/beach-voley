@@ -1,52 +1,45 @@
 #include <iostream>
 #include "PartnerRequester.h"
-#include "../InitException.h"
 #include "../Constants.h"
-#include "../../IPCClasses/FifoWrite.h"
-#include "../../IPCClasses/FifoRead.h"
+#include "../ResourceHandler.h"
 
-ssize_t PartnerRequester::request(const string &name, pid_t pidt) {
-    FifoWrite* partnerFifo = new FifoWrite(FIFO_FILE_PARTNER_REQUEST);
-    int fd = partnerFifo->openFifo();
-    if (fd < 0) {
-        throw InitException("Partner request fifo can't be opened!");
-    }
 
-    int *pid = new int(pidt);
-
-    ssize_t out = partnerFifo->writeFifo( static_cast<const void*>(pid), sizeof(pid));
-
-    if(out < 0) {
-        throw InitException("Partner request fifo can't be write!");
-    }
-
-    cout << "Participante " + name + ": pidió un compañero" << endl;
-
-    partnerFifo->closeFifo();
-
-    return out;
-
+PartnerRequester::PartnerRequester(const string &playerName) {
+    this->playerName = playerName;
+    this->fifoRead = ResourceHandler::getInstance()->createFifoRead(FIFO_FILE_PARTNER_RESPONSE + to_string(getpid()));
+    this->fifoWrite = ResourceHandler::getInstance()->createFifoWirte(FIFO_FILE_PARTNER_REQUEST);
 }
 
-OrgPlayerResponse * PartnerRequester::waitResponse(string name) {
-    FifoRead* partnerFifo = new FifoRead(name);
-    int fd = partnerFifo->openFifo();
+void PartnerRequester::request() {
+    int fd = fifoWrite->openFifo();
     if (fd < 0) {
-        throw InitException("Partner response fifo can't be opened!");
+        throw runtime_error(
+                "PartnerRequester: Trying to open a fifo to write a request to find a partner. Fifo couldn't be opened. Error Number: " +
+                errno);
     }
+    int pid = getpid();
+    ssize_t out = fifoWrite->writeFifo(static_cast<const void *>(&pid), sizeof(int));
+    if (out < 0) {
+        throw runtime_error("Partner request fifo can't be write!");
+    }
+    cout << "Player " << playerName << ": sent a find partner request" << endl;
+}
 
+OrgPlayerResponse *PartnerRequester::waitResponse() {
+    int fd = fifoRead->openFifo();
+    if (fd < 0) {
+        throw runtime_error(
+                "PartnerRequester: Trying to open fifo to read a response. Fifo couldn't be opened. Error Number: " +
+                errno);
+    }
     auto *buffer = new OrgPlayerResponse;
+    ssize_t out = fifoRead->readFifo((buffer), sizeof(buffer));
 
-    ssize_t out = partnerFifo->readFifo((buffer), sizeof(buffer));
-
-    if(out < 0) {
-        throw InitException("Partner request fifo can't be write!");
+    if (out < 0) {
+        throw runtime_error("PartnerRequester: response couldn't be read! Error Number: " + errno);
     }
 
-    partnerFifo->closeFifo();
-
-    cout << "Participante " + name + ": recibió un compañero " << buffer->show() << endl;
+    cout << "Player " << playerName << ": received a response: " << buffer->show() << endl;
 
     return buffer;
-
 }

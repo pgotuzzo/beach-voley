@@ -22,7 +22,7 @@ TideMonitor::TideMonitor(const int checkTideMaxSeconds, const int checkTideMinSe
  *
  * @return return the status of the tides.
  */
-TideChange TideMonitor::simulateTide() {
+TideMonitor::TideChange TideMonitor::simulateTide() {
     sleep(static_cast<unsigned int>(getRandomInt(checkTideMinSeconds, checkTideMaxSeconds)));
     double p = getRandomDouble();
     if (p < riseUpTideProb) {

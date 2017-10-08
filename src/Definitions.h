@@ -2,6 +2,7 @@
 #define BEACH_VOLEY_DEFINITIOS_H
 
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -15,8 +16,9 @@ typedef struct OrgPlayerResponse {
     PlayerAction playerAction;
 
     string show() {
-        return string("Column: ") + to_string(column) + string(" row: ") + to_string(row) + string(" player action: ") +
-               to_string(playerAction);
+        stringstream message;
+        message << "Court: (" << column << ", " << row << ") " << endl << "Action: " << playerAction;
+        return message.str();
     }
 
 };

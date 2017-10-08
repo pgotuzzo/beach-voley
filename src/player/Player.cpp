@@ -1,19 +1,13 @@
-#include <fcntl.h>
+
 #include <iostream>
-#include <unistd.h>
 #include "Player.h"
-#include "../InitException.h"
-#include "PartnerRequester.h"
-#include "../../Logger/Logger.h"
-#include "../Constants.h"
 
 using namespace std;
 
-Player::Player(const string &name, Field *field, const Semaforo *fieldTurnstile): fieldTurnstile(fieldTurnstile) {
+Player::Player(const string &name, Field *field, const Semaforo *fieldTurnstile) : fieldTurnstile(fieldTurnstile) {
     this->name = name;
     this->field = field;
-
-    this->logger = Logger::getInstance();
+    this->requester = new PartnerRequester(name);
 }
 
 /**
@@ -30,7 +24,7 @@ void Player::play() {
         log("Buscando compañero...");
         partnerRequest();
         while (response->playerAction != ENUM_LEAVE_TOURNAMENT or
-                response->playerAction !=ENUM_LEAVE_STADIUM) {
+               response->playerAction != ENUM_LEAVE_STADIUM) {
             log("Compañero asignado! Yendo a jugar");
             goToPlayCourt();
             log("Dejando la cancha");
@@ -48,8 +42,8 @@ void Player::play() {
 }
 
 void Player::partnerRequest() {
-    PartnerRequester::request(name, getpid());
-    organizatorResponse();
+    requester->request();
+    response = requester->waitResponse();
 }
 
 void Player::goToPlayCourt() {
@@ -65,12 +59,6 @@ void Player::leaveCourt() {
     semInfo.s->p(semInfo.id);
 }
 
-void Player::organizatorResponse() {
-    string file = FIFO_FILE_PARTNER_RESPONSE + to_string(getpid());
-    response = PartnerRequester::waitResponse(file);
-    removeTmpFile(file);
-}
-
 SemaforoInfo Player::getSemaforoInfoEntry() {
     return getCourt().getEntry();
 }
@@ -84,17 +72,9 @@ Court Player::getCourt() {
     return this->field->getCourt(response->row, response->column);
 }
 
-void Player::removeTmpFile(string fileName) {
-
-    if (remove(fileName.c_str()) != 0) {
-        throw InitException("No se pudo eliminar el archivo temporal " + fileName);
-    }
-
-}
-
 void Player::log(string message) {
     string aux = "Player " + name + ": " + message;
-    this->logger->logMessage(aux.c_str());
+    Logger::getInstance()->logMessage(aux.c_str());
 }
 
 /**

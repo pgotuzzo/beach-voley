@@ -1,5 +1,7 @@
 #include "FifoRead.h"
 
+FifoRead::FifoRead() = default;
+
 FifoRead::FifoRead(const std::string name) : Fifo(name) {
 }
 

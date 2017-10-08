@@ -15,6 +15,8 @@ private:
     int inicializar() const;
 
 public:
+    Semaforo();
+
     Semaforo(const std::string &nombre, int valorInicial, int cantidadSemaforos);
 
     int p(unsigned short numeroSemaforo) const; // decrementa

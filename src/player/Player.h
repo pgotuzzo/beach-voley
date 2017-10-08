@@ -6,30 +6,26 @@
 #include "../court/Court.h"
 #include "../court/Field.h"
 #include "../../Logger/Logger.h"
+#include "../../IPCClasses/fifo/FifoRead.h"
+#include "PartnerRequester.h"
 
 using namespace std;
-//extern const char *FIFO_FILE_PARTNER_REQUEST;
-//extern const char *FIFO_FILE_PARTNER_RESPONSE;
 
 
 class Player {
 
 private:
     string name;
-    OrgPlayerResponse *response;
     Field *field;
-    static const Logger* logger;
-    const Semaforo* fieldTurnstile;
+    const Semaforo *fieldTurnstile;
+    OrgPlayerResponse *response;
+    PartnerRequester *requester;
 
     Court getCourt();
 
     SemaforoInfo getSemaforoInfoEntry();
 
     void partnerRequest();
-
-    void organizatorResponse();
-
-    void removeTmpFile(string basic_string);
 
     void goToPlayCourt();
 

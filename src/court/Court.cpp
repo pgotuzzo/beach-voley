@@ -1,13 +1,10 @@
 
 #include "Court.h"
-#include "../../Logger/Logger.h"
 
 Court::Court(string name, Semaforo *entrance, unsigned short entranceId, Semaforo *exit, unsigned short exitId) {
     this->name = name;
     this->entrance = {entranceId, entrance};
     this->exit = {exitId, exit};
-
-    this->logger = Logger::getInstance();
 }
 
 Court::Court() = default;
@@ -43,6 +40,6 @@ SemaforoInfo Court::getExit() {
 
 void Court::log(string message) {
     string aux = "Cancha " + name + ": " + message;
-    this->logger->logMessage(aux.c_str());
+    Logger::getInstance()->logMessage(aux.c_str());
 }
 
