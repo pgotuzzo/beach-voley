@@ -23,4 +23,16 @@ struct OrgPlayerResponse {
 
 };
 
+typedef enum TaskType {
+    FIND_PARTNER, MATCH_CANCELLED, MATCH_RESULT
+};
+
+typedef struct TaskRequest {
+    int pid;
+    int resultLocal;
+    int resultVisitant;
+    bool marea;
+    TaskType task;
+};
+
 #endif //BEACH_VOLEY_DEFINITIOS_H

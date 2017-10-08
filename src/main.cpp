@@ -6,6 +6,7 @@
 #include "../IPCClasses/signal/SignalHandler.h"
 #include "../IPCClasses/signal/SIGINT_Handler.h"
 #include "Constants.h"
+#include "manager/Manager.h"
 #include <sys/wait.h>
 
 using namespace std;
@@ -42,6 +43,15 @@ bool initField(Field field) {
                 return false;
             }
         }
+    }
+    return true;
+}
+
+bool initManager(Manager manager) {
+    int pid = fork();
+    if (pid == 0) {
+        manager.receiveTask();
+        return false;
     }
     return true;
 }
@@ -85,6 +95,14 @@ int main(int argc, char *argv[]) {
         // Field = [C X R] Courts
         Field field(config.tournamentParams.columns, config.tournamentParams.rows);
         bool isRoot = initField(field);
+        if (!isRoot) {
+            // Tournament ended
+            exit(0);
+        }
+
+        // Manager
+        Manager manager;
+        isRoot = initManager(manager);
         if (!isRoot) {
             // Tournament ended
             exit(0);

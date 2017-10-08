@@ -4,7 +4,7 @@
 
 // TODO - Move to a FileUtils class
 void createFileIfNotExist(string path) {
-    int fd = open(path.c_str(), O_RDONLY | O_CREAT | 0664);
+    int fd = open(path.c_str(), O_RDONLY | O_CREAT);
     if (fd < 0) {
         stringstream message;
         message << "The file: " << path << " couldn't be created/opened! Error Number: " << errno;
