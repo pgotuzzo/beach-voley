@@ -1,5 +1,7 @@
 
+#include <unistd.h>
 #include "Field.h"
+#include "../../util/RandomNumber.hpp"
 
 Field::Field(string name, Semaforo *entrance, unsigned short entranceId, Semaforo *exit, unsigned short exitId) {
     this->name = name;
@@ -18,9 +20,18 @@ void Field::waitForPlayers() {
     play();
 }
 
+MatchResult Field::getResult() {
+    unsigned int teamThatLose = getRandomUnsignedInt(0, 2);
+    int teams[2] = {3, 3};
+    teams[teamThatLose] = getRandomInt(0, 3);
+
+    return MatchResult{teams[0], teams[1]};
+}
+
 void Field::play() {
     log("Comenzo el partido");
-    // TODO - Create result
+    usleep(getRandomUnsignedInt(100000, 500000));
+    MatchResult result = getResult();
     log("Finalizo el partido");
     for (int i = 0; i < 4; i++) {
         exit.s->v(exit.id);

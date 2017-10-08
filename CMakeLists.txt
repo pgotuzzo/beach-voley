@@ -29,7 +29,7 @@ set(INIT_EXCEPTION src/InitException.cpp src/InitException.h)
 set(TIDE_MONITOR src/monitor/TideMonitor.cpp src/monitor/TideMonitor.hpp ${RANDOM_NUMBER})
 set(PLAYER src/player/Player.cpp src/player/Player.h ${FIFO}
         src/player/PartnerRequester.h src/player/PartnerRequester.cpp)
-set(FIELD src/stadium/Field.cpp src/stadium/Field.h ${SEMAFORO} ${LOGGER})
+set(FIELD src/stadium/Field.cpp src/stadium/Field.h ${SEMAFORO} ${LOGGER} ${RANDOM_NUMBER})
 set(STADIUM src/stadium/Stadium.cpp src/stadium/Stadium.h)
 set(MANAGER  src/manager/Manager.cpp src/manager/Manager.h ${RESOURCE_HANDLER})
 

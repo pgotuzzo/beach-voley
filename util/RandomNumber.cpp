@@ -3,7 +3,11 @@
 
 int getRandomInt(const int minValue, const int maxValue) {
     srand(std::random_device()());
-    return minValue + (rand() % (maxValue - minValue));
+    return minValue + rand() % (maxValue - minValue);
+}
+
+unsigned int getRandomUnsignedInt(const int minValue, const int maxValue) {
+    return static_cast<unsigned int>(getRandomInt(minValue, maxValue));
 }
 
 double getRandomDouble() {

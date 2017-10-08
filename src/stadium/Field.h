@@ -6,15 +6,11 @@
 
 using namespace std;
 
+struct MatchResult{
+    int Team1, Team2;
+};
+
 class Field {
-private:
-    string name;
-    SemaforoInfo entrance;
-    SemaforoInfo exit;
-
-    void log(string message);
-
-    void play();
 
 public:
     Field();
@@ -26,6 +22,16 @@ public:
     SemaforoInfo getExit();
 
     void waitForPlayers();
+private:
+    string name;
+    SemaforoInfo entrance;
+    SemaforoInfo exit;
+
+    void log(string message);
+
+    void play();
+
+    MatchResult getResult();
 };
 
 #endif //BEACH_VOLEY_FIELD_H
