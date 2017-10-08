@@ -1,7 +1,6 @@
 #ifndef BEACH_VOLEY_RESOURCEHANDLER_H
 #define BEACH_VOLEY_RESOURCEHANDLER_H
 
-#include <vector>
 #include <map>
 #include "../IPCClasses/Semaforo.h"
 #include "../IPCClasses/fifo/FifoRead.h"

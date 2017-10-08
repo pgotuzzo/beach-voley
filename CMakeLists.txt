@@ -24,7 +24,7 @@ set(EXCEPTION src/config/ParseException.cpp src/config/ParseException.h src/Init
 # Source
 set(TIDE_MONITOR src/monitor/TideMonitor.cpp src/monitor/TideMonitor.hpp)
 
-set(SOURCE_FILES src/. src/main.cpp src/config/Config.cpp src/config/Config.h src/player/Player.cpp src/player/Player.h src/Constants.h util/StringUtils.h util/StringUtils.cpp src/court/Court.cpp src/court/Court.h src/player/PartnerRequester.h src/player/PartnerRequester.cpp src/court/Field.cpp src/court/Field.h util/ResourceHandler.cpp util/ResourceHandler.h)
+set(SOURCE_FILES src/. src/main.cpp src/config/Config.cpp src/config/Config.h src/player/Player.cpp src/player/Player.h src/Tournament.cpp src/Tournament.h src/Constants.h util/StringUtils.h util/StringUtils.cpp src/court/Court.cpp src/court/Court.h src/player/PartnerRequester.h src/player/PartnerRequester.cpp src/court/Field.cpp src/court/Field.h util/ResourceHandler.cpp util/ResourceHandler.h src/manager/Manager.cpp src/manager/Manager.h)
 
 add_executable(beach-voley
         ${SOURCE_FILES}
