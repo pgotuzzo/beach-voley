@@ -4,7 +4,8 @@
 
 using namespace std;
 
-Player::Player(const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile) : stadiumTurnstile(stadiumTurnstile) {
+Player::Player(const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile) : stadiumTurnstile(
+        stadiumTurnstile) {
     this->name = name;
     this->stadium = stadium;
     this->requester = new PartnerRequester(name);

@@ -4,7 +4,7 @@
 #include "../../util/RandomNumber.hpp"
 
 Field::Field(string name, Semaforo *entrance, unsigned short entranceId, Semaforo *exit, unsigned short exitId,
-             const int minGameDurationInMicro, const int maxGameDurationInMicro):
+             const int minGameDurationInMicro, const int maxGameDurationInMicro) :
         minGameDurationInMicro(minGameDurationInMicro), maxGameDurationInMicro(maxGameDurationInMicro) {
     this->name = name;
     this->entrance = {entranceId, entrance};
@@ -29,7 +29,8 @@ MatchResult Field::getResult() {
 }
 
 /**
- * The field waits
+ * The field waits till the game ends. Gets the random result.
+ * Leaves the players free
  */
 void Field::play() {
     log("Comenzo el partido");

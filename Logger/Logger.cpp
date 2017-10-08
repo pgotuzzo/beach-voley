@@ -1,10 +1,7 @@
 #include "Logger.h"
 #include <fstream>
 
-static const std::string archivo = "logs/log.txt";
-
-Logger::Logger() {
-}
+static const char archivo[] = "logs/log.txt";
 
 Logger *Logger::instance = nullptr;
 
@@ -15,7 +12,7 @@ Logger *Logger::getInstance() {
     return instance;
 }
 
-void Logger::logMessage(const char *mensaje)const {
+void Logger::logMessage(const char *mensaje) const {
     std::ofstream salida(archivo, std::ios::out | std::ios::app);
     salida << mensaje << std::endl;
     salida.close();

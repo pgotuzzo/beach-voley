@@ -11,7 +11,7 @@ class ParseException : public exception {
 public:
     explicit ParseException(const string &description);
 
-    const char* what() const throw() override;
+    const char *what() const throw() override;
 
 private:
     const char *description;

@@ -2,7 +2,7 @@ NAME
      beach-voley -- Beach Voley Tournament
 
 SYNOPSIS
-     beach-voley [-player name1 name2 name3 ...] [-c int] [-r int] [-m int] [-c int] [-debug]
+     beach-voley [-player name1 name2 name3 ...] [-p int] [-c int] [-r int] [-m int] [-c int] [-debug]
      beach-voley [-h]
 
 DESCRIPTION
@@ -10,7 +10,9 @@ DESCRIPTION
 
      -h          Displays the help
 
-     -player     [REQUIRED] Players names
+     -player     Players names
+
+     -p          Number of players  with dummy names ('player1, player2, ...')
 
      -m          [REQUIRED] Capacity of the stadium. Max amount of players that could be inside the stadium
 
