@@ -20,12 +20,8 @@ void Manager::receiveTask() {
     TaskRequest task = {};
     cout << TAG << "Trying to read a task" << endl;
     ssize_t out = fifoRead->readFifo((&task), sizeof(TaskRequest));
-    cout << TAG << "Read something... :thinking:" << endl;
-    if (out < sizeof(TaskRequest)) {
-        stringstream message;
-        message << TAG << "Read shit! :facepalm: " << errno;
-        throw runtime_error(message.str());
-    }
+    cout << TAG << "Read something... :thinking: " <<task.show() <<endl;
+
     cout << TAG << "Read a task successfully!" << endl;
     switch (task.task) {
         case (FIND_PARTNER):
@@ -51,7 +47,7 @@ void Manager::findPartner(int pid) {
     int fd = fifoWrite.openFifo();
     if (fd < 0) {
         stringstream message;
-        message << TAG << "Trying to open a fifo to write a response. Fifo couldn't be opened. Error Number: " << errno;
+        message << TAG << "Trying to open a fifo to write a response. Fifo couldn't be opened. Error Number: " << strerror(errno) << " " <<errno;
         throw runtime_error(message.str());
     }
     cout << TAG << "A partner for process: " << pid << "was found!!" << endl;
