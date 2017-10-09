@@ -91,8 +91,6 @@ void printConf(Config config) {
  * @param config the configuration for the simulation.
  */
 void playTournament(Config config) {
-    printConf(config);
-
     //TODO: get this from config
     int minGameDurationInMili = 100;
     int maxGameDurationInMili = 500;
@@ -122,7 +120,9 @@ int main(int argc, char *argv[]) {
 
     if (config.mode == MANUAL) {
         showHelp();
+        exit(0);
     } else if (config.mode == TOURNAMENT) {
+        printConf(config);
         playTournament(config);
     }
 

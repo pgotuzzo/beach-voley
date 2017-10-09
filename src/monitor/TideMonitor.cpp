@@ -1,6 +1,6 @@
 #include <unistd.h>
-#include "TideMonitor.hpp"
-#include "../../util/RandomNumber.hpp"
+#include "TideMonitor.h"
+#include "../../util/RandomNumber.h"
 
 /**
  * Tide monitor constructor initialize the attributes.

@@ -1,6 +1,6 @@
 #include <unistd.h>
 #include "Field.h"
-#include "../../util/RandomNumber.hpp"
+#include "../../util/RandomNumber.h"
 #include "../../util/ResourceHandler.h"
 #include "../config/Constants.h"
 

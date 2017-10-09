@@ -17,7 +17,7 @@ set(FIFO IPCClasses/fifo/FifoRead.cpp IPCClasses/fifo/FifoRead.h
 set(LOGGER Logger/Logger.cpp Logger/Logger.h)
 
 # Utils
-set(RANDOM_NUMBER util/RandomNumber.cpp util/RandomNumber.hpp)
+set(RANDOM_NUMBER util/RandomNumber.cpp util/RandomNumber.h)
 set(STRING_UTILS util/StringUtils.cpp util/StringUtils.h)
 set(RESOURCE_HANDLER util/ResourceHandler.cpp util/ResourceHandler.h)
 
@@ -26,7 +26,7 @@ set(PARSE_EXCEPTION src/config/ParseException.cpp src/config/ParseException.h)
 set(INIT_EXCEPTION src/InitException.cpp src/InitException.h)
 
 # Source
-set(TIDE_MONITOR src/monitor/TideMonitor.cpp src/monitor/TideMonitor.hpp ${RANDOM_NUMBER})
+set(TIDE_MONITOR src/monitor/TideMonitor.cpp src/monitor/TideMonitor.h ${RANDOM_NUMBER})
 set(PLAYER src/player/Player.cpp src/player/Player.h ${FIFO}
         src/player/PartnerRequester.h src/player/PartnerRequester.cpp)
 set(FIELD src/stadium/Field.cpp src/stadium/Field.h ${SEMAFORO} ${LOGGER} ${RANDOM_NUMBER})

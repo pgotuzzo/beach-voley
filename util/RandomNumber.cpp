@@ -1,5 +1,5 @@
 #include <random>
-#include "RandomNumber.hpp"
+#include "RandomNumber.h"
 
 int getRandomInt(const int minValue, const int maxValue) {
     srand(std::random_device()());
