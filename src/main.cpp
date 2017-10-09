@@ -9,7 +9,53 @@
 #include "manager/Manager.h"
 #include <sys/wait.h>
 
+void playTournament(Config config);
+
 using namespace std;
+
+bool initManager(Manager manager) {
+    int pid = fork();
+    if (pid == 0) {
+        manager.receiveTask();
+        exit(0);
+    }
+    return true;
+}
+
+bool initPlayers(Player player) {
+    int pid = fork();
+    if (pid == 0) {
+        player.play();
+        exit(0);
+    }
+    return true;
+}
+
+/**
+ * Parses the arguments to the simulation from arg and argv
+ *
+ * @param argc the number of arguments
+ * @param argv the array with the arguments
+ * @return a config for the simulation.
+ */
+Config parseArguments(int argc, char *argv[]){
+    // Creates vector of parameters removing the first one because it is the program's name
+    vector<string> vParams;
+    for (int i = 1; i < argc; i++) {
+        string param(argv[i]);
+        vParams.push_back(param);
+    }
+    Config config;
+    try {
+        config = parseConfig(vParams);
+    } catch (ParseException &e) {
+        cout << e.what() << endl;
+        exit(1);
+    }
+    cout << "Arguments used are correct. Parsing is complete!" << endl;
+
+    return config;
+}
 
 /**
  * Shows info about how to use the program
@@ -33,111 +79,71 @@ void showHelp() {
     }
 }
 
-bool initStadium(Stadium stadium) {
-    for (int i = 0; i < stadium.getColumns(); i++) {
-        for (int j = 0; j < stadium.getRows(); j++) {
-            Field field = stadium.getField(i, j);
-            int pid = fork();
-            if (pid == 0) {
-                field.waitForPlayers();
-                return false;
-            }
-        }
-    }
-    return true;
+/**
+ * Prints out the current configuration.
+ *
+ * @param config the current configuration.
+ */
+void printConf(Config config) {
+    cout << "CONFIGURATION:" << endl
+         << "Columns: " << config.tournamentParams.columns << endl
+         << "Rows: " << config.tournamentParams.rows << endl
+         << "Capacity: " << config.tournamentParams.capacity << endl
+         << "Matches count: " << config.tournamentParams.matches << endl
+         << "Players: " << toString(config.tournamentParams.players) << endl
+         << "Debug: " << (config.tournamentParams.debugEnable ? "true" : "false") << endl;
 }
 
-bool initManager(Manager manager) {
-    int pid = fork();
-    if (pid == 0) {
-        manager.receiveTask();
-        return false;
-    }
-    return true;
-}
+/**
+ * Runs the tournament simulation.
+ *
+ * @param config the configuration for the simulation.
+ */
+void playTournament(Config config) {
+    printConf(config);
 
-bool initPlayers(Player player) {
-    int pid = fork();
-    if (pid == 0) {
-        player.play();
-        return false;
+    //TODO: get this from config
+    int minGameDurationInMili = 100;
+    int maxGameDurationInMili = 500;
+
+    // Stadium = [C X R] Fields
+    Stadium stadium(config.tournamentParams.columns, config.tournamentParams.rows,
+                    1000 * minGameDurationInMili, 1000 * maxGameDurationInMili);
+    stadium.initStadium();
+
+    // Manager
+    Manager manager;
+    initManager(manager);
+
+    // Players
+    Semaforo *stadiumTurnstile = ResourceHandler::getInstance()->createSemaforo(
+            SEM_TURNSTILE, 0, config.tournamentParams.capacity
+    );
+    for (const auto &name : config.tournamentParams.players) {
+        Player player(name, &stadium, stadiumTurnstile);
+        initPlayers(player);
     }
-    return true;
+
 }
 
 int main(int argc, char *argv[]) {
-    // Creates vector of parameters removing the first one because it is the program's name
-    vector<string> vParams;
-    for (int i = 1; i < argc; i++) {
-        string param(argv[i]);
-        vParams.push_back(param);
-    }
-    Config config;
-    try {
-        config = parseConfig(vParams);
-    } catch (ParseException &e) {
-        cout << e.what() << endl;
-        return 1;
-    }
-    cout << "Arguments used are correct. Parsing is complete!" << endl;
+    Config config = parseArguments(argc, argv);
 
     if (config.mode == MANUAL) {
         showHelp();
     } else if (config.mode == TOURNAMENT) {
-        cout << "CONFIGURATION:" << endl
-             << "Columns: " << config.tournamentParams.columns << endl
-             << "Rows: " << config.tournamentParams.rows << endl
-             << "Capacity: " << config.tournamentParams.capacity << endl
-             << "Matches count: " << config.tournamentParams.matches << endl
-             << "Players: " << toString(config.tournamentParams.players) << endl
-             << "Debug: " << (config.tournamentParams.debugEnable ? "true" : "false") << endl;
-
-
-        //TODO: get this from config
-        int minGameDurationInMili = 100;
-        int maxGameDurationInMili = 500;
-
-        // Stadium = [C X R] Fields
-        Stadium stadium(config.tournamentParams.columns, config.tournamentParams.rows,
-                        1000 * minGameDurationInMili, 1000 * maxGameDurationInMili);
-        bool isRoot = initStadium(stadium);
-        if (!isRoot) {
-            // Tournament ended
-            exit(0);
-        }
-
-        // Manager
-        Manager manager;
-        isRoot = initManager(manager);
-        if (!isRoot) {
-            // Tournament ended
-            exit(0);
-        }
-
-        // Players
-        Semaforo *stadiumTurnstile = ResourceHandler::getInstance()->createSemaforo(
-                SEM_TURNSTILE, 0, config.tournamentParams.capacity
-        );
-        for (const auto &name : config.tournamentParams.players) {
-            Player player(name, &stadium, stadiumTurnstile);
-            isRoot = initPlayers(player);
-            if (!isRoot) {
-                // Player completed the expected matches amount
-                exit(0);
-            }
-        }
+        playTournament(config);
     }
 
     // Interrumption handler
     SIGINT_Handler handler;
     SignalHandler::getInstance()->registrarHandler(SIGINT, (EventHandler *) &handler);
 
-    // FIXME - DO NOT DO THIS!
     for (int i = 0; i < 20; i++) {
         wait(nullptr);
     }
 
     cout << "FINALIZANDO...";
 
-    return 0;
+    exit(0);
 }
