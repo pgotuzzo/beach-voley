@@ -1,3 +1,4 @@
+#include <cstring>
 #include "Manager.h"
 #include "../config/Constants.h"
 #include "../../util/ResourceHandler.h"
@@ -13,8 +14,7 @@ void Manager::receiveTask() {
     int fd = fifoRead->openFifo();
     if (fd < 0) {
         stringstream message;
-        message << TAG << "Trying to open a fifo to read a task. Fifo couldn't be opened. Error Number: " << errno
-                << endl;
+        message << TAG << "Trying to open a fifo to read a task. Fifo couldn't be opened. Error Number: " << strerror(errno) << endl;
         throw runtime_error(message.str());
     }
     TaskRequest task = {};
