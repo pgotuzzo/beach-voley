@@ -13,6 +13,8 @@ private:
 public:
     Stadium(int columns, int rows, int minGameDurationInMicro, int maxGameDurationInMicro);
 
+    void initStadium();
+
     Field getField(int column, int row);
 
     int getColumns();

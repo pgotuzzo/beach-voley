@@ -18,11 +18,11 @@ public:
     Field(string name, Semaforo *entrance, unsigned short entranceId, Semaforo *exit, unsigned short exitId,
           int minGameDurationInMicro, int maxGameDurationInMicro);
 
+    void readyForGames();
+
     SemaforoInfo getEntry();
 
     SemaforoInfo getExit();
-
-    void waitForPlayers();
 
 private:
     string name;
@@ -33,9 +33,13 @@ private:
 
     void log(string message);
 
-    void play();
+    void waitForPlayers();
 
     MatchResult getResult();
+
+    void sendResult();
+
+    void releasePlayers();
 };
 
 #endif //BEACH_VOLEY_FIELD_H
