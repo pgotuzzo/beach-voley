@@ -1,6 +1,8 @@
 #include <unistd.h>
 #include "Field.h"
 #include "../../util/RandomNumber.hpp"
+#include "../../util/ResourceHandler.h"
+#include "../config/Constants.h"
 
 Field::Field(string name, Semaforo *entrance, unsigned short entranceId, Semaforo *exit, unsigned short exitId,
              const int minGameDurationInMicro, const int maxGameDurationInMicro) :
@@ -8,6 +10,7 @@ Field::Field(string name, Semaforo *entrance, unsigned short entranceId, Semafor
     this->name = name;
     this->entrance = {entranceId, entrance};
     this->exit = {exitId, exit};
+    this->taskToManagerFifo = ResourceHandler::getInstance()->createFifoWirte(FIFO_FILE_MANAGER_RECEIVE_TASK);
 }
 
 /**
@@ -32,26 +35,31 @@ void Field::releasePlayers() {
 }
 
 /**
- * Creates a random result for a match.
+ * Creates a random result for a match and set it in the task request.
  * One of the team will win 3 sets, and the other a random number
  * between 0 and 2.
- *
- * @return the result of the game.
  */
-MatchResult Field::getResult() {
+void Field::setResult(TaskRequest *taskRequest) {
     unsigned int teamThatLose = getRandomUnsignedInt(0, 2);
     int teams[2] = {3, 3};
     teams[teamThatLose] = getRandomInt(0, 3);
 
-    return MatchResult{teams[0], teams[1]};
+    taskRequest->resultLocal = teams[0];
+    taskRequest->resultLocal = teams[1];
 }
 
 /**
  * Sends the result of the match to the manager.
  */
 void Field::sendResult() {
-    MatchResult result = getResult();
-
+    int pid = getpid();
+    TaskRequest taskRequest{pid, 3, 3, false, MATCH_RESULT};
+    this->setResult(&taskRequest);
+    log("Trying to write a response");
+    ssize_t out = taskToManagerFifo->writeFifo(static_cast<const void *> (&taskRequest), sizeof(TaskRequest));
+    if (out < 0) {
+        throw runtime_error("Match return fifo can't be write!");
+    }
 }
 
 /**

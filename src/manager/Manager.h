@@ -15,11 +15,12 @@ private:
 
     void findPartner(int pid);
 
+    void receiveTask();
+
 public:
     Manager();
 
-    void receiveTask();
-
+    void initManager();
 };
 
 

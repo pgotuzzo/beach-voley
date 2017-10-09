@@ -13,15 +13,6 @@ void playTournament(Config config);
 
 using namespace std;
 
-bool initManager(Manager manager) {
-    int pid = fork();
-    if (pid == 0) {
-        manager.receiveTask();
-        exit(0);
-    }
-    return true;
-}
-
 bool initPlayers(Player player) {
     int pid = fork();
     if (pid == 0) {
@@ -113,7 +104,7 @@ void playTournament(Config config) {
 
     // Manager
     Manager manager;
-    initManager(manager);
+    manager.initManager();
 
     // Players
     Semaforo *stadiumTurnstile = ResourceHandler::getInstance()->createSemaforo(

@@ -3,6 +3,8 @@
 
 #include "../../IPCClasses/Semaforo.h"
 #include "../../Logger/Logger.h"
+#include "../config/Definitions.h"
+#include "../../IPCClasses/fifo/FifoWrite.h"
 
 using namespace std;
 
@@ -30,12 +32,13 @@ private:
     SemaforoInfo exit{};
     int minGameDurationInMicro{};
     int maxGameDurationInMicro{};
+    FifoWrite *taskToManagerFifo;
 
     void log(string message);
 
     void waitForPlayers();
 
-    MatchResult getResult();
+    void setResult(TaskRequest *taskRequest);
 
     void sendResult();
 

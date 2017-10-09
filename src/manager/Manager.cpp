@@ -6,7 +6,18 @@
 const char *TAG = "Manager: ";
 
 Manager::Manager() {
-    fifoRead = ResourceHandler::getInstance()->createFifoRead(FIFO_FILE_PARTNER_REQUEST);
+    fifoRead = ResourceHandler::getInstance()->createFifoRead(FIFO_FILE_MANAGER_RECEIVE_TASK);
+}
+
+/**
+ * Creates a separated process and starts to receive task.
+ */
+void Manager::initManager(){
+    int pid = fork();
+    if (pid == 0) {
+        this->receiveTask();
+        exit(0);
+    }
 }
 
 void Manager::receiveTask() {

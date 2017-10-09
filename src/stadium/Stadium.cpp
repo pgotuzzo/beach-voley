@@ -38,8 +38,6 @@ int Stadium::getRows() {
  * Start all the field of the stadium, so the games can start.
  * Every field is a different process, that will end when
  * the tournament ends.
- *
- * @param stadium the stadium to start the fields.
  */
 void Stadium::initStadium() {
     for (int i = 0; i < this->getColumns(); i++) {

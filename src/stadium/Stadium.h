@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "Field.h"
+#include "../../IPCClasses/Pipe.h"
 
 class Stadium {
 private:
