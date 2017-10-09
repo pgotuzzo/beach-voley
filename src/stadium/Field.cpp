@@ -1,4 +1,3 @@
-
 #include <unistd.h>
 #include "Field.h"
 #include "../../util/RandomNumber.hpp"
@@ -11,15 +10,34 @@ Field::Field(string name, Semaforo *entrance, unsigned short entranceId, Semafor
     this->exit = {exitId, exit};
 }
 
+/**
+ * Waits for the players to be in the field.
+ */
 void Field::waitForPlayers() {
     log("Esperando por los participantes...");
     for (int i = 0; i < 4; i++) {
         entrance.s->p(entrance.id);
         log("Llego un nuevo participante");
     }
-    play();
 }
 
+/**
+ * Release the players from the field.
+ */
+void Field::releasePlayers() {
+    log("Liberando los participantes...");
+    for (int i = 0; i < 4; i++) {
+        exit.s->v(exit.id);
+    }
+}
+
+/**
+ * Creates a random result for a match.
+ * One of the team will win 3 sets, and the other a random number
+ * between 0 and 2.
+ *
+ * @return the result of the game.
+ */
 MatchResult Field::getResult() {
     unsigned int teamThatLose = getRandomUnsignedInt(0, 2);
     int teams[2] = {3, 3};
@@ -29,20 +47,30 @@ MatchResult Field::getResult() {
 }
 
 /**
- * The field waits till the game ends. Gets the random result.
- * Leaves the players free
+ * Sends the result of the match to the manager.
  */
-void Field::play() {
-    log("Comenzo el partido");
-    usleep(getRandomUnsignedInt(minGameDurationInMicro, maxGameDurationInMicro));
+void Field::sendResult() {
     MatchResult result = getResult();
-    log("Finalizo el partido");
-    for (int i = 0; i < 4; i++) {
-        exit.s->v(exit.id);
+
+}
+
+/**
+ * The field waits till the player arrive. Waits until the game ends.
+ * Gets a random result from the match. Leaves the players free, and start again
+ * until the tournament ends.
+ */
+void Field::readyForGames() {
+    bool tournamentEnded = false;
+    // TODO: This must be checked in a shared memory
+    while(!tournamentEnded) {
+        waitForPlayers();
+        log("Comenzo el partido");
+        usleep(getRandomUnsignedInt(minGameDurationInMicro, maxGameDurationInMicro));
+        log("Se comunica el resultado");
+        sendResult();
+        log("Finalizo el partido");
+        releasePlayers();
     }
-    log("Se comunica el resultado");
-    // TODO - Send result
-    waitForPlayers();
 }
 
 SemaforoInfo Field::getEntry() {
@@ -53,6 +81,11 @@ SemaforoInfo Field::getExit() {
     return exit;
 }
 
+/**
+ * Logs a message with the aditional field info.
+ *
+ * @param message the message to log.
+ */
 void Field::log(string message) {
     string aux = "Cancha " + name + ": " + message;
     Logger::getInstance()->logMessage(aux.c_str());
