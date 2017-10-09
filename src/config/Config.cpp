@@ -1,4 +1,5 @@
 #include <regex>
+#include <complex>
 #include "Config.h"
 #include "../../util/StringUtils.h"
 
@@ -22,6 +23,7 @@ const char *MODES[MODES_COUNT] = {MAPPER_MODE_MANUAL};
 
 // OPTION
 const char *MAPPER_OPT_PLAYER = "-player";
+const char *MAPPER_OPT_PLAYER_N = "-p";
 const char *MAPPER_OPT_COLUMNS = "-c";
 const char *MAPPER_OPT_ROWS = "-r";
 const char *MAPPER_OPT_CAPACITY = "-m";
@@ -29,11 +31,12 @@ const char *MAPPER_OPT_MATCHES_COUNT = "-k";
 const char *MAPPER_OPT_DEBUG = "-debug";
 
 // TOURNAMENT MODE OPTIONS
-const char *TOURNAMENT_OPT_OPTIONAL[1] = {
-        MAPPER_OPT_DEBUG
+const char *TOURNAMENT_OPT_OPTIONAL[3] = {
+        MAPPER_OPT_DEBUG,
+        MAPPER_OPT_PLAYER_N,
+        MAPPER_OPT_PLAYER
 };
-const char *TOURNAMENT_OPT_REQUIRED[5] = {
-        MAPPER_OPT_PLAYER,
+const char *TOURNAMENT_OPT_REQUIRED[4] = {
         MAPPER_OPT_COLUMNS,
         MAPPER_OPT_ROWS,
         MAPPER_OPT_CAPACITY,
@@ -64,6 +67,9 @@ bool validateOption(const Option &option) {
         return option.params.size() == 1;
     } else if (option.name == MAPPER_OPT_PLAYER) {
         return !option.params.empty();
+        // TODO: check this
+    } else if (option.name == MAPPER_OPT_PLAYER_N) {
+        return !option.params.empty();
     }
     return false;
 }
@@ -81,6 +87,13 @@ void setOption(Config *config, Option option) {
         config->tournamentParams.matches = stoi(option.params.front());
     } else if (option.name == MAPPER_OPT_PLAYER) {
         config->tournamentParams.players = option.params;
+    } else if (option.name == MAPPER_OPT_PLAYER_N) {
+        vector<string> players;
+        for (int i = 1; i <= stoi(option.params.front()); i++) {
+            string playerName = "player" + to_string(i);
+            players.push_back(playerName);
+        }
+        config->tournamentParams.players = players;
     }
 }
 

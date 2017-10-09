@@ -5,13 +5,15 @@
 
 class Logger {
 private:
-    const char* fecha;
-    static Logger* instance;
+    const char *fecha;
+    static Logger *instance;
 
-    Logger();
+    Logger() = default;
+
 public:
-    static Logger* getInstance();
-    void logMessage(const char *)const;
+    static Logger *getInstance();
+
+    void logMessage(const char *) const;
 };
 
 

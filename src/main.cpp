@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
 
         // Stadium = [C X R] Fields
         Stadium stadium(config.tournamentParams.columns, config.tournamentParams.rows,
-                        1000*minGameDurationInMili, 1000*maxGameDurationInMili);
+                        1000 * minGameDurationInMili, 1000 * maxGameDurationInMili);
         bool isRoot = initStadium(stadium);
         if (!isRoot) {
             // Tournament ended

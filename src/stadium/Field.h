@@ -6,7 +6,7 @@
 
 using namespace std;
 
-struct MatchResult{
+struct MatchResult {
     int Team1, Team2;
 };
 
@@ -23,6 +23,7 @@ public:
     SemaforoInfo getExit();
 
     void waitForPlayers();
+
 private:
     string name;
     SemaforoInfo entrance{};
