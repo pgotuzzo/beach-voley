@@ -18,7 +18,7 @@ private:
     string name;
     Stadium *stadium;
     const Semaforo *stadiumTurnstile;
-    OrgPlayerResponse *response;
+    OrgPlayerResponse response;
     PartnerRequester *requester;
 
     Field getField();

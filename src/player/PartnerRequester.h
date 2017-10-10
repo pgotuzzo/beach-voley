@@ -19,7 +19,7 @@ public:
 
     void request();
 
-    OrgPlayerResponse *waitResponse();
+    OrgPlayerResponse waitResponse();
 };
 
 

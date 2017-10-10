@@ -24,8 +24,8 @@ void Player::play() {
         enterStadium();
         log("Buscando compañero...");
         partnerRequest();
-        while (response->playerAction != ENUM_LEAVE_TOURNAMENT or
-               response->playerAction != ENUM_LEAVE_STADIUM) {
+        while (response.playerAction != ENUM_LEAVE_TOURNAMENT or
+               response.playerAction != ENUM_LEAVE_STADIUM) {
             log("Compañero asignado! Yendo a jugar");
             goToPlayGame();
             log("Dejando la cancha");
@@ -33,7 +33,7 @@ void Player::play() {
             log("Buscando compañero...");
             partnerRequest();
         }
-        if (response->playerAction == ENUM_LEAVE_TOURNAMENT) {
+        if (response.playerAction == ENUM_LEAVE_TOURNAMENT) {
             leaveTournament = true;
         }
         log("Saliendo del predio...");
@@ -70,7 +70,7 @@ SemaforoInfo Player::getSemaforoInfoExit() {
 }
 
 Field Player::getField() {
-    return this->stadium->getField(response->row, response->column);
+    return this->stadium->getField(response.row, response.column);
 }
 
 void Player::log(string message) {
