@@ -9,7 +9,7 @@ FifoRead::~FifoRead() {
 }
 
 int FifoRead::openFifo() {
-    fd = open(name.c_str(), O_RDONLY | O_CREAT);
+    fd = open(name.c_str(), O_RDONLY | O_CREAT, S_IRWXU);
 
     return fd;
 }

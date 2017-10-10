@@ -6,6 +6,9 @@
 
 PartnerRequester::PartnerRequester(const string &playerName) {
     this->playerName = playerName;
+}
+
+void PartnerRequester::init() {
     this->fifoRead = ResourceHandler::getInstance()->createFifoRead(FIFO_FILE_PARTNER_RESPONSE + to_string(getpid()));
     this->fifoWrite = ResourceHandler::getInstance()->createFifoWirte(FIFO_FILE_MANAGER_RECEIVE_TASK);
 }

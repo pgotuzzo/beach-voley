@@ -11,6 +11,10 @@ Player::Player(const string &name, Stadium *stadium, const Semaforo *stadiumTurn
     this->requester = new PartnerRequester(name);
 }
 
+void Player::init() {
+    this->requester->init();
+}
+
 /**
  * The player starts playing.
  * The player will try to enter the stadium as long as the tournament doesn't finish.
@@ -21,7 +25,7 @@ void Player::play() {
     bool leaveTournament = false;
     while (!leaveTournament) {
         log("Entrando al predio...");
-        //enterStadium();
+        enterStadium();
         log("Buscando compañero...");
         partnerRequest();
         while (response.playerAction != ENUM_LEAVE_TOURNAMENT or

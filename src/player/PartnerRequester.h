@@ -17,6 +17,8 @@ private:
 public:
     explicit PartnerRequester(const string &playerName);
 
+    void init();
+
     void request();
 
     OrgPlayerResponse waitResponse();

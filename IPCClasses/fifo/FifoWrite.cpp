@@ -9,7 +9,7 @@ FifoWrite::~FifoWrite() {
 }
 
 int FifoWrite::openFifo() {
-    fd = open(name.c_str(), O_WRONLY | O_CREAT);
+    fd = open(name.c_str(), O_WRONLY | O_CREAT, S_IRWXU);
 
     return fd;
 }

@@ -1,6 +1,5 @@
 #include <sstream>
 #include <iostream>
-#include <cstring>
 #include "ResourceHandler.h"
 
 // TODO - Move to a FileUtils class
@@ -8,7 +7,8 @@ void createFileIfNotExist(string path) {
     int fd = open(path.c_str(), O_RDWR | O_CREAT, S_IRWXU);
     if (fd < 0) {
         stringstream message;
-        message << "The file: " << path << " couldn't be created/opened! Error Number: " << strerror(errno) << " " <<errno;
+        message << "The file: " << path << " couldn't be created/opened! Error Number: " << strerror(errno) << " "
+                << errno;
         // TODO - Create exception
         throw runtime_error(message.str());
     }
@@ -18,7 +18,7 @@ void createFileIfNotExist(string path) {
 void deleteFile(string path) {
     if (remove(path.c_str()) != 0) {
         stringstream message;
-        message << "The file: " << path << " couldn't be deleted! Error Numer: " << strerror(errno) << " " <<errno;
+        message << "The file: " << path << " couldn't be deleted! Error Numer: " << strerror(errno) << " " << errno;
         throw runtime_error(message.str());
     }
 }
@@ -45,7 +45,6 @@ Semaforo *ResourceHandler::createSemaforo(string path, int initialValue, int cou
 
 FifoRead *ResourceHandler::createFifoRead(string path) {
     if (mFifoRead.find(path) == mFifoRead.end()) {
-        createFileIfNotExist(path);
         FifoRead f(path);
         mFifoRead.emplace(path, f);
     }
@@ -54,7 +53,6 @@ FifoRead *ResourceHandler::createFifoRead(string path) {
 
 FifoWrite *ResourceHandler::createFifoWirte(string path) {
     if (mFifoWrite.find(path) == mFifoWrite.end()) {
-        createFileIfNotExist(path);
         FifoWrite f(path);
         mFifoWrite.emplace(path, f);
     }

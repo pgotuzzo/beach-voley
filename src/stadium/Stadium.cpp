@@ -14,7 +14,7 @@ Stadium::Stadium(int columns, int rows,
     for (int i = 0; i < columns; i++) {
         for (int j = 0; j < rows; j++) {
             stringstream name;
-            name << "[" << i << ", " << j << "}";
+            name << "[" << i << ", " << j << "]";
             auto id = static_cast<unsigned short>(i * rows + j);
             fields[i * rows + j] = Field(name.str(), entrance, id, exit, id,
                                          minGameDurationInMicro, maxGameDurationInMicro);

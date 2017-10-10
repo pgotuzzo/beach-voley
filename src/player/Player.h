@@ -42,6 +42,8 @@ private:
 public:
     Player(const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile);
 
+    void init();
+
     void play();
 
 };

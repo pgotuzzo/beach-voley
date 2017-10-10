@@ -12,12 +12,6 @@ Field::Field(string name, Semaforo *entrance, unsigned short entranceId, Semafor
     this->entrance = {entranceId, entrance};
     this->exit = {exitId, exit};
     this->taskToManagerFifo = ResourceHandler::getInstance()->createFifoWirte(FIFO_FILE_MANAGER_RECEIVE_TASK);
-    int fd = taskToManagerFifo->openFifo();
-    if (fd < 0) {
-        stringstream message;
-        message << "Field" << "Trying to open a fifo to write a response. Fifo couldn't be opened. Error Number: " << strerror(errno) << " " <<errno << endl;
-        throw runtime_error(message.str());
-    }
 }
 
 /**
@@ -59,6 +53,13 @@ void Field::setResult(TaskRequest *taskRequest) {
  * Sends the result of the match to the manager.
  */
 void Field::sendResult() {
+    int fd = taskToManagerFifo->openFifo();
+    if (fd < 0) {
+        stringstream message;
+        message << "Field" << "Trying to open a fifo to write a response. Fifo couldn't be opened. Error Number: " << strerror(errno) << " " <<errno << endl;
+        throw runtime_error(message.str());
+    }
+
     int pid = getpid();
     TaskRequest taskRequest{pid, 3, 3, false, MATCH_RESULT};
     this->setResult(&taskRequest);
@@ -67,6 +68,7 @@ void Field::sendResult() {
     if (out < 0) {
         throw runtime_error(string("Match return fifo can't be write!" ) + strerror(errno));
     }
+    taskToManagerFifo->closeFifo();
 }
 
 /**

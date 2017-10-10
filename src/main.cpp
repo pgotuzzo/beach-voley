@@ -7,7 +7,6 @@
 #include "../IPCClasses/signal/SIGINT_Handler.h"
 #include "config/Constants.h"
 #include "manager/Manager.h"
-#include <sys/wait.h>
 
 void playTournament(Config config);
 
@@ -16,6 +15,7 @@ using namespace std;
 bool initPlayers(Player player) {
     int pid = fork();
     if (pid == 0) {
+        player.init();
         player.play();
         exit(0);
     }
