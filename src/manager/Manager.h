@@ -10,6 +10,7 @@ using namespace std;
 
 class Manager {
 private:
+    int count = 0;
     map<int, FifoWrite> mFifoWrite;
     FifoRead *fifoRead;
 
