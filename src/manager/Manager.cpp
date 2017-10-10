@@ -57,7 +57,7 @@ void Manager::receiveTask() {
 void Manager::findPartner(int pid) {
     //TODO: find partner + find stadium
     if (mFifoWrite.find(pid) == mFifoWrite.end()) {
-        FifoWrite *f = ResourceHandler::getInstance()->createFifoWirte(FIFO_FILE_PARTNER_RESPONSE + to_string(pid));
+        FifoWrite *f = ResourceHandler::getInstance()->createFifoWrite(FIFO_FILE_PARTNER_RESPONSE + to_string(pid));
         int fd = f->openFifo();
         if (fd < 0) {
             stringstream message;

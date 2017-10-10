@@ -5,6 +5,7 @@
 #include "../config/Definitions.h"
 #include "../../IPCClasses/fifo/FifoRead.h"
 #include "../../IPCClasses/fifo/FifoWrite.h"
+#include "../../IPCClasses/LockFile.h"
 
 using namespace std;
 
@@ -13,6 +14,7 @@ private:
     string playerName;
     FifoRead *fifoRead;
     FifoWrite *fifoWrite;
+    LockFile *lockFile;
 
 public:
     explicit PartnerRequester(const string &playerName);

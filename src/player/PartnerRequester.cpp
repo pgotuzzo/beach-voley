@@ -10,10 +10,15 @@ PartnerRequester::PartnerRequester(const string &playerName) {
 
 void PartnerRequester::init() {
     this->fifoRead = ResourceHandler::getInstance()->createFifoRead(FIFO_FILE_PARTNER_RESPONSE + to_string(getpid()));
-    this->fifoWrite = ResourceHandler::getInstance()->createFifoWirte(FIFO_FILE_MANAGER_RECEIVE_TASK);
+    this->fifoWrite = ResourceHandler::getInstance()->createFifoWrite(FIFO_FILE_MANAGER_RECEIVE_TASK);
+    this->lockFile = new LockFile(LOCK_FILE_PARTNER_REQUEST);
 }
 
 void PartnerRequester::request() {
+    int res = lockFile->tomarLock();
+    if (res < 0) {
+        throw runtime_error("Partner request lock can't be opened!");
+    }
     int fd = fifoWrite->openFifo();
     if (fd < 0) {
         throw runtime_error(
@@ -21,12 +26,13 @@ void PartnerRequester::request() {
                 errno);
     }
 
-    TaskRequest res = {getpid(), 0, 0, false, FIND_PARTNER};
-    ssize_t out = fifoWrite->writeFifo(&res, sizeof(TaskRequest));
+    TaskRequest taskRequest = {getpid(), 0, 0, false, FIND_PARTNER};
+    ssize_t out = fifoWrite->writeFifo(&taskRequest, sizeof(TaskRequest));
     if (out < 0) {
         throw runtime_error("Partner request fifo can't be write!");
     }
     cout << "Player " << playerName << ": sent a find partner request" << endl;
+    lockFile->liberarLock();
 }
 
 OrgPlayerResponse PartnerRequester::waitResponse() {

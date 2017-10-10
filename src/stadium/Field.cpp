@@ -11,7 +11,7 @@ Field::Field(string name, Semaforo *entrance, unsigned short entranceId, Semafor
     this->name = name;
     this->entrance = {entranceId, entrance};
     this->exit = {exitId, exit};
-    this->taskToManagerFifo = ResourceHandler::getInstance()->createFifoWirte(FIFO_FILE_MANAGER_RECEIVE_TASK);
+    this->taskToManagerFifo = ResourceHandler::getInstance()->createFifoWrite(FIFO_FILE_MANAGER_RECEIVE_TASK);
 }
 
 /**

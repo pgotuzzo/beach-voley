@@ -51,7 +51,7 @@ FifoRead *ResourceHandler::createFifoRead(string path) {
     return &mFifoRead[path];
 }
 
-FifoWrite *ResourceHandler::createFifoWirte(string path) {
+FifoWrite *ResourceHandler::createFifoWrite(string path) {
     if (mFifoWrite.find(path) == mFifoWrite.end()) {
         FifoWrite f(path);
         mFifoWrite.emplace(path, f);

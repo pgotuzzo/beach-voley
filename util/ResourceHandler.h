@@ -25,7 +25,7 @@ public:
 
     FifoRead *createFifoRead(string path);
 
-    FifoWrite *createFifoWirte(string path);
+    FifoWrite *createFifoWrite(string path);
 
     void freeResources();
 };

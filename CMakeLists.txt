@@ -39,7 +39,7 @@ set(CONFIG src/config/Config.cpp src/config/Config.h ${PARSE_EXCEPTION})
 # Main
 set(SOURCE_FILES src/. src/main.cpp src/config/Constants.h ${CONFIG}
         ${FIELD} ${PLAYER} ${STADIUM} ${MANAGER}
-        ${STRING_UTILS} ${RESOURCE_HANDLER}
+        ${STRING_UTILS} ${RESOURCE_HANDLER} ${LOCK_FILE}
         ${SIGNAL_HANDLER} ${SIGNAL_HANDLER})
 add_executable(beach-voley ${SOURCE_FILES})
 

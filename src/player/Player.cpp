@@ -25,7 +25,7 @@ void Player::play() {
     bool leaveTournament = false;
     while (!leaveTournament) {
         log("Entrando al predio...");
-        enterStadium();
+//        enterStadium();
         log("Buscando compañero...");
         partnerRequest();
         while (response.playerAction != ENUM_LEAVE_TOURNAMENT or
