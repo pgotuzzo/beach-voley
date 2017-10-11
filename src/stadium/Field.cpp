@@ -5,12 +5,14 @@
 #include "../../util/ResourceHandler.h"
 #include "../config/Constants.h"
 
-Field::Field(string name, Semaforo *entrance, unsigned short entranceId, Semaforo *exit, unsigned short exitId,
-             const int minGameDurationInMicro, const int maxGameDurationInMicro) :
-        minGameDurationInMicro(minGameDurationInMicro), maxGameDurationInMicro(maxGameDurationInMicro) {
-    this->name = name;
-    this->entrance = {entranceId, entrance};
-    this->exit = {exitId, exit};
+Field::Field(unsigned short id, string name, Semaforo *entrance, Semaforo *exit, const int minGameDurationInMicro,
+             const int maxGameDurationInMicro) :
+        name(name),
+        id(id),
+        minGameDurationInMicro(minGameDurationInMicro),
+        maxGameDurationInMicro(maxGameDurationInMicro) {
+    this->entrance = {id, entrance};
+    this->exit = {id, exit};
     this->taskToManagerFifo = ResourceHandler::getInstance()->getFifoWrite(FIFO_FILE_MANAGER_RECEIVE_TASK);
 }
 
@@ -61,8 +63,7 @@ void Field::sendResult() {
         throw runtime_error(message.str());
     }
 
-    int pid = getpid();
-    TaskRequest taskRequest{pid, 3, 3, false, MATCH_RESULT};
+    TaskRequest taskRequest{id, 3, 3, false, MATCH_RESULT};
     this->setResult(&taskRequest);
     log("Trying to write a response");
     ssize_t out = taskToManagerFifo->writeFifo((&taskRequest), sizeof(TaskRequest));

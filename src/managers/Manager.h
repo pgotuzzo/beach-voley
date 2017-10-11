@@ -13,11 +13,11 @@ using namespace std;
 class Manager {
 private:
     struct Team{
-        int pidPlayer1;
-        int pidPlayer2;
+        int idPlayer1;
+        int idPlayer2;
 
         bool operator==(const Team &compTeam) const {
-            return compTeam.pidPlayer1 == pidPlayer1 and compTeam.pidPlayer2 == pidPlayer2;
+            return compTeam.idPlayer1 == idPlayer1 and compTeam.idPlayer2 == idPlayer2;
         }
     };
 
@@ -33,9 +33,9 @@ private:
     };
 
     vector<MatchResult> matchHistory;
-    // TODO: initilize this with the pid of all players same time as playersPidFifoMap
-    VectorCompartido<int> *pidsTable;
-    map<int, int> pidToVectorIndexMap;
+    // TODO: initilize this with the id of all players same time as playersIdFifoMap
+    VectorCompartido<int> *idsTable;
+    map<int, int> idToVectorIndexMap;
     VectorCompartido<int> *pointsTable;
     LockFile *lockForSharedVectors;
     int count = 0;
@@ -44,15 +44,15 @@ private:
     unsigned int playersInGame = 0;
     // TODO: initilize this with the size of the vector of all the players same time as shared mem
     unsigned long totalPlayers;
-    // TODO: all pids, playersPidFifoMap will have one of this per player
-    map<int, FifoWrite> playersPidFifoMap;
+    // TODO: all pids, playersIdFifoMap will have one of this per player
+    map<int, FifoWrite> playersIdFifoMap;
     // TODO: initialize this map with the pids of the fields associated with an index from 0 to colums*rows
     map<int, int> fieldPidNumberMap;
     vector<TeamsMatch> teamsOnFields;
     vector<Team> waitingTeams;
     vector<int> waitingPlayers;
-    // TODO: initialize this map with the pids of the players as keys an a vector of the players
-    // pids (including them for simplicity).
+    // TODO: initialize this map with the ids of the players as keys an a vector of the players
+    // ids (including them for simplicity).
     map<int, vector<int>> playersPossiblePartners;
     vector<bool> freeFields;
     FifoRead *receiveTaskFifo;
@@ -70,7 +70,7 @@ private:
 
     void sendPlayersToField(TeamsMatch teamsMatch, int column, int row);
 
-    void sendMessageToPlayer(int playerPid, OrgPlayerResponse orgPlayerResponse);
+    void sendMessageToPlayer(int playerId, OrgPlayerResponse orgPlayerResponse);
 
     bool assignPartner(Team *teamProject);
 
@@ -86,7 +86,7 @@ private:
 
     void removePlayerFromPossiblePartners(Team team);
 
-    bool playerPlayAllGames(int playerPid);
+    bool playerPlayAllGames(int playerId);
 public:
     Manager(unsigned int rows, unsigned int columns, unsigned int stadiumSize, unsigned int totalGames,
             VectorCompartido<int> *pidsTable, VectorCompartido<int> *pointsTable, LockFile *lockForSharedVectors);

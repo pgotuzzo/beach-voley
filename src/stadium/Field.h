@@ -17,8 +17,8 @@ class Field {
 public:
     Field() = default;
 
-    Field(string name, Semaforo *entrance, unsigned short entranceId, Semaforo *exit, unsigned short exitId,
-          int minGameDurationInMicro, int maxGameDurationInMicro);
+    Field(unsigned short id, string name, Semaforo *entrance, Semaforo *exit, int minGameDurationInMicro,
+          int maxGameDurationInMicro);
 
     void readyForGames();
 
@@ -27,6 +27,7 @@ public:
     SemaforoInfo getExit();
 
 private:
+    unsigned short id;
     string name;
     SemaforoInfo entrance{};
     SemaforoInfo exit{};

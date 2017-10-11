@@ -16,6 +16,7 @@ private:
     static map<string, Semaforo> mSemaforo;
     static map<string, FifoRead> mFifoRead;
     static map<string, FifoWrite> mFifoWrite;
+    static map<string, VectorCompartido<int>> mVectorCompartido;
 
     ResourceHandler();
 
@@ -30,7 +31,7 @@ public:
 
     FifoWrite *getFifoWrite(string path);
 
-    VectorCompartido<int> createVectorCompartido(string path, char aChar, size_t vectorSize);
+    VectorCompartido<int> *getVectorCompartido(string path);
 
     void freeResources();
 };

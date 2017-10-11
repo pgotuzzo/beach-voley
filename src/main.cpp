@@ -101,23 +101,20 @@ void playTournament(Config config) {
                     1000 * maxGameDurationInMili);
     stadium.initStadium();
 
-    VectorCompartido<int> pidsTable = ResourceHandler::getInstance()->createVectorCompartido(
-            SHARED_MEMORY_PIDS_VECTOR, 'a', config.tournamentParams.players.size());
-    VectorCompartido<int> pointsTable = ResourceHandler::getInstance()->createVectorCompartido(
-            SHARED_MEMORY_POINTS_VECTOR, 'a', config.tournamentParams.players.size());
+    VectorCompartido<int> *idsTable = ResourceHandler::getInstance()->getVectorCompartido(SHARED_MEMORY_IDS_VECTOR);
+    VectorCompartido<int> *pointsTable = ResourceHandler::getInstance()->getVectorCompartido(SHARED_MEMORY_POINTS_VECTOR);
     LockFile lockForSharedVectors(LOCK_FILE_SHARED_VECTORS);
     // Manager
     Manager manager{static_cast<unsigned int>(config.tournamentParams.rows),
                     static_cast<unsigned int>(config.tournamentParams.columns),
                     static_cast<unsigned int>(config.tournamentParams.capacity),
                     static_cast<unsigned int>(config.tournamentParams.matches),
-                    &pidsTable, &pointsTable, &lockForSharedVectors};
+                    idsTable, pointsTable, &lockForSharedVectors};
     manager.initManager();
-    TournamentBoard tournamentBoard{&pidsTable, &pointsTable, &lockForSharedVectors};
+    TournamentBoard tournamentBoard{idsTable, pointsTable, &lockForSharedVectors};
 
     // Players
     Semaforo *stadiumTurnstile = ResourceHandler::getInstance()->getSemaforo(SEM_TURNSTILE);
-    cout << "INITIAL STATUS: " << stadiumTurnstile->getStatus(0);
     for (int i = 0; i < config.tournamentParams.players.size(); i++) {
         string name = config.tournamentParams.players[i];
         Player player(i, name, &stadium, stadiumTurnstile);

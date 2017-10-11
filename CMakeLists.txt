@@ -8,6 +8,7 @@ set(LOCK_FILE IPCClasses/LockFile.cpp IPCClasses/LockFile.h)
 set(SEMAFORO IPCClasses/Semaforo.cpp IPCClasses/Semaforo.h)
 set(PIPE IPCClasses/Pipe.cpp IPCClasses/Pipe.h)
 set(MEMORIA_COMPARTIDA IPCClasses/MemoriaCompartida.h)
+set(VECTOR_COMPARTIDO IPCClasses/VectorCompartido.h)
 set(SIGNAL_HANDLER IPCClasses/signal/SignalHandler.h IPCClasses/signal/SignalHandler.cpp
         IPCClasses/signal/EventHandler.h IPCClasses/signal/SIGINT_Handler.h)
 set(FIFO IPCClasses/fifo/FifoRead.cpp IPCClasses/fifo/FifoRead.h
@@ -31,7 +32,7 @@ set(PLAYER src/player/Player.cpp src/player/Player.h ${FIFO}
         src/player/PartnerRequester.h src/player/PartnerRequester.cpp)
 set(FIELD src/stadium/Field.cpp src/stadium/Field.h ${SEMAFORO} ${LOGGER} ${RANDOM_NUMBER})
 set(STADIUM src/stadium/Stadium.cpp src/stadium/Stadium.h)
-set(MANAGER src/managers/Manager.cpp src/managers/Manager.h ${RESOURCE_HANDLER})
+set(MANAGER src/managers/Manager.cpp src/managers/Manager.h ${RESOURCE_HANDLER} ${VECTOR_COMPARTIDO})
 set(TOURNAMENT_BOARD src/managers/TournamentBoard.cpp src/managers/TournamentBoard.hpp)
 
 # Configs

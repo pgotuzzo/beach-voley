@@ -28,13 +28,13 @@ enum TaskType {
 };
 
 struct TaskRequest {
-    int pid;
+    int id;
     int resultLocal;
     int resultVisitant;
     bool tideRise;
     TaskType task;
     string show() {
-        return string("pid: ") + to_string(pid) + string(" resultLocal: ") + to_string(resultLocal) + string(" resultVisitant: ") +
+        return string("id: ") + to_string(id) + string(" resultLocal: ") + to_string(resultLocal) + string(" resultVisitant: ") +
                to_string(resultVisitant) + string(" task: ") + to_string(task);
     }
 };

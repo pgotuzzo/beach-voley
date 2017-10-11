@@ -1,6 +1,5 @@
 #include <sstream>
 #include <iostream>
-#include <cstring>
 #include "ResourceHandler.h"
 #include "../src/config/Constants.h"
 
@@ -17,19 +16,11 @@ void createFileIfNotExist(string path) {
     close(fd);
 }
 
-void deleteFile(string path) {
-    if (remove(path.c_str()) != 0) {
-//        stringstream message;
-        cout << "The file: " << path << " couldn't be deleted! Error Number: " << strerror(errno) << " " << errno
-             << endl;
-//        throw runtime_error(message.str());
-    }
-}
-
 ResourceHandler *ResourceHandler::instance = nullptr;
 map<string, Semaforo> ResourceHandler::mSemaforo;
 map<string, FifoWrite> ResourceHandler::mFifoWrite;
 map<string, FifoRead> ResourceHandler::mFifoRead;
+map<string, VectorCompartido<int>> ResourceHandler::mVectorCompartido;
 
 ResourceHandler::ResourceHandler() = default;
 
@@ -72,6 +63,19 @@ void ResourceHandler::init(Config config) {
     createFileIfNotExist(path);
     s = Semaforo(path, 0, config.tournamentParams.rows * config.tournamentParams.columns);
     mSemaforo.emplace(path, s);
+    // Shared Memory
+    //      IDs Vector
+    path = SHARED_MEMORY_IDS_VECTOR;
+    createFileIfNotExist(path);
+    VectorCompartido<int> vectorCompartido1;
+    vectorCompartido1.crear(path, 'a', config.tournamentParams.players.size());
+    mVectorCompartido.emplace(path, vectorCompartido1);
+    //      Points Vector
+    path = SHARED_MEMORY_POINTS_VECTOR;
+    createFileIfNotExist(path);
+    VectorCompartido<int> vectorCompartido2;
+    vectorCompartido2.crear(path, 'a', config.tournamentParams.players.size());
+    mVectorCompartido.emplace(path, vectorCompartido2);
 }
 
 Semaforo *ResourceHandler::getSemaforo(string path) {
@@ -95,11 +99,11 @@ FifoWrite *ResourceHandler::getFifoWrite(string path) {
     return &mFifoWrite[path];
 }
 
-VectorCompartido<int> ResourceHandler::createVectorCompartido(string path, char aChar, size_t vectorSize) {
-    createFileIfNotExist(path);
-    VectorCompartido<int> vectorCompartido;
-    vectorCompartido.crear(path, aChar, vectorSize);
-    return vectorCompartido;
+VectorCompartido<int> *ResourceHandler::getVectorCompartido(string path) {
+    if (mVectorCompartido.find(path) == mVectorCompartido.end()) {
+        throw runtime_error("Vector compartido not available. Vector compartido: " + path);
+    }
+    return &mVectorCompartido[path];
 }
 
 void ResourceHandler::freeResources() {
@@ -114,6 +118,10 @@ void ResourceHandler::freeResources() {
     for (auto item : mFifoWrite) {
         item.second.closeFifo();
         item.second.deleteFifo();
+    }
+    for (auto item : mVectorCompartido) {
+        item.second.liberar();
+        remove(item.first.c_str());
     }
 }
 

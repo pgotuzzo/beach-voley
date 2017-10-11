@@ -9,11 +9,11 @@
 const char *TAG = "Manager: ";
 
 Manager::Manager(unsigned int rows, unsigned int columns, unsigned int stadiumSize, unsigned int totalGames,
-                 VectorCompartido<int> *pidsTable, VectorCompartido<int> *pointsTable,
+                 VectorCompartido<int> *idsTable, VectorCompartido<int> *pointsTable,
                  LockFile *lockForSharedVectors) :
-        stadiumSize(stadiumSize), totalGames(totalGames), pidsTable(pidsTable), pointsTable(pointsTable),
+        stadiumSize(stadiumSize), totalGames(totalGames), idsTable(idsTable), pointsTable(pointsTable),
         lockForSharedVectors(lockForSharedVectors) {
-    this->receiveTaskFifo = ResourceHandler::getInstance()->createFifoRead(FIFO_FILE_MANAGER_RECEIVE_TASK);
+    this->receiveTaskFifo = ResourceHandler::getInstance()->getFifoRead(FIFO_FILE_MANAGER_RECEIVE_TASK);
     this->rows = rows;
     this->columns = columns;
     this->freeFields = vector<bool>(rows * columns, true);
@@ -51,20 +51,20 @@ void Manager::receiveTask() {
         TaskRequest task = {};
         cout << TAG << "Trying to read a task" << endl;
         ssize_t out = receiveTaskFifo->readFifo((&task), sizeof(TaskRequest));
-        cout << TAG << "Read something... :thinking: " << task.show() << " out:" << out << endl;
+        cout << TAG << "Read something... :thinking: " << task.show() << " out: " << out << endl;
         receiveTaskFifo->closeFifo();
 
         if (out > 0) {
             cout << TAG << "Read a task successfully!" << endl;
             switch (task.task) {
                 case (FIND_PARTNER):
-                    findPartner(task.pid);
+                    findPartner(task.id);
                     break;
                 case (TIDE_CHANGE):
-                    updateFieldList(task.pid, task.tideRise);
+                    updateFieldList(task.id, task.tideRise);
                     break;
                 case (MATCH_RESULT):
-                    saveResult(task.pid, task.resultLocal, task.resultVisitant);
+                    saveResult(task.id, task.resultLocal, task.resultVisitant);
                     break;
                 default:
                     throw runtime_error("Task handler not defined.");
@@ -77,11 +77,11 @@ void Manager::receiveTask() {
 /**
  * Updates the field list for a tide change.
  *
- * @param fieldPid the pid of the field to update.
+ * @param fieldId the id of the field to update.
  * @param tideRise true if the tide rise or false if the tide fall.
  */
-void Manager::updateFieldList(int fieldPid, bool tideRise) {
-    freeFields[fieldPidNumberMap[fieldPid]] = !tideRise;
+void Manager::updateFieldList(int fieldId, bool tideRise) {
+    freeFields[fieldPidNumberMap[fieldId]] = !tideRise;
 }
 
 /**
@@ -90,12 +90,12 @@ void Manager::updateFieldList(int fieldPid, bool tideRise) {
  * @param team the team to erase their partners.
  */
 void Manager::removePlayerFromPossiblePartners(Team team) {
-    playersPossiblePartners[team.pidPlayer1].erase(find(playersPossiblePartners[team.pidPlayer1].begin(),
-                                                        playersPossiblePartners[team.pidPlayer1].end(),
-                                                        team.pidPlayer2));
-    playersPossiblePartners[team.pidPlayer2].erase(find(playersPossiblePartners[team.pidPlayer2].begin(),
-                                                        playersPossiblePartners[team.pidPlayer2].end(),
-                                                        team.pidPlayer1));
+    playersPossiblePartners[team.idPlayer1].erase(find(playersPossiblePartners[team.idPlayer1].begin(),
+                                                        playersPossiblePartners[team.idPlayer1].end(),
+                                                        team.idPlayer2));
+    playersPossiblePartners[team.idPlayer2].erase(find(playersPossiblePartners[team.idPlayer2].begin(),
+                                                        playersPossiblePartners[team.idPlayer2].end(),
+                                                        team.idPlayer1));
 }
 
 /**
@@ -103,22 +103,22 @@ void Manager::removePlayerFromPossiblePartners(Team team) {
  * Frees the field. Saves the results of the match in a history and the points
  * of the players in the shared memory.
  *
- * @param fieldPid the pid of the field.
+ * @param fieldPid the id of the field.
  * @param resultLocal the number of sets won by the local team.
  * @param resultVisitant the number of sets won by the visit team.
  */
-void Manager::saveResult(int fieldPid, int resultLocal, int resultVisitant) {
-    int fieldNumber = fieldPidNumberMap[fieldPid];
+void Manager::saveResult(int fieldId, int resultLocal, int resultVisitant) {
+    int fieldNumber = fieldPidNumberMap[fieldId];
     TeamsMatch teamsMatch = teamsOnFields[fieldNumber];
     freeFields[fieldNumber] = true;
     removePlayerFromPossiblePartners(teamsMatch.localTeam);
     removePlayerFromPossiblePartners(teamsMatch.visitTeam);
     playersInGame = playersInGame - 4;
 
-    auto idxLocalPlayer1 = static_cast<unsigned int>(pidToVectorIndexMap[teamsMatch.localTeam.pidPlayer1]);
-    auto idxLocalPlayer2 = static_cast<unsigned int>(pidToVectorIndexMap[teamsMatch.localTeam.pidPlayer2]);
-    auto idxVisitPlayer1 = static_cast<unsigned int>(pidToVectorIndexMap[teamsMatch.visitTeam.pidPlayer1]);
-    auto idxVisitPlayer2 = static_cast<unsigned int>(pidToVectorIndexMap[teamsMatch.visitTeam.pidPlayer2]);
+    auto idxLocalPlayer1 = static_cast<unsigned int>(idToVectorIndexMap[teamsMatch.localTeam.idPlayer1]);
+    auto idxLocalPlayer2 = static_cast<unsigned int>(idToVectorIndexMap[teamsMatch.localTeam.idPlayer2]);
+    auto idxVisitPlayer1 = static_cast<unsigned int>(idToVectorIndexMap[teamsMatch.visitTeam.idPlayer1]);
+    auto idxVisitPlayer2 = static_cast<unsigned int>(idToVectorIndexMap[teamsMatch.visitTeam.idPlayer2]);
 
     lockForSharedVectors->tomarLock();
     if (resultLocal == 3) {
@@ -147,24 +147,24 @@ void Manager::saveResult(int fieldPid, int resultLocal, int resultVisitant) {
 /**
  * Sends a message to a particular player.
  *
- * @param playerPid the pid of the player.
+ * @param playerId the id of the player.
  * @param orgPlayerResponse the message to send.
  */
-void Manager::sendMessageToPlayer(int playerPid, OrgPlayerResponse orgPlayerResponse) {
-    if (playersPidFifoMap.find(playerPid) == playersPidFifoMap.end()) {
-        FifoWrite *f = ResourceHandler::getInstance()->createFifoWrite(FIFO_FILE_PARTNER_RESPONSE + to_string(playerPid));
+void Manager::sendMessageToPlayer(int playerId, OrgPlayerResponse orgPlayerResponse) {
+    if (playersIdFifoMap.find(playerId) == playersIdFifoMap.end()) {
+        FifoWrite *f = ResourceHandler::getInstance()->getFifoWrite(FIFO_FILE_PARTNER_RESPONSE + to_string(playerId));
         int fd = f->openFifo();
         if (fd < 0) {
             stringstream message;
             message << TAG << "Trying to open a fifo to write a response. Fifo couldn't be opened. Error Number: "
-                    << strerror(errno) << " " << errno << " Tamaño:" << playersPidFifoMap.size();
+                    << strerror(errno) << " " << errno << " Tamaño:" << playersIdFifoMap.size();
             throw runtime_error(message.str());
         }
-        playersPidFifoMap.emplace(playerPid, *f);
+        playersIdFifoMap.emplace(playerId, *f);
     }
-    FifoWrite fifoWrite = playersPidFifoMap[playerPid];
+    FifoWrite fifoWrite = playersIdFifoMap[playerId];
 
-    cout << TAG << "A partner for process: " << playerPid << "was found!!" << endl;
+    cout << TAG << "A partner for process: " << playerId << "was found!!" << endl;
     cout << TAG << "Trying to write a response" << endl;
     ssize_t out = fifoWrite.writeFifo(static_cast<const void *> (&orgPlayerResponse), sizeof(OrgPlayerResponse));
     if (out < 0) {
@@ -182,10 +182,10 @@ void Manager::sendMessageToPlayer(int playerPid, OrgPlayerResponse orgPlayerResp
  */
 void Manager::sendPlayersToField(TeamsMatch teamsMatch, int column, int row) {
     OrgPlayerResponse orgPlayerResponse = OrgPlayerResponse{column, row, ENUM_PLAY};
-    sendMessageToPlayer(teamsMatch.localTeam.pidPlayer1, orgPlayerResponse);
-    sendMessageToPlayer(teamsMatch.localTeam.pidPlayer2, orgPlayerResponse);
-    sendMessageToPlayer(teamsMatch.visitTeam.pidPlayer1, orgPlayerResponse);
-    sendMessageToPlayer(teamsMatch.visitTeam.pidPlayer2, orgPlayerResponse);
+    sendMessageToPlayer(teamsMatch.localTeam.idPlayer1, orgPlayerResponse);
+    sendMessageToPlayer(teamsMatch.localTeam.idPlayer2, orgPlayerResponse);
+    sendMessageToPlayer(teamsMatch.visitTeam.idPlayer1, orgPlayerResponse);
+    sendMessageToPlayer(teamsMatch.visitTeam.idPlayer2, orgPlayerResponse);
 }
 
 /**
@@ -199,14 +199,14 @@ void Manager::sendPlayersToField(TeamsMatch teamsMatch, int column, int row) {
 bool Manager::assignPartner(Team *teamProject) {
     auto waitingPlayer = waitingPlayers.begin();
     while (waitingPlayer != waitingPlayers.end()) {
-        auto partnerPid = find(playersPossiblePartners[teamProject->pidPlayer1].begin(),
-                                                playersPossiblePartners[teamProject->pidPlayer1].end(), *waitingPlayer);
+        auto partnerPid = find(playersPossiblePartners[teamProject->idPlayer1].begin(),
+                                                playersPossiblePartners[teamProject->idPlayer1].end(), *waitingPlayer);
         // If its the player do the search again from the player on.
-        if (*partnerPid == teamProject->pidPlayer1) {
-            partnerPid = find(partnerPid, playersPossiblePartners[teamProject->pidPlayer1].end(), *waitingPlayer);
+        if (*partnerPid == teamProject->idPlayer1) {
+            partnerPid = find(partnerPid, playersPossiblePartners[teamProject->idPlayer1].end(), *waitingPlayer);
         }
-        if (partnerPid != playersPossiblePartners[teamProject->pidPlayer1].end()) {
-            teamProject->pidPlayer2 = *partnerPid;
+        if (partnerPid != playersPossiblePartners[teamProject->idPlayer1].end()) {
+            teamProject->idPlayer2 = *partnerPid;
             return true;
         }
         waitingPlayer++;
@@ -224,8 +224,8 @@ bool Manager::findOpponents(Team *teamProject) {
     if (waitingTeams.empty()) {
         return false;
     }
-    teamProject->pidPlayer1 = waitingTeams[0].pidPlayer1;
-    teamProject->pidPlayer2 = waitingTeams[0].pidPlayer1;
+    teamProject->idPlayer1 = waitingTeams[0].idPlayer1;
+    teamProject->idPlayer2 = waitingTeams[0].idPlayer1;
     return true;
 }
 
@@ -286,8 +286,8 @@ void Manager::formTeamsAndAssignFields() {
             waitingPlayer++;
         }
         if (teamFormed) {
-            waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), team.pidPlayer1));
-            waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), team.pidPlayer2));
+            waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), team.idPlayer1));
+            waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), team.idPlayer2));
             waitingTeams.push_back(team);
         }
     }
@@ -309,32 +309,32 @@ void Manager::formTeamsAndAssignFields() {
  * If it can't found a partner and the stadium is full, removes one waiting player from the stadium
  * and leave this player waiting, after that tries to form new teams to play.
  *
- * @param playerPid the pid of the player.
+ * @param playerId the id of the player.
  */
-void Manager::findPartner(int playerPid) {
-    if (playerPlayAllGames(playerPid)) {
-        sendMessageToPlayer(playerPid, OrgPlayerResponse{0, 0, ENUM_LEAVE_TOURNAMENT});
+void Manager::findPartner(int playerId) {
+    if (playerPlayAllGames(playerId)) {
+        sendMessageToPlayer(playerId, OrgPlayerResponse{0, 0, ENUM_LEAVE_TOURNAMENT});
     } else {
-        Team localTeam = Team{playerPid, 0};
+        Team localTeam = Team{playerId, 0};
         if (assignPartner(&localTeam)) {
             Team opponentTeam{};
             if (findOpponents(&opponentTeam)) {
                 if (assignField(localTeam, opponentTeam)) {
-                    waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), localTeam.pidPlayer2));
+                    waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), localTeam.idPlayer2));
                     waitingTeams.erase(find(waitingTeams.begin(), waitingTeams.end(), opponentTeam));
                 } else {
-                    waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), localTeam.pidPlayer2));
+                    waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), localTeam.idPlayer2));
                     waitingTeams.push_back(localTeam);
                 }
             } else {
-                waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), localTeam.pidPlayer2));
+                waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), localTeam.idPlayer2));
                 waitingTeams.push_back(opponentTeam);
             }
         } else {
             if (stadiumIsFull()) {
                 removeRandomWaitingPlayer();
             }
-            waitingPlayers.push_back(playerPid);
+            waitingPlayers.push_back(playerId);
             formTeamsAndAssignFields();
         }
     }
@@ -343,11 +343,11 @@ void Manager::findPartner(int playerPid) {
 /**
  * Checks if the given player have played all his games.
  *
- * @param playerPid the player to check.
+ * @param playerId the player to check.
  * @return true if the player played all his games.
  */
-bool Manager::playerPlayAllGames(int playerPid) {
-    return totalPlayers - playersPossiblePartners[playerPid].size() >= totalGames;
+bool Manager::playerPlayAllGames(int playerId) {
+    return totalPlayers - playersPossiblePartners[playerId].size() >= totalGames;
 }
 
 bool Manager::checkTournamentEnd() {
