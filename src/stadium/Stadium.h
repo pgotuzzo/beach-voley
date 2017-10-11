@@ -16,7 +16,7 @@ public:
 
     void initStadium();
 
-    Field getField(int column, int row);
+    Field getField(int id);
 
     int getColumns();
 

@@ -25,8 +25,7 @@ void Player::play() {
         enterStadium();
         log("Buscando compañero...");
         partnerRequest();
-        while (response.playerAction != ENUM_LEAVE_TOURNAMENT or
-               response.playerAction != ENUM_LEAVE_STADIUM) {
+        while (response.playerAction == ENUM_PLAY) {
             log("Compañero asignado! Yendo a jugar");
             goToPlayGame();
             log("Dejando la cancha");
@@ -44,7 +43,7 @@ void Player::play() {
 }
 /**
  * Player make the request to the Manager over fifo FIFO_FILE_MANAGER_RECEIVE_TASK
- * and waits for the response Manager in the other Fifo FIFO_FILE_PARTNER_RESPONSE + getpid()
+ * and waits for the response Manager in the other Fifo FIFO_FILE_PARTNER_RESPONSE + id
  * */
 void Player::partnerRequest() {
     requester->request();
@@ -79,7 +78,7 @@ SemaforoInfo Player::getSemaforoInfoExit() {
 }
 
 Field Player::getField() {
-    return this->stadium->getField(response.row, response.column);
+    return this->stadium->getField(response.fieldId);
 }
 
 void Player::log(string message) {

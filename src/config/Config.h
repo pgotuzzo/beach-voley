@@ -13,10 +13,10 @@ enum Mode {
 };
 
 struct TournamentParams {
-    int columns;
-    int rows;
-    int capacity;
-    int matches;
+    unsigned int columns;
+    unsigned int rows;
+    unsigned int capacity;
+    unsigned int matches;
     vector<string> players;
     bool debugEnable;
 };

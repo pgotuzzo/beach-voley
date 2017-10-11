@@ -22,8 +22,8 @@ Stadium::Stadium(int columns, int rows,
     }
 }
 
-Field Stadium::getField(int column, int row) {
-    return fields[column * rows + row];
+Field Stadium::getField(int id) {
+    return fields[id];
 }
 
 int Stadium::getColumns() {
@@ -40,14 +40,12 @@ int Stadium::getRows() {
  * the tournament ends.
  */
 void Stadium::initStadium() {
-    for (int i = 0; i < this->getColumns(); i++) {
-        for (int j = 0; j < this->getRows(); j++) {
-            Field field = this->getField(i, j);
-            int pid = fork();
-            if (pid == 0) {
-                field.readyForGames();
-                exit(0);
-            }
+    for (int i = 0; i < this->getColumns() * this->getRows(); i++) {
+        Field field = this->getField(i);
+        int pid = fork();
+        if (pid == 0) {
+            field.readyForGames();
+            exit(0);
         }
     }
 }

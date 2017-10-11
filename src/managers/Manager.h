@@ -7,6 +7,7 @@
 #include "../../IPCClasses/fifo/FifoWrite.h"
 #include "../player/Player.h"
 #include "../../IPCClasses/VectorCompartido.h"
+#include "../config/Config.h"
 
 using namespace std;
 
@@ -42,21 +43,16 @@ private:
     unsigned int stadiumSize;
     unsigned int totalGames;
     unsigned int playersInGame = 0;
-    // TODO: initilize this with the size of the vector of all the players same time as shared mem
     unsigned long totalPlayers;
-    // TODO: all pids, playersIdFifoMap will have one of this per player
+    // TODO: all ids, playersIdFifoMap will have one of this per player
     map<int, FifoWrite> playersIdFifoMap;
-    // TODO: initialize this map with the pids of the fields associated with an index from 0 to colums*rows
-    map<int, int> fieldPidNumberMap;
     vector<TeamsMatch> teamsOnFields;
     vector<Team> waitingTeams;
     vector<int> waitingPlayers;
-    // TODO: initialize this map with the ids of the players as keys an a vector of the players
-    // ids (including them for simplicity).
     map<int, vector<int>> playersPossiblePartners;
     vector<bool> freeFields;
     FifoRead *receiveTaskFifo;
-    int rows, columns;
+    unsigned int rows, columns;
 
     void findPartner(int playerPid);
 
@@ -68,7 +64,7 @@ private:
 
     void saveResult(int fieldPid, int resultLocal, int resultVisitant);
 
-    void sendPlayersToField(TeamsMatch teamsMatch, int column, int row);
+    void sendPlayersToField(TeamsMatch teamsMatch, int fieldId);
 
     void sendMessageToPlayer(int playerId, OrgPlayerResponse orgPlayerResponse);
 
@@ -88,8 +84,8 @@ private:
 
     bool playerPlayAllGames(int playerId);
 public:
-    Manager(unsigned int rows, unsigned int columns, unsigned int stadiumSize, unsigned int totalGames,
-            VectorCompartido<int> *pidsTable, VectorCompartido<int> *pointsTable, LockFile *lockForSharedVectors);
+    Manager(TournamentParams tournamentParams, VectorCompartido<int> *idsTable, VectorCompartido<int> *pointsTable,
+            LockFile *lockForSharedVectors);
 
     void initManager();
 };

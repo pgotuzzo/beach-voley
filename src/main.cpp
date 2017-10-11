@@ -105,11 +105,7 @@ void playTournament(Config config) {
     VectorCompartido<int> *pointsTable = ResourceHandler::getInstance()->getVectorCompartido(SHARED_MEMORY_POINTS_VECTOR);
     LockFile lockForSharedVectors(LOCK_FILE_SHARED_VECTORS);
     // Manager
-    Manager manager{static_cast<unsigned int>(config.tournamentParams.rows),
-                    static_cast<unsigned int>(config.tournamentParams.columns),
-                    static_cast<unsigned int>(config.tournamentParams.capacity),
-                    static_cast<unsigned int>(config.tournamentParams.matches),
-                    idsTable, pointsTable, &lockForSharedVectors};
+    Manager manager{config.tournamentParams, idsTable, pointsTable, &lockForSharedVectors};
     manager.initManager();
     TournamentBoard tournamentBoard{idsTable, pointsTable, &lockForSharedVectors};
 

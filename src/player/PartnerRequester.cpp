@@ -41,7 +41,7 @@ OrgPlayerResponse PartnerRequester::waitResponse() {
         throw runtime_error("PartnerRequester: response couldn't be read! Error Number: " + errno);
     }
 
-    cout << "Player " << playerName << ": received a response: " << buffer.show() << endl;
+    cout << "Player " << playerName << ": received a response: " << endl << buffer.show() << endl;
 
     return buffer;
 }

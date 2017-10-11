@@ -11,13 +11,12 @@ enum PlayerAction {
 };
 
 struct OrgPlayerResponse {
-    int column;
-    int row;
+    int fieldId;
     PlayerAction playerAction;
 
     string show() {
         stringstream message;
-        message << "Field: (" << column << ", " << row << ") " << endl << "Action: " << playerAction;
+        message << "Field: (" << fieldId << ") " << endl << "Action: " << playerAction;
         return message.str();
     }
 
