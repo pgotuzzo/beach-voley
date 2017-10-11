@@ -24,14 +24,14 @@ struct OrgPlayerResponse {
 };
 
 enum TaskType {
-    FIND_PARTNER, MATCH_CANCELLED, MATCH_RESULT
+    FIND_PARTNER, TIDE_CHANGE, MATCH_RESULT
 };
 
 struct TaskRequest {
     int pid;
     int resultLocal;
     int resultVisitant;
-    bool marea;
+    bool tideRise;
     TaskType task;
     string show() {
         return string("pid: ") + to_string(pid) + string(" resultLocal: ") + to_string(resultLocal) + string(" resultVisitant: ") +

@@ -1,12 +1,11 @@
 #include <iostream>
+#include <sys/wait.h>
 #include "config/Config.h"
-#include "../util/StringUtils.h"
-#include "stadium/Stadium.h"
-#include "player/Player.h"
-#include "../IPCClasses/signal/SignalHandler.h"
-#include "../IPCClasses/signal/SIGINT_Handler.h"
 #include "config/Constants.h"
 #include "manager/Manager.h"
+#include "../util/StringUtils.h"
+#include "../IPCClasses/signal/SignalHandler.h"
+#include "../IPCClasses/signal/SIGINT_Handler.h"
 
 void playTournament(Config config);
 
@@ -101,7 +100,10 @@ void playTournament(Config config) {
     stadium.initStadium();
 
     // Manager
-    Manager manager;
+    Manager manager{static_cast<unsigned int>(config.tournamentParams.rows),
+                    static_cast<unsigned int>(config.tournamentParams.columns),
+                    static_cast<unsigned int>(config.tournamentParams.capacity),
+                    static_cast<unsigned int>(config.tournamentParams.matches)};
     manager.initManager();
 
     // Players

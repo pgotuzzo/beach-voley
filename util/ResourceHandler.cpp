@@ -1,5 +1,6 @@
 #include <sstream>
 #include <iostream>
+#include <cstring>
 #include "ResourceHandler.h"
 
 // TODO - Move to a FileUtils class

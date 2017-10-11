@@ -5,19 +5,19 @@
 class TideMonitor {
 private:
     enum TideChange {
-        RISE_UP, FALL_DOWN, DONT_CHANGE
+        RISE, FALL, DONT_CHANGE
     };
 
     const int checkTideMinSeconds;
     const int checkTideMaxSeconds;
-    const float riseUpTideProb;
-    const float fallDownTideProb;
+    const float riseTideProb;
+    const float fallTideProb;
 
     TideChange simulateTide();
 
 public:
-    TideMonitor(int checkTideMaxSeconds, int checkTideMinSeconds, float fallDownTideProb,
-                float riseUpTideProb);
+    TideMonitor(int checkTideMaxSeconds, int checkTideMinSeconds, float fallTideProb,
+                float riseTideProb);
 
 
 };
