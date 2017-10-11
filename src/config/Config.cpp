@@ -60,7 +60,12 @@ bool validateOption(const Option &option) {
                option.name == MAPPER_OPT_MATCHES_COUNT ||
                option.name == MAPPER_OPT_CAPACITY) {
         try {
-            stoi(option.params.front());
+            //if the input has -k -5 then then option.params.front() throws Segmentation fault
+            if(!option.params.empty()) {
+                stoi(option.params.front());
+            } else {
+                return false;
+            }
         } catch (exception &e) {
             return false;
         }
@@ -142,6 +147,17 @@ Mode parseMode(const string &name) throw(ParseException) {
     } else {
         throw ParseException("Parsing error: " + name + " it is NOT a valid Mode!");
     }
+}
+
+/**
+ *
+ * */
+void validConfig(Config config) throw(InvalidConfigException) {
+
+    if (config.tournamentParams.matches > config.tournamentParams.players.size()) {
+        throw InvalidConfigException("Matches grater than players size.");
+    }
+
 }
 
 Config parseConfig(vector<string> arguments) throw(ParseException) {

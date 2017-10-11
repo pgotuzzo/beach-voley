@@ -45,12 +45,17 @@ void Player::play() {
     }
     log("Saliendo del torneo...");
 }
-
+/**
+ * Player make the request to the Manager over fifo FIFO_FILE_MANAGER_RECEIVE_TASK
+ * and waits for the response Manager in the other Fifo FIFO_FILE_PARTNER_RESPONSE + getpid()
+ * */
 void Player::partnerRequest() {
     requester->request();
     response = requester->waitResponse();
 }
-
+/**
+ * Enter in to the Field and .
+ * */
 void Player::goToPlayGame() {
     SemaforoInfo semInfo = getSemaforoInfoEntry();
     string aux = "Yendo a la cancha: " + to_string(semInfo.id);
@@ -59,6 +64,9 @@ void Player::goToPlayGame() {
     log("Adentro de la cancha");
 }
 
+/**
+ * Leaves the field when the Field release the semaphore
+ * */
 void Player::leaveField() {
     SemaforoInfo semInfo = getSemaforoInfoExit();
     semInfo.s->p(semInfo.id);

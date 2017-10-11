@@ -127,6 +127,7 @@ void playTournament(Config config) {
 
 int main(int argc, char *argv[]) {
     Config config = parseArguments(argc, argv);
+    validConfig(config);
 
     if (config.mode == MANUAL) {
         showHelp();
