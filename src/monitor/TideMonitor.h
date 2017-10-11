@@ -2,6 +2,10 @@
 #define BEACH_VOLEY_MONITORMAREA_H
 
 
+#include <vector>
+
+using namespace std;
+
 class TideMonitor {
 private:
     enum TideChange {
@@ -10,16 +14,20 @@ private:
 
     const int checkTideMinSeconds;
     const int checkTideMaxSeconds;
+    unsigned long totalColumns;
     const float riseTideProb;
     const float fallTideProb;
+    // TODO: Initialize in main
+    vector<vector<int>> columnFieldsPids;
+    int tideStatus = -1;
 
     TideChange simulateTide();
 
 public:
     TideMonitor(int checkTideMaxSeconds, int checkTideMinSeconds, float fallTideProb,
-                float riseTideProb);
+                float riseTideProb, vector<vector<int>> columnFieldsPids);
 
-
+    void TideMonitor::startMonitoring();
 };
 
 

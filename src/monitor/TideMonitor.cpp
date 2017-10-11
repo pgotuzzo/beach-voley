@@ -1,6 +1,11 @@
 #include <unistd.h>
+#include <signal.h>
+
+#include <utility>
 #include "TideMonitor.h"
 #include "../../util/RandomNumber.h"
+
+using namespace std;
 
 /**
  * Tide monitor constructor initialize the attributes.
@@ -11,10 +16,10 @@
  * @param riseTideProb Probability that the tides rise.
  */
 TideMonitor::TideMonitor(const int checkTideMaxSeconds, const int checkTideMinSeconds, const float fallTideProb,
-                         const float riseTideProb)
+                         const float riseTideProb, vector<vector<int>> columnFieldsPids)
         : checkTideMaxSeconds(checkTideMaxSeconds), checkTideMinSeconds(checkTideMinSeconds),
-          fallTideProb(fallTideProb),
-          riseTideProb(riseTideProb) {
+          fallTideProb(fallTideProb), riseTideProb(riseTideProb), columnFieldsPids(move(columnFieldsPids)),
+          totalColumns(columnFieldsPids.size()) {
 }
 
 /**
@@ -31,4 +36,31 @@ TideMonitor::TideChange TideMonitor::simulateTide() {
         return FALL;
     }
     return DONT_CHANGE;
+}
+
+/**
+ * Start checking for tide changes an send signals to the fields
+ * if the tides rise or fall.
+ */
+void TideMonitor::startMonitoring() {
+    bool tournamentEnded = false;
+    // TODO: This must be checked in a shared memory
+    while (!tournamentEnded) {
+        TideChange tideChange = simulateTide();
+        if (tideChange == RISE) {
+            if (tideStatus + 1 < totalColumns - 1) {
+                tideStatus++;
+                for (auto fieldPid: columnFieldsPids[tideStatus]) {
+                    kill(fieldPid, SIGINT);
+                }
+            }
+        } else if (tideChange == FALL) {
+            if (tideStatus >= 0) {
+                for (auto fieldPid: columnFieldsPids[tideStatus]) {
+                    kill(fieldPid, SIGINT);
+                }
+                tideStatus--;
+            }
+        }
+    }
 }
