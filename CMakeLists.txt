@@ -31,7 +31,8 @@ set(PLAYER src/player/Player.cpp src/player/Player.h ${FIFO}
         src/player/PartnerRequester.h src/player/PartnerRequester.cpp)
 set(FIELD src/stadium/Field.cpp src/stadium/Field.h ${SEMAFORO} ${LOGGER} ${RANDOM_NUMBER})
 set(STADIUM src/stadium/Stadium.cpp src/stadium/Stadium.h)
-set(MANAGER  src/manager/Manager.cpp src/manager/Manager.h ${RESOURCE_HANDLER})
+set(MANAGER src/managers/Manager.cpp src/managers/Manager.h ${RESOURCE_HANDLER})
+set(BOARD_TABLE src/managers/TournamentBoard.cpp src/managers/TournamentBoard.hpp)
 
 # Configs
 set(CONFIG src/config/Config.cpp src/config/Config.h ${PARSE_EXCEPTION})
