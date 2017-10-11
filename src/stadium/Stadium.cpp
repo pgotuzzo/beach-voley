@@ -9,8 +9,8 @@ Stadium::Stadium(int columns, int rows,
     this->rows = rows;
     this->fields = vector<Field>(static_cast<unsigned long>(rows * columns));
 
-    Semaforo *entrance = ResourceHandler::getInstance()->createSemaforo(SEM_FILE_FIELD_ENTRANCE, 0, columns * rows);
-    Semaforo *exit = ResourceHandler::getInstance()->createSemaforo(SEM_FILE_FIELD_EXIT, 0, columns * rows);
+    Semaforo *entrance = ResourceHandler::getInstance()->getSemaforo(SEM_FILE_FIELD_ENTRANCE);
+    Semaforo *exit = ResourceHandler::getInstance()->getSemaforo(SEM_FILE_FIELD_EXIT);
     for (int i = 0; i < columns; i++) {
         for (int j = 0; j < rows; j++) {
             stringstream name;

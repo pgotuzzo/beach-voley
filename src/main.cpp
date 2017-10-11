@@ -15,7 +15,6 @@ using namespace std;
 bool initPlayers(Player player) {
     int pid = fork();
     if (pid == 0) {
-        player.init();
         player.play();
         exit(0);
     }
@@ -29,7 +28,7 @@ bool initPlayers(Player player) {
  * @param argv the array with the arguments
  * @return a config for the simulation.
  */
-Config parseArguments(int argc, char *argv[]){
+Config parseArguments(int argc, char *argv[]) {
     // Creates vector of parameters removing the first one because it is the program's name
     vector<string> vParams;
     for (int i = 1; i < argc; i++) {
@@ -96,8 +95,10 @@ void playTournament(Config config) {
     int maxGameDurationInMili = 500;
 
     // Stadium = [C X R] Fields
-    Stadium stadium(config.tournamentParams.columns, config.tournamentParams.rows,
-                    1000 * minGameDurationInMili, 1000 * maxGameDurationInMili);
+    Stadium stadium(config.tournamentParams.columns,
+                    config.tournamentParams.rows,
+                    1000 * minGameDurationInMili,
+                    1000 * maxGameDurationInMili);
     stadium.initStadium();
 
     VectorCompartido<int> pidsTable = ResourceHandler::getInstance()->createVectorCompartido(
@@ -115,11 +116,11 @@ void playTournament(Config config) {
     TournamentBoard tournamentBoard{&pidsTable, &pointsTable, &lockForSharedVectors};
 
     // Players
-    Semaforo *stadiumTurnstile = ResourceHandler::getInstance()->createSemaforo(
-            SEM_TURNSTILE, 0, config.tournamentParams.capacity
-    );
-    for (const auto &name : config.tournamentParams.players) {
-        Player player(name, &stadium, stadiumTurnstile);
+    Semaforo *stadiumTurnstile = ResourceHandler::getInstance()->getSemaforo(SEM_TURNSTILE);
+    cout << "INITIAL STATUS: " << stadiumTurnstile->getStatus(0);
+    for (int i = 0; i < config.tournamentParams.players.size(); i++) {
+        string name = config.tournamentParams.players[i];
+        Player player(i, name, &stadium, stadiumTurnstile);
         initPlayers(player);
     }
 
@@ -134,6 +135,7 @@ int main(int argc, char *argv[]) {
         exit(0);
     } else if (config.mode == TOURNAMENT) {
         printConf(config);
+        ResourceHandler::init(config);
         playTournament(config);
     }
 

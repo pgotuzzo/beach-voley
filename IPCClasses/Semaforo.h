@@ -10,19 +10,21 @@ class Semaforo {
 
 private:
     int id;
-    int valorInicial;
+    ushort valorInicial;
+    int count;
 
     int inicializar() const;
 
 public:
     Semaforo();
 
-    Semaforo(const std::string &nombre, int valorInicial, int cantidadSemaforos);
+    Semaforo(const std::string &nombre, ushort valorInicial, int cantidadSemaforos);
 
     int p(unsigned short numeroSemaforo) const; // decrementa
     int v(unsigned short numeroSemaforo) const; // incrementa
     int ultimoProceso() const; // pid del ultimo proceso que uso el sem
     void eliminar() const;
+    int getStatus(unsigned short numeroSemaforo) const;
 };
 
 struct SemaforoInfo {

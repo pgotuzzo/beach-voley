@@ -4,21 +4,14 @@
 #include "../../util/ResourceHandler.h"
 
 
-PartnerRequester::PartnerRequester(const string &playerName) {
-    this->playerName = playerName;
-}
-
-void PartnerRequester::init() {
-    this->fifoRead = ResourceHandler::getInstance()->createFifoRead(FIFO_FILE_PARTNER_RESPONSE + to_string(getpid()));
-    this->fifoWrite = ResourceHandler::getInstance()->createFifoWrite(FIFO_FILE_MANAGER_RECEIVE_TASK);
-    this->lockFile = new LockFile(LOCK_FILE_PARTNER_REQUEST);
+PartnerRequester::PartnerRequester(int playerId, const string &playerName) :
+        playerId(playerId),
+        playerName(playerName) {
+    this->fifoRead = ResourceHandler::getInstance()->getFifoRead(FIFO_FILE_PARTNER_RESPONSE + to_string(playerId));
+    this->fifoWrite = ResourceHandler::getInstance()->getFifoWrite(FIFO_FILE_MANAGER_RECEIVE_TASK);
 }
 
 void PartnerRequester::request() {
-    int res = lockFile->tomarLock();
-    if (res < 0) {
-        throw runtime_error("Partner request lock can't be opened!");
-    }
     int fd = fifoWrite->openFifo();
     if (fd < 0) {
         throw runtime_error(
@@ -26,13 +19,12 @@ void PartnerRequester::request() {
                 errno);
     }
 
-    TaskRequest taskRequest = {getpid(), 0, 0, false, FIND_PARTNER};
+    TaskRequest taskRequest = {playerId, 0, 0, false, FIND_PARTNER};
     ssize_t out = fifoWrite->writeFifo(&taskRequest, sizeof(TaskRequest));
     if (out < 0) {
         throw runtime_error("Partner request fifo can't be write!");
     }
     cout << "Player " << playerName << ": sent a find partner request" << endl;
-    lockFile->liberarLock();
 }
 
 OrgPlayerResponse PartnerRequester::waitResponse() {

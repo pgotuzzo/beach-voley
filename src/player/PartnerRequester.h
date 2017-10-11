@@ -11,15 +11,13 @@ using namespace std;
 
 class PartnerRequester {
 private:
+    int playerId;
     string playerName;
     FifoRead *fifoRead;
     FifoWrite *fifoWrite;
-    LockFile *lockFile;
 
 public:
-    explicit PartnerRequester(const string &playerName);
-
-    void init();
+    explicit PartnerRequester(int playerId, const string &playerName);
 
     void request();
 

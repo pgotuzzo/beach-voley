@@ -15,6 +15,7 @@ using namespace std;
 class Player {
 
 private:
+    int id;
     string name;
     Stadium *stadium;
     const Semaforo *stadiumTurnstile;
@@ -40,9 +41,7 @@ private:
     SemaforoInfo getSemaforoInfoExit();
 
 public:
-    Player(const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile);
-
-    void init();
+    Player(int id, const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile);
 
     void play();
 

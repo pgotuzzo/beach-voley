@@ -3,12 +3,19 @@
 
 Semaforo::Semaforo() = default;
 
-Semaforo::Semaforo(const std::string &nombre, const int valorInicial, const int cantidadSemaforos) : valorInicial(
-        valorInicial) {
+Semaforo::Semaforo(const std::string &nombre, const ushort valorInicial, const int cantidadSemaforos) :
+        valorInicial(valorInicial),
+        count(cantidadSemaforos) {
     key_t clave = ftok(nombre.c_str(), 'a');
+    if (clave == -1) {
+        throw std::runtime_error("Couldn't create semapore: " + nombre);
+    }
     this->id = semget(clave, cantidadSemaforos, 0666 | IPC_CREAT);
 
-    this->inicializar();
+    int res = this->inicializar();
+    if (res == -1) {
+        throw std::runtime_error("Couldn't initialize semaphore: " + nombre);
+    }
 }
 
 int Semaforo::inicializar() const {
@@ -20,7 +27,11 @@ int Semaforo::inicializar() const {
     };
 
     semnum init{};
-    init.val = this->valorInicial;
+    init.array = (ushort *) malloc(sizeof(ushort) * count);
+    for (int i = 0; i < count; i++) {
+        init.array[i] = valorInicial;
+    }
+
     int resultado = semctl(this->id, 0, SETALL, init);
     return resultado;
 }
@@ -55,4 +66,8 @@ int Semaforo::v(const unsigned short numeroSemaforo) const {
 
 void Semaforo::eliminar() const {
     semctl(this->id, 0, IPC_RMID);
+}
+
+int Semaforo::getStatus(const unsigned short numeroSemaforo) const {
+    return semctl(this->id, 0, GETVAL, 0);
 }

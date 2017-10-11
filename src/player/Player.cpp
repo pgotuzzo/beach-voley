@@ -4,15 +4,12 @@
 
 using namespace std;
 
-Player::Player(const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile) : stadiumTurnstile(
-        stadiumTurnstile) {
-    this->name = name;
-    this->stadium = stadium;
-    this->requester = new PartnerRequester(name);
-}
-
-void Player::init() {
-    this->requester->init();
+Player::Player(int id, const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile) :
+        id(id),
+        name(name),
+        stadium(stadium),
+        stadiumTurnstile(stadiumTurnstile) {
+    this->requester = new PartnerRequester(id, name);
 }
 
 /**
@@ -25,7 +22,7 @@ void Player::play() {
     bool leaveTournament = false;
     while (!leaveTournament) {
         log("Entrando al predio...");
-//        enterStadium();
+        enterStadium();
         log("Buscando compañero...");
         partnerRequest();
         while (response.playerAction != ENUM_LEAVE_TOURNAMENT or
