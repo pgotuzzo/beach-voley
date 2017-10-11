@@ -32,14 +32,14 @@ set(PLAYER src/player/Player.cpp src/player/Player.h ${FIFO}
 set(FIELD src/stadium/Field.cpp src/stadium/Field.h ${SEMAFORO} ${LOGGER} ${RANDOM_NUMBER})
 set(STADIUM src/stadium/Stadium.cpp src/stadium/Stadium.h)
 set(MANAGER src/managers/Manager.cpp src/managers/Manager.h ${RESOURCE_HANDLER})
-set(BOARD_TABLE src/managers/TournamentBoard.cpp src/managers/TournamentBoard.hpp)
+set(TOURNAMENT_BOARD src/managers/TournamentBoard.cpp src/managers/TournamentBoard.hpp)
 
 # Configs
 set(CONFIG src/config/Config.cpp src/config/Config.h ${PARSE_EXCEPTION})
 
 # Main
 set(SOURCE_FILES src/. src/main.cpp src/config/Constants.h ${CONFIG}
-        ${FIELD} ${PLAYER} ${STADIUM} ${MANAGER}
+        ${FIELD} ${PLAYER} ${STADIUM} ${MANAGER} ${TOURNAMENT_BOARD}
         ${STRING_UTILS} ${RESOURCE_HANDLER} ${LOCK_FILE}
         ${SIGNAL_HANDLER} ${SIGNAL_HANDLER})
 add_executable(beach-voley ${SOURCE_FILES})

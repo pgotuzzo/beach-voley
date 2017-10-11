@@ -60,6 +60,13 @@ FifoWrite *ResourceHandler::createFifoWrite(string path) {
     return &mFifoWrite[path];
 }
 
+VectorCompartido<int> ResourceHandler::createVectorCompartido(string path, char aChar, size_t vectorSize) {
+    createFileIfNotExist(path);
+    VectorCompartido<int> vectorCompartido;
+    vectorCompartido.crear(path, aChar, vectorSize);
+    return vectorCompartido;
+}
+
 void ResourceHandler::freeResources() {
     cout << endl << "Liberando recursos" << endl;
     for (auto item : mSemaforo) {

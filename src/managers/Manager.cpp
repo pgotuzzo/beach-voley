@@ -8,8 +8,11 @@
 
 const char *TAG = "Manager: ";
 
-Manager::Manager(unsigned int rows, unsigned int columns, unsigned int stadiumSize, unsigned int totalGames) :
-        stadiumSize(stadiumSize), totalGames(totalGames) {
+Manager::Manager(unsigned int rows, unsigned int columns, unsigned int stadiumSize, unsigned int totalGames,
+                 VectorCompartido<int> *pidsTable, VectorCompartido<int> *pointsTable,
+                 LockFile *lockForSharedVectors) :
+        stadiumSize(stadiumSize), totalGames(totalGames), pidsTable(pidsTable), pointsTable(pointsTable),
+        lockForSharedVectors(lockForSharedVectors) {
     this->receiveTaskFifo = ResourceHandler::getInstance()->createFifoRead(FIFO_FILE_MANAGER_RECEIVE_TASK);
     this->rows = rows;
     this->columns = columns;
@@ -97,7 +100,8 @@ void Manager::removePlayerFromPossiblePartners(Team team) {
 
 /**
  * Saves the results of the match, and stores the players that played together.
- * Frees the field.
+ * Frees the field. Saves the results of the match in a history and the points
+ * of the players in the shared memory.
  *
  * @param fieldPid the pid of the field.
  * @param resultLocal the number of sets won by the local team.
@@ -110,7 +114,34 @@ void Manager::saveResult(int fieldPid, int resultLocal, int resultVisitant) {
     removePlayerFromPossiblePartners(teamsMatch.localTeam);
     removePlayerFromPossiblePartners(teamsMatch.visitTeam);
     playersInGame = playersInGame - 4;
-    // TODO: update the points of the players in the shared memory
+
+    auto idxLocalPlayer1 = static_cast<unsigned int>(pidToVectorIndexMap[teamsMatch.localTeam.pidPlayer1]);
+    auto idxLocalPlayer2 = static_cast<unsigned int>(pidToVectorIndexMap[teamsMatch.localTeam.pidPlayer2]);
+    auto idxVisitPlayer1 = static_cast<unsigned int>(pidToVectorIndexMap[teamsMatch.visitTeam.pidPlayer1]);
+    auto idxVisitPlayer2 = static_cast<unsigned int>(pidToVectorIndexMap[teamsMatch.visitTeam.pidPlayer2]);
+
+    lockForSharedVectors->tomarLock();
+    if (resultLocal == 3) {
+        if (resultVisitant == 2) {
+            pointsTable->escribir(pointsTable->leer(idxLocalPlayer1)+2, idxLocalPlayer1);
+            pointsTable->escribir(pointsTable->leer(idxLocalPlayer2)+2, idxLocalPlayer2);
+            pointsTable->escribir(pointsTable->leer(idxVisitPlayer1)+1, idxVisitPlayer1);
+            pointsTable->escribir(pointsTable->leer(idxVisitPlayer2)+1, idxVisitPlayer2);
+        } else {
+            pointsTable->escribir(pointsTable->leer(idxLocalPlayer1)+3, idxLocalPlayer1);
+            pointsTable->escribir(pointsTable->leer(idxLocalPlayer2)+3, idxLocalPlayer2);
+        }
+    } else if (resultLocal == 2) {
+        pointsTable->escribir(pointsTable->leer(idxLocalPlayer1)+1, idxLocalPlayer1);
+        pointsTable->escribir(pointsTable->leer(idxLocalPlayer2)+1, idxLocalPlayer2);
+        pointsTable->escribir(pointsTable->leer(idxVisitPlayer1)+2, idxVisitPlayer1);
+        pointsTable->escribir(pointsTable->leer(idxVisitPlayer2)+2, idxVisitPlayer2);
+    } else {
+        pointsTable->escribir(pointsTable->leer(idxVisitPlayer1)+3, idxVisitPlayer1);
+        pointsTable->escribir(pointsTable->leer(idxVisitPlayer2)+3, idxVisitPlayer2);
+    }
+    lockForSharedVectors->liberarLock();
+    matchHistory.push_back(MatchResult{teamsMatch, resultLocal, resultVisitant});
 }
 
 /**

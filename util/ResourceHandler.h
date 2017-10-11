@@ -5,6 +5,7 @@
 #include "../IPCClasses/Semaforo.h"
 #include "../IPCClasses/fifo/FifoRead.h"
 #include "../IPCClasses/fifo/FifoWrite.h"
+#include "../IPCClasses/VectorCompartido.h"
 
 using namespace std;
 
@@ -26,6 +27,8 @@ public:
     FifoRead *createFifoRead(string path);
 
     FifoWrite *createFifoWrite(string path);
+
+    VectorCompartido<int> createVectorCompartido(string path, char aChar, size_t vectorSize);
 
     void freeResources();
 };

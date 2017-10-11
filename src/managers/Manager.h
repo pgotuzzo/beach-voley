@@ -6,6 +6,7 @@
 #include "../../IPCClasses/fifo/FifoRead.h"
 #include "../../IPCClasses/fifo/FifoWrite.h"
 #include "../player/Player.h"
+#include "../../IPCClasses/VectorCompartido.h"
 
 using namespace std;
 
@@ -25,12 +26,25 @@ private:
         Team visitTeam;
     };
 
+    struct MatchResult{
+        TeamsMatch teamsInMatch;
+        int localScore;
+        int visitScore;
+    };
+
+    vector<MatchResult> matchHistory;
+    // TODO: initilize this with the pid of all players same time as playersPidFifoMap
+    VectorCompartido<int> *pidsTable;
+    map<int, int> pidToVectorIndexMap;
+    VectorCompartido<int> *pointsTable;
+    LockFile *lockForSharedVectors;
     int count = 0;
     unsigned int stadiumSize;
     unsigned int totalGames;
     unsigned int playersInGame = 0;
-    // TODO: initilize this with the size of the vector of all the players
+    // TODO: initilize this with the size of the vector of all the players same time as shared mem
     unsigned long totalPlayers;
+    // TODO: all pids, playersPidFifoMap will have one of this per player
     map<int, FifoWrite> playersPidFifoMap;
     // TODO: initialize this map with the pids of the fields associated with an index from 0 to colums*rows
     map<int, int> fieldPidNumberMap;
@@ -74,7 +88,8 @@ private:
 
     bool playerPlayAllGames(int playerPid);
 public:
-    Manager(unsigned int rows, unsigned int columns, unsigned int stadiumSize, unsigned int totalGames);
+    Manager(unsigned int rows, unsigned int columns, unsigned int stadiumSize, unsigned int totalGames,
+            VectorCompartido<int> *pidsTable, VectorCompartido<int> *pointsTable, LockFile *lockForSharedVectors);
 
     void initManager();
 };

@@ -2,10 +2,11 @@
 #include <sys/wait.h>
 #include "config/Config.h"
 #include "config/Constants.h"
-#include "manager/Manager.h"
+#include "managers/Manager.h"
 #include "../util/StringUtils.h"
 #include "../IPCClasses/signal/SignalHandler.h"
 #include "../IPCClasses/signal/SIGINT_Handler.h"
+#include "managers/TournamentBoard.hpp"
 
 void playTournament(Config config);
 
@@ -99,12 +100,19 @@ void playTournament(Config config) {
                     1000 * minGameDurationInMili, 1000 * maxGameDurationInMili);
     stadium.initStadium();
 
+    VectorCompartido<int> pidsTable = ResourceHandler::getInstance()->createVectorCompartido(
+            SHARED_MEMORY_PIDS_VECTOR, 'a', config.tournamentParams.players.size());
+    VectorCompartido<int> pointsTable = ResourceHandler::getInstance()->createVectorCompartido(
+            SHARED_MEMORY_POINTS_VECTOR, 'a', config.tournamentParams.players.size());
+    LockFile lockForSharedVectors(LOCK_FILE_SHARED_VECTORS);
     // Manager
     Manager manager{static_cast<unsigned int>(config.tournamentParams.rows),
                     static_cast<unsigned int>(config.tournamentParams.columns),
                     static_cast<unsigned int>(config.tournamentParams.capacity),
-                    static_cast<unsigned int>(config.tournamentParams.matches)};
+                    static_cast<unsigned int>(config.tournamentParams.matches),
+                    &pidsTable, &pointsTable, &lockForSharedVectors};
     manager.initManager();
+    TournamentBoard tournamentBoard{&pidsTable, &pointsTable, &lockForSharedVectors};
 
     // Players
     Semaforo *stadiumTurnstile = ResourceHandler::getInstance()->createSemaforo(
