@@ -12,7 +12,7 @@ Manager::Manager(TournamentParams tournamentParams, VectorCompartido<int> *idsTa
                  LockFile *lockForSharedVectors) :
         stadiumSize(tournamentParams.capacity),
         totalGames(tournamentParams.matches),
-        totalPlayers(tournamentParams.players.size()),
+        totalPlayersInTournament(tournamentParams.players.size()),
         rows(tournamentParams.rows),
         columns(tournamentParams.columns),
         idsTable(idsTable),
@@ -24,14 +24,7 @@ Manager::Manager(TournamentParams tournamentParams, VectorCompartido<int> *idsTa
 
     int keyPlayerId;
     vector<int> valuesPlayers;
-    for (int i = 0; i < totalPlayers; i++) {
-        keyPlayerId = i;
-        valuesPlayers.clear();
-        for (int j = 0; j < totalPlayers; j++) {
-            if (i != j) {
-                valuesPlayers.push_back(j);
-            }
-        }
+    for (int i = 0; i < totalPlayersInTournament; i++) {
         this->playersPossiblePartners.emplace(keyPlayerId, valuesPlayers);
     }
 
@@ -105,11 +98,24 @@ void Manager::updateFieldList(int fieldId, bool tideRise) {
 }
 
 /**
+ * Removes a player from the possible partner of other player.
+ *
+ * @param targetPlayer the player from whom the possible partner will be removed.
+ * @param playerToRemove the player to remove from the other player partner.
+ */
+void Manager::removePlayerFromPossiblePartner(int targetPlayer, int playerToRemove) {
+    playersPossiblePartners[targetPlayer].erase(find(playersPossiblePartners[targetPlayer].begin(),
+                                                       playersPossiblePartners[targetPlayer].end(),
+                                                     playerToRemove));
+}
+
+
+/**
  * Removes the players of a team from their respective possible partner lists.
  *
  * @param team the team to erase their partners.
  */
-void Manager::removePlayerFromPossiblePartners(Team team) {
+void Manager::removePlayersFromPossiblePartners(Team team) {
     cout << "Team: player " << team.idPlayer1 << " - player " << team.idPlayer2 << endl
          << "Player " << team.idPlayer1 << " available partners: " << endl;
     for (int p : playersPossiblePartners[team.idPlayer1]) {
@@ -120,13 +126,8 @@ void Manager::removePlayerFromPossiblePartners(Team team) {
     for (int p : playersPossiblePartners[team.idPlayer2]) {
         cout << " Player " << p << endl;
     }
-    playersPossiblePartners[team.idPlayer1].erase(find(playersPossiblePartners[team.idPlayer1].begin(),
-                                                       playersPossiblePartners[team.idPlayer1].end(),
-                                                       team.idPlayer2));
-
-    playersPossiblePartners[team.idPlayer2].erase(find(playersPossiblePartners[team.idPlayer2].begin(),
-                                                       playersPossiblePartners[team.idPlayer2].end(),
-                                                       team.idPlayer1));
+    removePlayerFromPossiblePartner(team.idPlayer1, team.idPlayer2);
+    removePlayerFromPossiblePartner(team.idPlayer2, team.idPlayer1);
 }
 
 /**
@@ -141,8 +142,8 @@ void Manager::removePlayerFromPossiblePartners(Team team) {
 void Manager::saveResult(int fieldId, int resultLocal, int resultVisitant) {
     TeamsMatch teamsMatch = teamsOnFields[fieldId];
     freeFields[fieldId] = true;
-    removePlayerFromPossiblePartners(teamsMatch.localTeam);
-    removePlayerFromPossiblePartners(teamsMatch.visitTeam);
+    removePlayersFromPossiblePartners(teamsMatch.localTeam);
+    removePlayersFromPossiblePartners(teamsMatch.visitTeam);
     playersInGame = playersInGame - 4;
 
     auto idxLocalPlayer1 = static_cast<unsigned int>(idToVectorIndexMap[teamsMatch.localTeam.idPlayer1]);
@@ -348,11 +349,14 @@ void Manager::formTeamsAndAssignFields() {
  * @param playerId the id of the player.
  */
 void Manager::findPartner(int playerId) {
-    if (playerPlayAllGames(playerId)) {
+    if (playerPlayAllGamesOrHasNoPossiblePartner(playerId)) {
         // LEAVE TOURNAMENT - All matches played
+        // LEAVE TOURNAMENT - Or no more players to play
         cout << TAG << "PLayer " << playerId
              << "already played all the matches allowed. Dismissing him from tournament!" << endl;
         sendMessageToPlayer(playerId, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
+        removePlayerFromAllPossiblePartners(playerId);
+        totalPlayersInTournament--;
     } else {
         // FIND PARTNER - Matches to play
         Team localTeam = Team{playerId, 0};
@@ -390,10 +394,29 @@ void Manager::findPartner(int playerId) {
  * @param playerId the player to check.
  * @return true if the player played all his games.
  */
-bool Manager::playerPlayAllGames(int playerId) {
-    return totalPlayers - 1 - playersPossiblePartners[playerId].size() >= totalGames;
+bool Manager::playerPlayAllGamesOrHasNoPossiblePartner(int playerId) {
+    bool playedAllGames = totalPlayersInTournament - 1 - playersPossiblePartners[playerId].size() >= totalGames;
+    // has no possible partner if the only possible partner is himself.
+    bool hasNoPossiblePartner = playersPossiblePartners[playerId].size() == 1;
+    return playedAllGames or hasNoPossiblePartner;
 }
 
+/**
+ * Checks if there are no more players in the tournament so the tournament ends.
+ *
+ * @return true if the tournament ends.
+ */
 bool Manager::checkTournamentEnd() {
-    return count < 100;
+    return totalPlayersInTournament > 0;
+}
+
+/**
+ * Removes the player for all the lists of possible partners.
+ *
+ * @param playerId the player id to be removed.
+ */
+void Manager::removePlayerFromAllPossiblePartners(int playerId) {
+    for (const auto &player: playersPossiblePartners) {
+        removePlayerFromPossiblePartner(player.first, playerId);
+    }
 }

@@ -43,7 +43,7 @@ private:
     unsigned int stadiumSize;
     unsigned int totalGames;
     unsigned int playersInGame = 0;
-    unsigned long totalPlayers;
+    unsigned long totalPlayersInTournament;
     // TODO: all ids, playersIdFifoMap will have one of this per player
     map<int, FifoWrite> playersIdFifoMap;
     vector<TeamsMatch> teamsOnFields;
@@ -80,14 +80,18 @@ private:
 
     void formTeamsAndAssignFields();
 
-    void removePlayerFromPossiblePartners(Team team);
+    void removePlayersFromPossiblePartners(Team team);
 
-    bool playerPlayAllGames(int playerId);
+    bool playerPlayAllGamesOrHasNoPossiblePartner(int playerId);
+
+    void removePlayerFromPossiblePartner(int targetPlayer, int playerToRemove);
 public:
     Manager(TournamentParams tournamentParams, VectorCompartido<int> *idsTable, VectorCompartido<int> *pointsTable,
             LockFile *lockForSharedVectors);
 
     void initManager();
+
+    void removePlayerFromAllPossiblePartners(int playerId);
 };
 
 
