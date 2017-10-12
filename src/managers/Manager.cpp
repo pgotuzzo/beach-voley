@@ -94,9 +94,11 @@ void Manager::updateFieldList(int fieldId, bool tideRise) {
  * @param playerToRemove the player to remove from the other player partner.
  */
 void Manager::removePlayerFromPossiblePartner(int targetPlayer, int playerToRemove) {
-    playersPossiblePartners[targetPlayer].erase(find(playersPossiblePartners[targetPlayer].begin(),
-                                                     playersPossiblePartners[targetPlayer].end(),
-                                                     playerToRemove));
+    auto playerToRemoveReference = find(playersPossiblePartners[targetPlayer].begin(),
+                                        playersPossiblePartners[targetPlayer].end(), playerToRemove);
+    if (playerToRemoveReference != playersPossiblePartners[targetPlayer].end()) {
+        playersPossiblePartners[targetPlayer].erase(playerToRemoveReference);
+    }
 }
 
 
@@ -304,10 +306,13 @@ void Manager::findPartner(int playerId) {
         // LEAVE TOURNAMENT - All matches played
         // LEAVE TOURNAMENT - Or no more players to play
         cout << TAG << "Player " << playerId
-             << "already played all the matches allowed or cant play more. Dismissing him from tournament!" << endl;
+             << " already played all the matches allowed or cant play more. Dismissing him from tournament!" << endl;
         sendMessageToPlayer(playerId, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
+        cout << "1" << endl;
         removePlayerFromAllPossiblePartners(playerId);
+        cout << "2" << endl;
         totalPlayersInTournament--;
+        cout << "him from tournamesafasfasfnt!" << endl;
     } else {
         // FIND PARTNER - Matches to play
         Team localTeam = Team{playerId, 0};
@@ -349,17 +354,8 @@ void Manager::findPartner(int playerId) {
  */
 bool Manager::playerPlayAllGamesOrHasNoPossiblePartner(int playerId) {
     bool playedAllGames = initialPlayersInTournament - 1 - playersPossiblePartners[playerId].size() >= totalGames;
-    if (playedAllGames) {
-        cout << "totalPlayersInTournament" << to_string(initialPlayersInTournament) << endl;
-        cout << "totalGames" << to_string(totalGames) << endl;
-        cout << "playersPossiblePartners[playerId].size()" << to_string(playersPossiblePartners[playerId].size()) << endl;
-    }
     // has no possible partner if the only possible partner is himself.
     bool hasNoPossiblePartner = playersPossiblePartners[playerId].size() == 1;
-    if (hasNoPossiblePartner) {
-
-        cout << "hasNoPossiblePartner" << endl;
-    }
     return playedAllGames or hasNoPossiblePartner;
 }
 
@@ -378,7 +374,7 @@ bool Manager::checkTournamentEnd() {
  * @param playerId the player id to be removed.
  */
 void Manager::removePlayerFromAllPossiblePartners(int playerId) {
-    for (const auto &player: playersPossiblePartners) {
+    for (auto player: playersPossiblePartners) {
         removePlayerFromPossiblePartner(player.first, playerId);
     }
 }
@@ -389,6 +385,7 @@ void Manager::removePlayerFromAllPossiblePartners(int playerId) {
  * @return true if it removes some player.
  */
 bool Manager::removePlayersThatCantPlay() {
+    cout << "Check if waiting players cant play more games." << endl;
     bool playerRemoved = false;
     vector<int> removePlayers;
     for (auto player: waitingPlayers) {
@@ -399,7 +396,7 @@ bool Manager::removePlayersThatCantPlay() {
     }
     for (auto player: removePlayers) {
         cout << TAG << "Player " << player
-             << "already played all the matches allowed or cant play more. Dismissing him from tournament!" << endl;
+             << " already played all the matches allowed or cant play more. Dismissing him from tournament!" << endl;
         sendMessageToPlayer(player, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
         removePlayerFromAllPossiblePartners(player);
         totalPlayersInTournament--;
