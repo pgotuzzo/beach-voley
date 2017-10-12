@@ -79,7 +79,6 @@ void Field::sendResult() {
  */
 void Field::readyForGames() {
     bool tournamentEnded = false;
-    // TODO: This must be checked in a shared memory
     while (!tournamentEnded) {
         waitForPlayers();
         thereArePlayersToRelease = true;

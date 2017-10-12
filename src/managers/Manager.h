@@ -32,7 +32,6 @@ private:
     };
 
     vector<MatchResult> matchHistory;
-    // TODO: initilize this with the id of all players same time as playersIdPipeMap
     VectorCompartido<int> *idsTable;
     map<int, int> idToVectorIndexMap;
     VectorCompartido<int> *pointsTable;
@@ -43,7 +42,6 @@ private:
     unsigned int playersInGame = 0;
     unsigned long totalPlayersInTournament;
     unsigned long initialPlayersInTournament;
-    // TODO: all ids, playersIdPipeMap will have one of this per player
     map<int, Pipe *> playersIdPipeMap;
     vector<TeamsMatch> teamsOnFields;
     vector<Team> waitingTeams;

@@ -46,7 +46,6 @@ TideMonitor::TideChange TideMonitor::simulateTide() {
  * if the tides rise or fall.
  */
 void TideMonitor::startMonitoring() {
-    // TODO: This must be checked in a shared memory
     __pid_t pid = fork();
     if (pid == 0) {
         bool tournamentEnded = false;
