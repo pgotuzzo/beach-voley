@@ -44,10 +44,11 @@ void Manager::initManager() {
  * check if the tournament finishes and reads a new task.
  */
 void Manager::receiveTask() {
-    while (checkTournamentEnd()) {
+    while (checkTournamentEnd() or playersInGame > 0) {
         count++;
         TaskRequest task{};
         cout << TAG << "Trying to read a task" << endl;
+        cout << "Players in tournament " << to_string(totalPlayersInTournament) << endl;
         ssize_t out = receiveTaskPipe->leer(static_cast<void *>(&task), sizeof(TaskRequest));
         cout << TAG << "Read something... :thinking: " << task.show() << " out: " << out << endl;
 
@@ -73,6 +74,8 @@ void Manager::receiveTask() {
         } else {
             cout << strerror(errno)<< endl;
         }
+        removePlayersThatCantPlay();
+        cout << "Players in game " << to_string(playersInGame) << endl;
     }
     cout << "Tournament ended!" << endl;
 }
@@ -308,11 +311,8 @@ void Manager::findPartner(int playerId) {
         cout << TAG << "Player " << playerId
              << " already played all the matches allowed or cant play more. Dismissing him from tournament!" << endl;
         sendMessageToPlayer(playerId, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
-        cout << "1" << endl;
         removePlayerFromAllPossiblePartners(playerId);
-        cout << "2" << endl;
         totalPlayersInTournament--;
-        cout << "him from tournamesafasfasfnt!" << endl;
     } else {
         // FIND PARTNER - Matches to play
         Team localTeam = Team{playerId, 0};
@@ -337,9 +337,7 @@ void Manager::findPartner(int playerId) {
             // PARTNER NOT FOUND - Team ready
             if (stadiumIsFull()) {
                 cout << TAG << "Stadium is full...removing a (random) player!" << endl;
-                if (removePlayersThatCantPlay()) {
-                    removeRandomWaitingPlayer();
-                }
+                removeRandomWaitingPlayer();
             }
             waitingPlayers.push_back(playerId);
         }
@@ -365,7 +363,7 @@ bool Manager::playerPlayAllGamesOrHasNoPossiblePartner(int playerId) {
  * @return true if the tournament doesnt ends yet.
  */
 bool Manager::checkTournamentEnd() {
-    return totalPlayersInTournament > 0;
+    return totalPlayersInTournament > 3;
 }
 
 /**
@@ -400,6 +398,7 @@ bool Manager::removePlayersThatCantPlay() {
         sendMessageToPlayer(player, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
         removePlayerFromAllPossiblePartners(player);
         totalPlayersInTournament--;
+        waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), player));
     }
     return playerRemoved;
 }
