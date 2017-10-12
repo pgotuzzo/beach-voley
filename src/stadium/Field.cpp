@@ -15,7 +15,6 @@ Field::Field(unsigned short id, string name, Semaforo *entrance, Semaforo *exit,
         minGameDurationInMicro(minGameDurationInMicro), maxGameDurationInMicro(maxGameDurationInMicro) {
     this->entrance = {id, entrance};
     this->exit = {id, exit};
-    this->taskToManagerPipe->setearModo(Pipe::ESCRITURA);
 
     SIGINT_HandlerForField sigint_handlerForField(this);
     SignalHandler::getInstance()->registrarHandler(SIGINT, &sigint_handlerForField);
@@ -66,9 +65,11 @@ void Field::sendResult() {
     TaskRequest taskRequest{id, 3, 3, false, MATCH_RESULT};
     setResult(&taskRequest);
     log("Trying to write a response");
-    ssize_t out = taskToManagerPipe->escribir((&taskRequest), sizeof(TaskRequest));
+    TaskRequest taskRequest1 = {id, 3, 0, false, MATCH_RESULT};
+    ssize_t out = taskToManagerPipe->escribir(&taskRequest1, sizeof(TaskRequest));
     if (out < 0) {
-        throw runtime_error(string("Match return fifo can't be write!") + strerror(errno));
+        throw runtime_error(string("Match return fifo can't be write! in sendResult for id: ") + to_string(id) +
+                                    string(" Error: ") + strerror(errno));
     }
 }
 
@@ -126,7 +127,8 @@ void Field::toggleFloodedAndSendNotification() {
     log("Trying to write a response");
     ssize_t out = taskToManagerPipe->escribir((&taskRequest), sizeof(TaskRequest));
     if (out < 0) {
-        throw runtime_error(string("Match return fifo can't be write!") + strerror(errno));
+        throw runtime_error(string("Match return fifo can't be write! in toggleFloodedAndSendNotification for id: ")
+                            + to_string(id) + string(" Error: ") + strerror(errno));
     }
 }
 

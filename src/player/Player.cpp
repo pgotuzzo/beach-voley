@@ -10,6 +10,14 @@ Player::Player(int id, const string &name, Stadium *stadium, const Semaforo *sta
     this->requester = new PartnerRequester(id, name, receiveResponsesPipe, sendRequestPipe);
 }
 
+void Player::initPlayer() {
+    int pid = fork();
+    if (pid == 0) {
+        play();
+        exit(0);
+    }
+}
+
 /**
  * The player starts playing.
  * The player will try to enter the stadium as long as the tournament doesn't finish.

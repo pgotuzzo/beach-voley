@@ -1,7 +1,12 @@
+#include <cstring>
+#include <iostream>
 #include "Pipe.h"
 
 Pipe::Pipe() : lectura(true), escritura(true) {
-    pipe(this->descriptores);
+    if (pipe(this->descriptores) != 0) {
+        std::cout << strerror(errno)<< std::endl;
+        exit(1);
+    }
 }
 
 void Pipe::setearModo(const int modo) {
@@ -20,7 +25,6 @@ ssize_t Pipe::escribir(const void *dato, size_t datoSize) {
         close(this->descriptores[0]);
         this->lectura = false;
     }
-
     return write(this->descriptores[1], dato, datoSize);
 }
 

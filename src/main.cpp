@@ -12,16 +12,6 @@ void playTournament(Config config);
 
 using namespace std;
 
-bool initPlayers(Player player) {
-    int pid = fork();
-    if (pid == 0) {
-        player.play();
-        ResourceHandler::getInstance()->freeResources();
-        exit(0);
-    }
-    return true;
-}
-
 /**
  * Parses the arguments to the simulation from arg and argv
  *
@@ -96,10 +86,6 @@ void playTournament(Config config) {
     int maxGameDurationInMili = 500;
 
     Pipe managerReceive;
-    // Stadium = [C X R] Fields
-    Stadium stadium(config.tournamentParams.columns, config.tournamentParams.rows,
-                    1000 * minGameDurationInMili, 1000 * maxGameDurationInMili, &managerReceive);
-    stadium.initStadium();
 
     VectorCompartido<int> *idsTable = ResourceHandler::getInstance()->getVectorCompartido(SHARED_MEMORY_IDS_VECTOR);
     VectorCompartido<int> *pointsTable = ResourceHandler::getInstance()->getVectorCompartido(
@@ -118,14 +104,19 @@ void playTournament(Config config) {
     manager.initManager();
     TournamentBoard tournamentBoard{idsTable, pointsTable, &lockForSharedVectors};
 
+    // Stadium = [C X R] Fields
+    Stadium stadium(config.tournamentParams.columns, config.tournamentParams.rows,
+                    1000 * minGameDurationInMili, 1000 * maxGameDurationInMili, &managerReceive);
+    stadium.initStadium();
+
     // Players
     Semaforo *stadiumTurnstile = ResourceHandler::getInstance()->getSemaforo(SEM_TURNSTILE);
     for (int i = 0; i < config.tournamentParams.players.size(); i++) {
         string name = config.tournamentParams.players[i];
         Player player(i, name, &stadium, stadiumTurnstile, &pipesToPlayers[i], &managerReceive);
-        initPlayers(player);
+        player.initPlayer();
     }
-
+    managerReceive.cerrar();
 }
 
 int main(int argc, char *argv[]) {

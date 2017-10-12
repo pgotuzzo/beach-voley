@@ -13,15 +13,9 @@ Manager::Manager(TournamentParams tournamentParams, VectorCompartido<int> *idsTa
         totalPlayersInTournament(tournamentParams.players.size()), rows(tournamentParams.rows),
         columns(tournamentParams.columns), idsTable(idsTable), pointsTable(pointsTable),
         receiveTaskPipe(receiveTaskPipe), lockForSharedVectors(lockForSharedVectors),
-        playersIdPipeMap(playersIdPipeMap) {
+        playersIdPipeMap(playersIdPipeMap), initialPlayersInTournament(tournamentParams.players.size()) {
     this->freeFields = vector<bool>(rows * columns, true);
     this->teamsOnFields = vector<TeamsMatch>(rows * columns);
-
-    for (const auto &playerPipe: playersIdPipeMap) {
-        playerPipe.second->setearModo(Pipe::ESCRITURA);
-    }
-
-    this->receiveTaskPipe->setearModo(Pipe::LECTURA);
 
     vector<int> valuesPlayers;
     for (int i = 0; i < totalPlayersInTournament; i++) {
@@ -52,9 +46,9 @@ void Manager::initManager() {
 void Manager::receiveTask() {
     while (checkTournamentEnd()) {
         count++;
-        TaskRequest task = {};
+        TaskRequest task{};
         cout << TAG << "Trying to read a task" << endl;
-        ssize_t out = receiveTaskPipe->leer((&task), sizeof(TaskRequest));
+        ssize_t out = receiveTaskPipe->leer(static_cast<void *>(&task), sizeof(TaskRequest));
         cout << TAG << "Read something... :thinking: " << task.show() << " out: " << out << endl;
 
         if (out > 0) {
@@ -76,8 +70,11 @@ void Manager::receiveTask() {
                     throw runtime_error("Task handler not defined.");
             }
             cout << TAG << "Task completed! Going for a new one" << endl;
+        } else {
+            cout << strerror(errno)<< endl;
         }
     }
+    cout << "Tournament ended!" << endl;
 }
 
 /**
@@ -333,7 +330,7 @@ void Manager::findPartner(int playerId) {
     if (playerPlayAllGamesOrHasNoPossiblePartner(playerId)) {
         // LEAVE TOURNAMENT - All matches played
         // LEAVE TOURNAMENT - Or no more players to play
-        cout << TAG << "PLayer " << playerId
+        cout << TAG << "Player " << playerId
              << "already played all the matches allowed. Dismissing him from tournament!" << endl;
         sendMessageToPlayer(playerId, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
         removePlayerFromAllPossiblePartners(playerId);
@@ -376,16 +373,25 @@ void Manager::findPartner(int playerId) {
  * @return true if the player played all his games.
  */
 bool Manager::playerPlayAllGamesOrHasNoPossiblePartner(int playerId) {
-    bool playedAllGames = totalPlayersInTournament - 1 - playersPossiblePartners[playerId].size() >= totalGames;
+    bool playedAllGames = initialPlayersInTournament - 1 - playersPossiblePartners[playerId].size() >= totalGames;
+    if (playedAllGames) {
+        cout << "totalPlayersInTournament" << to_string(totalPlayersInTournament) << endl;
+        cout << "totalGames" << to_string(totalGames) << endl;
+        cout << "playersPossiblePartners[playerId].size()" << to_string(playersPossiblePartners[playerId].size()) << endl;
+    }
     // has no possible partner if the only possible partner is himself.
     bool hasNoPossiblePartner = playersPossiblePartners[playerId].size() == 1;
+    if (hasNoPossiblePartner) {
+
+        cout << "hasNoPossiblePartner" << endl;
+    }
     return playedAllGames or hasNoPossiblePartner;
 }
 
 /**
  * Checks if there are no more players in the tournament so the tournament ends.
  *
- * @return true if the tournament ends.
+ * @return true if the tournament doesnt ends yet.
  */
 bool Manager::checkTournamentEnd() {
     return totalPlayersInTournament > 0;

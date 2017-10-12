@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 #include "PartnerRequester.h"
 
 
@@ -6,15 +7,15 @@ PartnerRequester::PartnerRequester(int playerId, const string &playerName, Pipe 
                                    Pipe *sendRequestPipe) :
         playerId(playerId), playerName(playerName), receiveResponsesPipe(receiveResponsesPipe),
         sendRequestPipe(sendRequestPipe) {
-    this->receiveResponsesPipe->setearModo(Pipe::LECTURA);
-    this->sendRequestPipe->setearModo(Pipe::ESCRITURA);
 }
 
 void PartnerRequester::request() {
     TaskRequest taskRequest = {playerId, 0, 0, false, FIND_PARTNER};
-    ssize_t out = sendRequestPipe->escribir(&taskRequest, sizeof(TaskRequest));
+    this->sendRequestPipe->setearModo(Pipe::ESCRITURA);
+    ssize_t out = this->sendRequestPipe->escribir(&taskRequest, sizeof(TaskRequest));
     if (out < 0) {
-        throw runtime_error("Partner request fifo can't be write!");
+        std::cout << strerror(errno)<< std::endl;
+        throw runtime_error("Partner request pipe can't be write!");
     }
     cout << "Player " << playerName << ": sent a find partner request" << endl;
 }

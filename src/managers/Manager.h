@@ -42,6 +42,7 @@ private:
     unsigned int totalGames;
     unsigned int playersInGame = 0;
     unsigned long totalPlayersInTournament;
+    unsigned long initialPlayersInTournament;
     // TODO: all ids, playersIdPipeMap will have one of this per player
     map<int, Pipe *> playersIdPipeMap;
     vector<TeamsMatch> teamsOnFields;
