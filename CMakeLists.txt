@@ -41,7 +41,7 @@ set(CONFIG src/config/Config.cpp src/config/Config.h ${PARSE_EXCEPTION})
 # Main
 set(SOURCE_FILES src/. src/main.cpp src/config/Constants.h ${CONFIG}
         ${FIELD} ${PLAYER} ${STADIUM} ${MANAGER} ${TOURNAMENT_BOARD}
-        ${STRING_UTILS} ${RESOURCE_HANDLER} ${LOCK_FILE}
+        ${STRING_UTILS} ${RESOURCE_HANDLER} ${LOCK_FILE} ${TIDE_MONITOR}
         ${SIGNAL_HANDLER} ${SIGNAL_HANDLER} src/config/InvalidConfigException.cpp src/config/InvalidConfigException.h)
 add_executable(beach-voley ${SOURCE_FILES})
 

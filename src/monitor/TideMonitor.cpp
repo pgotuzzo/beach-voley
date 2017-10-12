@@ -2,6 +2,7 @@
 #include <signal.h>
 
 #include <utility>
+#include <iostream>
 #include "TideMonitor.h"
 #include "../../util/RandomNumber.h"
 
@@ -31,8 +32,10 @@ TideMonitor::TideChange TideMonitor::simulateTide() {
     sleep(getRandomUnsignedInt(checkTideMinSeconds, checkTideMaxSeconds));
     double p = getRandomDouble();
     if (p < riseTideProb) {
+        cout << "Tide rise"<< endl;
         return RISE;
     } else if (p < (riseTideProb + fallTideProb)) {
+        cout << "Tide fall"<< endl;
         return FALL;
     }
     return DONT_CHANGE;
@@ -43,24 +46,28 @@ TideMonitor::TideChange TideMonitor::simulateTide() {
  * if the tides rise or fall.
  */
 void TideMonitor::startMonitoring() {
-    bool tournamentEnded = false;
     // TODO: This must be checked in a shared memory
-    while (!tournamentEnded) {
-        TideChange tideChange = simulateTide();
-        if (tideChange == RISE) {
-            if (tideStatus + 1 < totalColumns - 1) {
-                tideStatus++;
-                for (auto fieldPid: columnFieldsPids[tideStatus]) {
-                    kill(fieldPid, SIGINT);
+    __pid_t pid = fork();
+    if (pid == 0) {
+        bool tournamentEnded = false;
+        while (!tournamentEnded) {
+            TideChange tideChange = simulateTide();
+            if (tideChange == RISE) {
+                if (tideStatus + 1 < totalColumns - 1) {
+                    tideStatus++;
+                    for (auto fieldPid: columnFieldsPids[tideStatus]) {
+                        kill(fieldPid, SIGINT);
+                    }
                 }
-            }
-        } else if (tideChange == FALL) {
-            if (tideStatus >= 0) {
-                for (auto fieldPid: columnFieldsPids[tideStatus]) {
-                    kill(fieldPid, SIGINT);
+            } else if (tideChange == FALL) {
+                if (tideStatus >= 0) {
+                    for (auto fieldPid: columnFieldsPids[tideStatus]) {
+                        kill(fieldPid, SIGINT);
+                    }
+                    tideStatus--;
                 }
-                tideStatus--;
             }
         }
+
     }
 }

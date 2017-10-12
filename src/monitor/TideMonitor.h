@@ -17,7 +17,6 @@ private:
     unsigned long totalColumns;
     const float riseTideProb;
     const float fallTideProb;
-    // TODO: Initialize in main
     vector<vector<int>> columnFieldsPids;
     int tideStatus = -1;
 
@@ -27,7 +26,7 @@ public:
     TideMonitor(int checkTideMaxSeconds, int checkTideMinSeconds, float fallTideProb,
                 float riseTideProb, vector<vector<int>> columnFieldsPids);
 
-    void TideMonitor::startMonitoring();
+    void startMonitoring();
 };
 
 

@@ -7,6 +7,7 @@
 #include "../IPCClasses/signal/SignalHandler.h"
 #include "../IPCClasses/signal/SIGINT_Handler.h"
 #include "managers/TournamentBoard.hpp"
+#include "monitor/TideMonitor.h"
 
 void playTournament(Config config);
 
@@ -109,6 +110,17 @@ void playTournament(Config config) {
     manager.initManager();
     TournamentBoard tournamentBoard{idsTable, pointsTable, &lockForSharedVectors};
 
+    vector<vector<int>> fieldsInColumns;
+    for (int i = 0; i < config.tournamentParams.columns; i++) {
+        vector<int> col;
+        for (int j = 0; j < config.tournamentParams.rows; j++) {
+            col.push_back(fieldPids[i*config.tournamentParams.columns + j]);
+        }
+        fieldsInColumns.push_back(col);
+    }
+    TideMonitor tideMonitor{2, 1, 0.3, 0.4, fieldsInColumns};
+    tideMonitor.startMonitoring();
+
     // Players
     Semaforo *stadiumTurnstile = ResourceHandler::getInstance()->getSemaforo(SEM_TURNSTILE);
     for (int i = 0; i < config.tournamentParams.players.size(); i++) {
@@ -142,8 +154,6 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < processToWait; i++) {
         wait(nullptr);
     }
-
-    // TODO: create the TideMonitor
 
     cout << "FINALIZANDO...";
 
