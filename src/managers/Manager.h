@@ -52,7 +52,7 @@ private:
     vector<bool> freeFields;
     Pipe *receiveTaskPipe;
     unsigned int rows, columns;
-
+    vector<int> fieldPids;
     void findPartner(int playerPid);
 
     void receiveTask();
@@ -86,7 +86,8 @@ private:
     bool removePlayersThatCantPlay();
 public:
     Manager(TournamentParams tournamentParams, VectorCompartido<int> *idsTable, VectorCompartido<int> *pointsTable,
-            LockFile *lockForSharedVectors, Pipe *receiveTaskPipe, map<int, Pipe *> playersIdPipeMap);
+            LockFile *lockForSharedVectors, Pipe *receiveTaskPipe, map<int, Pipe *> playersIdPipeMap,
+            vector<int> fieldPids);
 
     void initManager();
 

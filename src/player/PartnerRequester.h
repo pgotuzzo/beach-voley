@@ -18,7 +18,7 @@ private:
 public:
     explicit PartnerRequester(int playerId, const string &playerName, Pipe *receiveResponsesPipe,
                               Pipe *sendRequestPipe);
-
+    ~PartnerRequester();
     void request();
 
     OrgPlayerResponse waitResponse();

@@ -14,7 +14,7 @@ private:
 public:
     Stadium(int columns, int rows, int minGameDurationInMicro, int maxGameDurationInMicro, Pipe *managerReceive);
 
-    void initStadium();
+    vector<int> initStadium();
 
     Field getField(int id);
 

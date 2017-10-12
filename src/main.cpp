@@ -98,16 +98,16 @@ void playTournament(Config config) {
         playersIdPipeMap[i] = &(pipesToPlayers[i]);
     }
 
-    // Manager
-    Manager manager{config.tournamentParams, idsTable, pointsTable, &lockForSharedVectors, &managerReceive,
-                    playersIdPipeMap};
-    manager.initManager();
-    TournamentBoard tournamentBoard{idsTable, pointsTable, &lockForSharedVectors};
-
     // Stadium = [C X R] Fields
     Stadium stadium(config.tournamentParams.columns, config.tournamentParams.rows,
                     1000 * minGameDurationInMili, 1000 * maxGameDurationInMili, &managerReceive);
-    stadium.initStadium();
+    vector<int> fieldPids = stadium.initStadium();
+
+    // Manager
+    Manager manager{config.tournamentParams, idsTable, pointsTable, &lockForSharedVectors, &managerReceive,
+                    playersIdPipeMap, fieldPids};
+    manager.initManager();
+    TournamentBoard tournamentBoard{idsTable, pointsTable, &lockForSharedVectors};
 
     // Players
     Semaforo *stadiumTurnstile = ResourceHandler::getInstance()->getSemaforo(SEM_TURNSTILE);

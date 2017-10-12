@@ -1,6 +1,7 @@
 #include <cstring>
 
 #include <algorithm>
+#include <signal.h>
 #include "Manager.h"
 #include "../../util/ResourceHandler.h"
 #include "../../util/RandomNumber.h"
@@ -8,11 +9,12 @@
 const char *TAG = "Manager: ";
 
 Manager::Manager(TournamentParams tournamentParams, VectorCompartido<int> *idsTable, VectorCompartido<int> *pointsTable,
-                 LockFile *lockForSharedVectors, Pipe *receiveTaskPipe, map<int, Pipe *> playersIdPipeMap) :
+                 LockFile *lockForSharedVectors, Pipe *receiveTaskPipe, map<int, Pipe *> playersIdPipeMap,
+                 vector<int> fieldPids) :
         stadiumSize(tournamentParams.capacity), totalGames(tournamentParams.matches),
         totalPlayersInTournament(tournamentParams.players.size()), rows(tournamentParams.rows),
         columns(tournamentParams.columns), idsTable(idsTable), pointsTable(pointsTable),
-        receiveTaskPipe(receiveTaskPipe), lockForSharedVectors(lockForSharedVectors),
+        receiveTaskPipe(receiveTaskPipe), lockForSharedVectors(lockForSharedVectors), fieldPids(fieldPids),
         playersIdPipeMap(playersIdPipeMap), initialPlayersInTournament(tournamentParams.players.size()) {
     this->freeFields = vector<bool>(rows * columns, true);
     this->teamsOnFields = vector<TeamsMatch>(rows * columns);
@@ -44,12 +46,13 @@ void Manager::initManager() {
  * check if the tournament finishes and reads a new task.
  */
 void Manager::receiveTask() {
-    while (checkTournamentEnd() or playersInGame > 0) {
+    ssize_t out = 0;
+    while (!checkTournamentEnd() or playersInGame > 0) {
         count++;
         TaskRequest task{};
         cout << TAG << "Trying to read a task" << endl;
         cout << "Players in tournament " << to_string(totalPlayersInTournament) << endl;
-        ssize_t out = receiveTaskPipe->leer(static_cast<void *>(&task), sizeof(TaskRequest));
+        out = receiveTaskPipe->leer(static_cast<void *>(&task), sizeof(TaskRequest));
         cout << TAG << "Read something... :thinking: " << task.show() << " out: " << out << endl;
 
         if (out > 0) {
@@ -77,7 +80,15 @@ void Manager::receiveTask() {
         removePlayersThatCantPlay();
         cout << "Players in game " << to_string(playersInGame) << endl;
     }
+    if (checkTournamentEnd()) {
+        for (auto fieldPid: fieldPids) {
+            kill(fieldPid, SIGKILL);
+        }
+    }
     cout << "Tournament ended!" << endl;
+    for (auto player: waitingPlayers) {
+        sendMessageToPlayer(player, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
+    }
 }
 
 /**
@@ -358,12 +369,12 @@ bool Manager::playerPlayAllGamesOrHasNoPossiblePartner(int playerId) {
 }
 
 /**
- * Checks if there are no more players in the tournament so the tournament ends.
+ * Checks if the remaining players cant play more games.
  *
- * @return true if the tournament doesnt ends yet.
+ * @return true if the tournament ends.
  */
 bool Manager::checkTournamentEnd() {
-    return totalPlayersInTournament > 3;
+    return totalPlayersInTournament < 4;
 }
 
 /**

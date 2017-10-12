@@ -32,3 +32,8 @@ OrgPlayerResponse PartnerRequester::waitResponse() {
 
     return buffer;
 }
+
+PartnerRequester::~PartnerRequester() {
+    receiveResponsesPipe->cerrar();
+    sendRequestPipe->cerrar();
+}

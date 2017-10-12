@@ -40,7 +40,8 @@ int Stadium::getRows() {
  * Every field is a different process, that will end when
  * the tournament ends.
  */
-void Stadium::initStadium() {
+vector<int> Stadium::initStadium() {
+    vector<int> fieldsPid;
     for (int i = 0; i < this->getColumns() * this->getRows(); i++) {
         Field field = this->getField(i);
         int pid = fork();
@@ -49,5 +50,7 @@ void Stadium::initStadium() {
             ResourceHandler::getInstance()->freeResources();
             exit(0);
         }
+        fieldsPid.push_back(pid);
     }
+    return fieldsPid;
 }
