@@ -12,7 +12,8 @@ private:
     unsigned int numberOfPlayers;
 
 public:
-    TournamentBoard(VectorCompartido<int> *pidsTable, VectorCompartido<int> *pointsTable, LockFile *lockForSharedVectors);
+    TournamentBoard(VectorCompartido<int> *pidsTable, VectorCompartido<int> *pointsTable,
+                    LockFile *lockForSharedVectors);
 
     void printTableValues();
 };

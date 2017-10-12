@@ -29,7 +29,6 @@ ssize_t Pipe::leer(void *buffer, size_t buffSize) {
         close(this->descriptores[1]);
         this->escritura = false;
     }
-//    std::cout<< "descriptor " << this->descriptores[0] << " seees" << std::endl;
 
     return read(this->descriptores[0], buffer, buffSize);
 }

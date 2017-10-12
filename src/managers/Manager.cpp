@@ -2,32 +2,34 @@
 
 #include <algorithm>
 #include "Manager.h"
-#include "../config/Constants.h"
 #include "../../util/ResourceHandler.h"
 #include "../../util/RandomNumber.h"
 
 const char *TAG = "Manager: ";
 
 Manager::Manager(TournamentParams tournamentParams, VectorCompartido<int> *idsTable, VectorCompartido<int> *pointsTable,
-                 LockFile *lockForSharedVectors) :
-        stadiumSize(tournamentParams.capacity),
-        totalGames(tournamentParams.matches),
-        totalPlayersInTournament(tournamentParams.players.size()),
-        rows(tournamentParams.rows),
-        columns(tournamentParams.columns),
-        idsTable(idsTable),
-        pointsTable(pointsTable),
-        lockForSharedVectors(lockForSharedVectors) {
-    this->receiveTaskFifo = ResourceHandler::getInstance()->getFifoRead(FIFO_FILE_MANAGER_RECEIVE_TASK);
+                 LockFile *lockForSharedVectors, Pipe *receiveTaskPipe, map<int, Pipe *> playersIdPipeMap) :
+        stadiumSize(tournamentParams.capacity), totalGames(tournamentParams.matches),
+        totalPlayersInTournament(tournamentParams.players.size()), rows(tournamentParams.rows),
+        columns(tournamentParams.columns), idsTable(idsTable), pointsTable(pointsTable),
+        receiveTaskPipe(receiveTaskPipe), lockForSharedVectors(lockForSharedVectors),
+        playersIdPipeMap(playersIdPipeMap) {
     this->freeFields = vector<bool>(rows * columns, true);
     this->teamsOnFields = vector<TeamsMatch>(rows * columns);
 
-    int keyPlayerId;
-    vector<int> valuesPlayers;
-    for (int i = 0; i < totalPlayersInTournament; i++) {
-        this->playersPossiblePartners.emplace(keyPlayerId, valuesPlayers);
+    for (const auto &playerPipe: playersIdPipeMap) {
+        playerPipe.second->setearModo(Pipe::ESCRITURA);
     }
 
+    this->receiveTaskPipe->setearModo(Pipe::LECTURA);
+
+    vector<int> valuesPlayers;
+    for (int i = 0; i < totalPlayersInTournament; i++) {
+        valuesPlayers.push_back(i);
+    }
+    for (int i = 0; i < totalPlayersInTournament; i++) {
+        this->playersPossiblePartners.emplace(i, valuesPlayers);
+    }
 }
 
 /**
@@ -37,6 +39,7 @@ void Manager::initManager() {
     int pid = fork();
     if (pid == 0) {
         this->receiveTask();
+        ResourceHandler::getInstance()->freeResources();
         exit(0);
     }
 }
@@ -49,20 +52,10 @@ void Manager::initManager() {
 void Manager::receiveTask() {
     while (checkTournamentEnd()) {
         count++;
-        cout << TAG << "Trying to open a fifo to read a task N°: " << count << endl;
-        int fd = receiveTaskFifo->openFifo();
-        if (fd < 0) {
-            stringstream message;
-            message << TAG << "Trying to open a fifo to read a task. Fifo couldn't be opened. Error Number: "
-                    << strerror(errno) << " tamaño: " << count << endl;
-            throw runtime_error(message.str());
-        }
-
         TaskRequest task = {};
         cout << TAG << "Trying to read a task" << endl;
-        ssize_t out = receiveTaskFifo->readFifo((&task), sizeof(TaskRequest));
+        ssize_t out = receiveTaskPipe->leer((&task), sizeof(TaskRequest));
         cout << TAG << "Read something... :thinking: " << task.show() << " out: " << out << endl;
-        receiveTaskFifo->closeFifo();
 
         if (out > 0) {
             cout << TAG << "Read a task successfully!" << endl;
@@ -105,7 +98,7 @@ void Manager::updateFieldList(int fieldId, bool tideRise) {
  */
 void Manager::removePlayerFromPossiblePartner(int targetPlayer, int playerToRemove) {
     playersPossiblePartners[targetPlayer].erase(find(playersPossiblePartners[targetPlayer].begin(),
-                                                       playersPossiblePartners[targetPlayer].end(),
+                                                     playersPossiblePartners[targetPlayer].end(),
                                                      playerToRemove));
 }
 
@@ -182,21 +175,9 @@ void Manager::saveResult(int fieldId, int resultLocal, int resultVisitant) {
  * @param orgPlayerResponse the message to send.
  */
 void Manager::sendMessageToPlayer(int playerId, OrgPlayerResponse orgPlayerResponse) {
-    if (playersIdFifoMap.find(playerId) == playersIdFifoMap.end()) {
-        FifoWrite *f = ResourceHandler::getInstance()->getFifoWrite(FIFO_FILE_PARTNER_RESPONSE + to_string(playerId));
-        int fd = f->openFifo();
-        if (fd < 0) {
-            stringstream message;
-            message << TAG << "Trying to open a fifo to write a response. Fifo couldn't be opened. Error Number: "
-                    << strerror(errno) << " " << errno << " Tamaño:" << playersIdFifoMap.size();
-            throw runtime_error(message.str());
-        }
-        playersIdFifoMap.emplace(playerId, *f);
-    }
-    FifoWrite fifoWrite = playersIdFifoMap[playerId];
-
     cout << TAG << "Trying to write a response" << endl;
-    ssize_t out = fifoWrite.writeFifo(static_cast<const void *> (&orgPlayerResponse), sizeof(OrgPlayerResponse));
+    ssize_t out = playersIdPipeMap[playerId]->escribir(static_cast<const void *> (&orgPlayerResponse),
+                                                       sizeof(OrgPlayerResponse));
     if (out < 0) {
         throw runtime_error("Partner response fifo can't be write!");
     }

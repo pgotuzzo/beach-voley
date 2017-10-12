@@ -14,7 +14,7 @@ private:
 
 public:
 
-    explicit SIGINT_HandlerForField(Field *associatedField): associatedField(associatedField){
+    explicit SIGINT_HandlerForField(Field *associatedField) : associatedField(associatedField) {
     }
 
     /**

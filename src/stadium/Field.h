@@ -4,7 +4,7 @@
 #include "../../IPCClasses/Semaforo.h"
 #include "../../Logger/Logger.h"
 #include "../config/Definitions.h"
-#include "../../IPCClasses/fifo/FifoWrite.h"
+#include "../../IPCClasses/Pipe.h"
 
 using namespace std;
 
@@ -16,10 +16,11 @@ class Field {
 
 public:
     Field() = default;
+
     ~Field();
 
     Field(unsigned short id, string name, Semaforo *entrance, Semaforo *exit, int minGameDurationInMicro,
-          int maxGameDurationInMicro);
+          int maxGameDurationInMicro, Pipe *taskToManagerPipe);
 
     void readyForGames();
 
@@ -40,7 +41,7 @@ private:
     SemaforoInfo exit{};
     int minGameDurationInMicro{};
     int maxGameDurationInMicro{};
-    FifoWrite *taskToManagerFifo;
+    Pipe *taskToManagerPipe;
 
     void log(string message);
 

@@ -61,7 +61,7 @@ bool validateOption(const Option &option) {
                option.name == MAPPER_OPT_CAPACITY) {
         try {
             //if the input has -k -5 then then option.params.front() throws Segmentation fault
-            if(!option.params.empty()) {
+            if (!option.params.empty()) {
                 stoi(option.params.front());
             } else {
                 return false;
@@ -83,13 +83,13 @@ void setOption(Config *config, Option option) {
     if (option.name == MAPPER_OPT_DEBUG) {
         config->tournamentParams.debugEnable = true;
     } else if (option.name == MAPPER_OPT_ROWS) {
-        config->tournamentParams.rows = stoi(option.params.front());
+        config->tournamentParams.rows = static_cast<unsigned int>(stoi(option.params.front()));
     } else if (option.name == MAPPER_OPT_COLUMNS) {
-        config->tournamentParams.columns = stoi(option.params.front());
+        config->tournamentParams.columns = static_cast<unsigned int>(stoi(option.params.front()));
     } else if (option.name == MAPPER_OPT_CAPACITY) {
-        config->tournamentParams.capacity = stoi(option.params.front());
+        config->tournamentParams.capacity = static_cast<unsigned int>(stoi(option.params.front()));
     } else if (option.name == MAPPER_OPT_MATCHES_COUNT) {
-        config->tournamentParams.matches = stoi(option.params.front());
+        config->tournamentParams.matches = static_cast<unsigned int>(stoi(option.params.front()));
     } else if (option.name == MAPPER_OPT_PLAYER) {
         config->tournamentParams.players = option.params;
     } else if (option.name == MAPPER_OPT_PLAYER_N) {

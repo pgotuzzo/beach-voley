@@ -72,9 +72,9 @@ void VectorCompartido<T>::liberar() {
 
     int procAdosados = this->cantidadProcesosAdosados();
 
-//    if (procAdosados == 0) {
+    if (procAdosados == 0) {
         shmctl(this->shmId, IPC_RMID, NULL);
-//    }
+    }
 }
 
 template<class T>

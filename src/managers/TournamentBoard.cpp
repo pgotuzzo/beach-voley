@@ -14,6 +14,6 @@ void TournamentBoard::printTableValues() {
 }
 
 TournamentBoard::TournamentBoard(VectorCompartido<int> *pidsTable, VectorCompartido<int> *pointsTable,
-                       LockFile *lockForSharedVectors): pidsTable(pidsTable), pointsTable(pointsTable),
-                                                        lockForSharedVectors(lockForSharedVectors) {
+                                 LockFile *lockForSharedVectors) : pidsTable(pidsTable), pointsTable(pointsTable),
+                                                                   lockForSharedVectors(lockForSharedVectors) {
 }

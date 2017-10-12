@@ -6,7 +6,6 @@
 #include "../stadium/Field.h"
 #include "../stadium/Stadium.h"
 #include "../../Logger/Logger.h"
-#include "../../IPCClasses/fifo/FifoRead.h"
 #include "PartnerRequester.h"
 
 using namespace std;
@@ -41,7 +40,8 @@ private:
     SemaforoInfo getSemaforoInfoExit();
 
 public:
-    Player(int id, const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile);
+    Player(int id, const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile,
+           Pipe *receiveResponsesPipe, Pipe *sendRequestPipe);
 
     void play();
 

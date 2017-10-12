@@ -4,12 +4,10 @@
 
 using namespace std;
 
-Player::Player(int id, const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile) :
-        id(id),
-        name(name),
-        stadium(stadium),
-        stadiumTurnstile(stadiumTurnstile) {
-    this->requester = new PartnerRequester(id, name);
+Player::Player(int id, const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile,
+               Pipe *receiveResponsesPipe, Pipe *sendRequestPipe) :
+        id(id), name(name), stadium(stadium), stadiumTurnstile(stadiumTurnstile) {
+    this->requester = new PartnerRequester(id, name, receiveResponsesPipe, sendRequestPipe);
 }
 
 /**
@@ -41,6 +39,7 @@ void Player::play() {
     }
     log("Saliendo del torneo...");
 }
+
 /**
  * Player make the request to the Manager over fifo FIFO_FILE_MANAGER_RECEIVE_TASK
  * and waits for the response Manager in the other Fifo FIFO_FILE_PARTNER_RESPONSE + id
@@ -49,6 +48,7 @@ void Player::partnerRequest() {
     requester->request();
     response = requester->waitResponse();
 }
+
 /**
  * Enter in to the Field and .
  * */

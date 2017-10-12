@@ -13,8 +13,6 @@ set(SIGNAL_HANDLER IPCClasses/signal/SignalHandler.h IPCClasses/signal/SignalHan
         IPCClasses/signal/EventHandler.h IPCClasses/signal/SIGINT_HandlerForField.h)
 set(SIGINT_HANFLER IPCClasses/signal/SIGINT_Handler.h)
 set(SIGNAL_HANDLER_FOR_FIELD IPCClasses/signal/SIGINT_HandlerForField.h)
-set(FIFO IPCClasses/fifo/FifoRead.cpp IPCClasses/fifo/FifoRead.h
-        IPCClasses/fifo/FifoWrite.cpp IPCClasses/fifo/FifoWrite.h IPCClasses/fifo/Fifo.cpp IPCClasses/fifo/Fifo.h )
 
 # Log
 set(LOGGER Logger/Logger.cpp Logger/Logger.h)
@@ -30,7 +28,7 @@ set(INIT_EXCEPTION src/InitException.cpp src/InitException.h)
 
 # Source
 set(TIDE_MONITOR src/monitor/TideMonitor.cpp src/monitor/TideMonitor.h ${RANDOM_NUMBER})
-set(PLAYER src/player/Player.cpp src/player/Player.h ${FIFO}
+set(PLAYER src/player/Player.cpp src/player/Player.h ${PIPE}
         src/player/PartnerRequester.h src/player/PartnerRequester.cpp)
 set(FIELD src/stadium/Field.cpp src/stadium/Field.h ${SEMAFORO} ${LOGGER} ${RANDOM_NUMBER})
 set(STADIUM src/stadium/Stadium.cpp src/stadium/Stadium.h)

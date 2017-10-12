@@ -3,10 +3,9 @@
 
 #include <map>
 #include "../IPCClasses/Semaforo.h"
-#include "../IPCClasses/fifo/FifoRead.h"
-#include "../IPCClasses/fifo/FifoWrite.h"
 #include "../IPCClasses/VectorCompartido.h"
 #include "../src/config/Config.h"
+#include "../IPCClasses/Pipe.h"
 
 using namespace std;
 
@@ -14,8 +13,6 @@ class ResourceHandler {
 private:
     static ResourceHandler *instance;
     static map<string, Semaforo> mSemaforo;
-    static map<string, FifoRead> mFifoRead;
-    static map<string, FifoWrite> mFifoWrite;
     static map<string, VectorCompartido<int>> mVectorCompartido;
 
     ResourceHandler();
@@ -26,10 +23,6 @@ public:
     static void init(Config config);
 
     Semaforo *getSemaforo(string path);
-
-    FifoRead *getFifoRead(string path);
-
-    FifoWrite *getFifoWrite(string path);
 
     VectorCompartido<int> *getVectorCompartido(string path);
 

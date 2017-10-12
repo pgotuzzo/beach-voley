@@ -16,6 +16,7 @@ bool initPlayers(Player player) {
     int pid = fork();
     if (pid == 0) {
         player.play();
+        ResourceHandler::getInstance()->freeResources();
         exit(0);
     }
     return true;
@@ -94,18 +95,26 @@ void playTournament(Config config) {
     int minGameDurationInMili = 100;
     int maxGameDurationInMili = 500;
 
+    Pipe managerReceive;
     // Stadium = [C X R] Fields
-    Stadium stadium(config.tournamentParams.columns,
-                    config.tournamentParams.rows,
-                    1000 * minGameDurationInMili,
-                    1000 * maxGameDurationInMili);
+    Stadium stadium(config.tournamentParams.columns, config.tournamentParams.rows,
+                    1000 * minGameDurationInMili, 1000 * maxGameDurationInMili, &managerReceive);
     stadium.initStadium();
 
     VectorCompartido<int> *idsTable = ResourceHandler::getInstance()->getVectorCompartido(SHARED_MEMORY_IDS_VECTOR);
-    VectorCompartido<int> *pointsTable = ResourceHandler::getInstance()->getVectorCompartido(SHARED_MEMORY_POINTS_VECTOR);
+    VectorCompartido<int> *pointsTable = ResourceHandler::getInstance()->getVectorCompartido(
+            SHARED_MEMORY_POINTS_VECTOR);
     LockFile lockForSharedVectors(LOCK_FILE_SHARED_VECTORS);
+
+    Pipe pipesToPlayers[config.tournamentParams.players.size()];
+    map<int, Pipe *> playersIdPipeMap;
+    for (int i = 0; i < config.tournamentParams.players.size(); i++) {
+        playersIdPipeMap[i] = &(pipesToPlayers[i]);
+    }
+
     // Manager
-    Manager manager{config.tournamentParams, idsTable, pointsTable, &lockForSharedVectors};
+    Manager manager{config.tournamentParams, idsTable, pointsTable, &lockForSharedVectors, &managerReceive,
+                    playersIdPipeMap};
     manager.initManager();
     TournamentBoard tournamentBoard{idsTable, pointsTable, &lockForSharedVectors};
 
@@ -113,7 +122,7 @@ void playTournament(Config config) {
     Semaforo *stadiumTurnstile = ResourceHandler::getInstance()->getSemaforo(SEM_TURNSTILE);
     for (int i = 0; i < config.tournamentParams.players.size(); i++) {
         string name = config.tournamentParams.players[i];
-        Player player(i, name, &stadium, stadiumTurnstile);
+        Player player(i, name, &stadium, stadiumTurnstile, &pipesToPlayers[i], &managerReceive);
         initPlayers(player);
     }
 
@@ -136,7 +145,10 @@ int main(int argc, char *argv[]) {
     SIGINT_Handler handler;
     SignalHandler::getInstance()->registrarHandler(SIGINT, (EventHandler *) &handler);
 
-    for (int i = 0; i < 20; i++) {
+    // 3 = tide monitor, manager, game board
+    auto processToWait = static_cast<int>(config.tournamentParams.players.size()
+                                          + config.tournamentParams.columns * config.tournamentParams.rows + 3);
+    for (int i = 0; i < processToWait; i++) {
         wait(nullptr);
     }
 
@@ -144,5 +156,6 @@ int main(int argc, char *argv[]) {
 
     cout << "FINALIZANDO...";
 
+    ResourceHandler::getInstance()->freeResources();
     exit(0);
 }

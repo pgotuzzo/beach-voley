@@ -3,8 +3,6 @@
 
 #include <map>
 #include <vector>
-#include "../../IPCClasses/fifo/FifoRead.h"
-#include "../../IPCClasses/fifo/FifoWrite.h"
 #include "../player/Player.h"
 #include "../../IPCClasses/VectorCompartido.h"
 #include "../config/Config.h"
@@ -13,7 +11,7 @@ using namespace std;
 
 class Manager {
 private:
-    struct Team{
+    struct Team {
         int idPlayer1;
         int idPlayer2;
 
@@ -22,19 +20,19 @@ private:
         }
     };
 
-    struct TeamsMatch{
+    struct TeamsMatch {
         Team localTeam;
         Team visitTeam;
     };
 
-    struct MatchResult{
+    struct MatchResult {
         TeamsMatch teamsInMatch;
         int localScore;
         int visitScore;
     };
 
     vector<MatchResult> matchHistory;
-    // TODO: initilize this with the id of all players same time as playersIdFifoMap
+    // TODO: initilize this with the id of all players same time as playersIdPipeMap
     VectorCompartido<int> *idsTable;
     map<int, int> idToVectorIndexMap;
     VectorCompartido<int> *pointsTable;
@@ -44,20 +42,20 @@ private:
     unsigned int totalGames;
     unsigned int playersInGame = 0;
     unsigned long totalPlayersInTournament;
-    // TODO: all ids, playersIdFifoMap will have one of this per player
-    map<int, FifoWrite> playersIdFifoMap;
+    // TODO: all ids, playersIdPipeMap will have one of this per player
+    map<int, Pipe *> playersIdPipeMap;
     vector<TeamsMatch> teamsOnFields;
     vector<Team> waitingTeams;
     vector<int> waitingPlayers;
     map<int, vector<int>> playersPossiblePartners;
     vector<bool> freeFields;
-    FifoRead *receiveTaskFifo;
+    Pipe *receiveTaskPipe;
     unsigned int rows, columns;
 
     void findPartner(int playerPid);
 
     void receiveTask();
-    
+
     bool checkTournamentEnd();
 
     void updateFieldList(int fieldPid, bool tideRise);
@@ -85,9 +83,10 @@ private:
     bool playerPlayAllGamesOrHasNoPossiblePartner(int playerId);
 
     void removePlayerFromPossiblePartner(int targetPlayer, int playerToRemove);
+
 public:
     Manager(TournamentParams tournamentParams, VectorCompartido<int> *idsTable, VectorCompartido<int> *pointsTable,
-            LockFile *lockForSharedVectors);
+            LockFile *lockForSharedVectors, Pipe *receiveTaskPipe, map<int, Pipe *> playersIdPipeMap);
 
     void initManager();
 

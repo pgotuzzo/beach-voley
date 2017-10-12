@@ -3,21 +3,22 @@
 #include "../config/Constants.h"
 #include "../../util/ResourceHandler.h"
 
-Stadium::Stadium(int columns, int rows,
-                 int minGameDurationInMicro, int maxGameDurationInMicro) {
+Stadium::Stadium(int columns, int rows, int minGameDurationInMicro, int maxGameDurationInMicro, Pipe *managerReceive) {
     this->columns = columns;
     this->rows = rows;
     this->fields = vector<Field>(static_cast<unsigned long>(rows * columns));
 
     Semaforo *entrance = ResourceHandler::getInstance()->getSemaforo(SEM_FILE_FIELD_ENTRANCE);
     Semaforo *exit = ResourceHandler::getInstance()->getSemaforo(SEM_FILE_FIELD_EXIT);
+
     for (int i = 0; i < columns; i++) {
         for (int j = 0; j < rows; j++) {
             stringstream name;
             name << "[" << i << ", " << j << "]";
             auto id = static_cast<unsigned short>(i * rows + j);
             fields[i * rows + j] =
-                    Field(id, name.str(), entrance, exit, minGameDurationInMicro, maxGameDurationInMicro);
+                    Field(id, name.str(), entrance, exit, minGameDurationInMicro, maxGameDurationInMicro,
+                          managerReceive);
         }
     }
 }
@@ -45,6 +46,7 @@ void Stadium::initStadium() {
         int pid = fork();
         if (pid == 0) {
             field.readyForGames();
+            ResourceHandler::getInstance()->freeResources();
             exit(0);
         }
     }

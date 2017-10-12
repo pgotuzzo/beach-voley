@@ -12,7 +12,7 @@ private:
     vector<Field> fields;
 
 public:
-    Stadium(int columns, int rows, int minGameDurationInMicro, int maxGameDurationInMicro);
+    Stadium(int columns, int rows, int minGameDurationInMicro, int maxGameDurationInMicro, Pipe *managerReceive);
 
     void initStadium();
 

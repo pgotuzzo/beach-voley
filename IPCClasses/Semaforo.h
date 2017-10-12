@@ -24,6 +24,7 @@ public:
     int v(unsigned short numeroSemaforo) const; // incrementa
     int ultimoProceso() const; // pid del ultimo proceso que uso el sem
     void eliminar() const;
+
     int getStatus(unsigned short numeroSemaforo) const;
 };
 

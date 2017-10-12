@@ -4,31 +4,21 @@
 #include "Field.h"
 #include "../../util/RandomNumber.h"
 #include "../../util/ResourceHandler.h"
-#include "../config/Constants.h"
 
 #include "../../IPCClasses/signal/SignalHandler.h"
 #include "../../IPCClasses/signal/SIGINT_HandlerForField.h"
 
 
 Field::Field(unsigned short id, string name, Semaforo *entrance, Semaforo *exit, const int minGameDurationInMicro,
-             const int maxGameDurationInMicro) :
-        name(std::move(name)),
-        id(id),
-        minGameDurationInMicro(minGameDurationInMicro),
-        maxGameDurationInMicro(maxGameDurationInMicro) {
+             const int maxGameDurationInMicro, Pipe *taskToManagerPipe) :
+        name(std::move(name)), id(id), taskToManagerPipe(taskToManagerPipe),
+        minGameDurationInMicro(minGameDurationInMicro), maxGameDurationInMicro(maxGameDurationInMicro) {
     this->entrance = {id, entrance};
     this->exit = {id, exit};
-    this->taskToManagerFifo = ResourceHandler::getInstance()->getFifoWrite(FIFO_FILE_MANAGER_RECEIVE_TASK);
-    int fd = taskToManagerFifo->openFifo();
-    if (fd < 0) {
-        stringstream message;
-        message << "Field" << "Trying to open a fifo to write a response. Fifo couldn't be opened. Error Number: "
-                << strerror(errno) << " " << errno << endl;
-        throw runtime_error(message.str());
-    }
+    this->taskToManagerPipe->setearModo(Pipe::ESCRITURA);
 
     SIGINT_HandlerForField sigint_handlerForField(this);
-    SignalHandler :: getInstance()->registrarHandler ( SIGINT,&sigint_handlerForField );
+    SignalHandler::getInstance()->registrarHandler(SIGINT, &sigint_handlerForField);
 }
 
 /**
@@ -73,22 +63,13 @@ void Field::setResult(TaskRequest *taskRequest) {
  * Sends the result of the match to the manager.
  */
 void Field::sendResult() {
-    int fd = taskToManagerFifo->openFifo();
-    if (fd < 0) {
-        stringstream message;
-        message << "Field" << "Trying to open a fifo to write a response. Fifo couldn't be opened. Error Number: "
-                << strerror(errno) << " " << errno << endl;
-        throw runtime_error(message.str());
-    }
-
     TaskRequest taskRequest{id, 3, 3, false, MATCH_RESULT};
-    this->setResult(&taskRequest);
+    setResult(&taskRequest);
     log("Trying to write a response");
-    ssize_t out = taskToManagerFifo->writeFifo((&taskRequest), sizeof(TaskRequest));
+    ssize_t out = taskToManagerPipe->escribir((&taskRequest), sizeof(TaskRequest));
     if (out < 0) {
         throw runtime_error(string("Match return fifo can't be write!") + strerror(errno));
     }
-    taskToManagerFifo->closeFifo();
 }
 
 /**
@@ -142,9 +123,8 @@ void Field::toggleFloodedAndSendNotification() {
     flooded = !flooded;
     // if now is flooded then the tideRise
     TaskRequest taskRequest{id, 0, 0, flooded, TIDE_CHANGE};
-    this->setResult(&taskRequest);
     log("Trying to write a response");
-    ssize_t out = taskToManagerFifo->writeFifo((&taskRequest), sizeof(TaskRequest));
+    ssize_t out = taskToManagerPipe->escribir((&taskRequest), sizeof(TaskRequest));
     if (out < 0) {
         throw runtime_error(string("Match return fifo can't be write!") + strerror(errno));
     }
@@ -152,5 +132,4 @@ void Field::toggleFloodedAndSendNotification() {
 
 Field::~Field() {
     SignalHandler::destruir();
-    taskToManagerFifo->closeFifo();
 }

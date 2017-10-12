@@ -11,7 +11,7 @@
 
 using namespace std;
 
-class InvalidConfigException : public exception{
+class InvalidConfigException : public exception {
 
 public:
     explicit InvalidConfigException(const string &description);
