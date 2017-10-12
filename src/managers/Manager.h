@@ -85,6 +85,7 @@ private:
 
     void removePlayerFromPossiblePartner(int targetPlayer, int playerToRemove);
 
+    bool removePlayersThatCantPlay();
 public:
     Manager(TournamentParams tournamentParams, VectorCompartido<int> *idsTable, VectorCompartido<int> *pointsTable,
             LockFile *lockForSharedVectors, Pipe *receiveTaskPipe, map<int, Pipe *> playersIdPipeMap);
