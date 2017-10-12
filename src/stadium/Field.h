@@ -16,6 +16,7 @@ class Field {
 
 public:
     Field() = default;
+    ~Field();
 
     Field(unsigned short id, string name, Semaforo *entrance, Semaforo *exit, int minGameDurationInMicro,
           int maxGameDurationInMicro);
@@ -26,9 +27,15 @@ public:
 
     SemaforoInfo getExit();
 
+    void releasePlayers();
+
+    void toggleFloodedAndSendNotification();
+
 private:
     unsigned short id;
     string name;
+    bool flooded = false;
+    bool thereArePlayersToRelease = false;
     SemaforoInfo entrance{};
     SemaforoInfo exit{};
     int minGameDurationInMicro{};
@@ -42,8 +49,6 @@ private:
     void setResult(TaskRequest *taskRequest);
 
     void sendResult();
-
-    void releasePlayers();
 };
 
 #endif //BEACH_VOLEY_FIELD_H

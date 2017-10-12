@@ -140,6 +140,8 @@ int main(int argc, char *argv[]) {
         wait(nullptr);
     }
 
+    // TODO: create the TideMonitor
+
     cout << "FINALIZANDO...";
 
     exit(0);

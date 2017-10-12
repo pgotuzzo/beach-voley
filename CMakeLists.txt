@@ -10,7 +10,9 @@ set(PIPE IPCClasses/Pipe.cpp IPCClasses/Pipe.h)
 set(MEMORIA_COMPARTIDA IPCClasses/MemoriaCompartida.h)
 set(VECTOR_COMPARTIDO IPCClasses/VectorCompartido.h)
 set(SIGNAL_HANDLER IPCClasses/signal/SignalHandler.h IPCClasses/signal/SignalHandler.cpp
-        IPCClasses/signal/EventHandler.h IPCClasses/signal/SIGINT_Handler.h)
+        IPCClasses/signal/EventHandler.h IPCClasses/signal/SIGINT_HandlerForField.h)
+set(SIGINT_HANFLER IPCClasses/signal/SIGINT_Handler.h)
+set(SIGNAL_HANDLER_FOR_FIELD IPCClasses/signal/SIGINT_HandlerForField.h)
 set(FIFO IPCClasses/fifo/FifoRead.cpp IPCClasses/fifo/FifoRead.h
         IPCClasses/fifo/FifoWrite.cpp IPCClasses/fifo/FifoWrite.h IPCClasses/fifo/Fifo.cpp IPCClasses/fifo/Fifo.h )
 
