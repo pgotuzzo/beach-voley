@@ -77,8 +77,6 @@ private:
 
     void removeRandomWaitingPlayer();
 
-    void formTeamsAndAssignFields();
-
     void removePlayersFromPossiblePartners(Team team);
 
     bool playerPlayAllGamesOrHasNoPossiblePartner(int playerId);

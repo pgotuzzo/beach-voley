@@ -55,7 +55,7 @@ void Field::setResult(TaskRequest *taskRequest) {
     teams[teamThatLose] = getRandomInt(0, 3);
 
     taskRequest->resultLocal = teams[0];
-    taskRequest->resultLocal = teams[1];
+    taskRequest->resultVisitant = teams[1];
 }
 
 /**
@@ -65,8 +65,7 @@ void Field::sendResult() {
     TaskRequest taskRequest{id, 3, 3, false, MATCH_RESULT};
     setResult(&taskRequest);
     log("Trying to write a response");
-    TaskRequest taskRequest1 = {id, 3, 0, false, MATCH_RESULT};
-    ssize_t out = taskToManagerPipe->escribir(&taskRequest1, sizeof(TaskRequest));
+    ssize_t out = taskToManagerPipe->escribir(&taskRequest, sizeof(TaskRequest));
     if (out < 0) {
         throw runtime_error(string("Match return fifo can't be write! in sendResult for id: ") + to_string(id) +
                                     string(" Error: ") + strerror(errno));

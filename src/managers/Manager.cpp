@@ -108,14 +108,14 @@ void Manager::removePlayerFromPossiblePartner(int targetPlayer, int playerToRemo
 void Manager::removePlayersFromPossiblePartners(Team team) {
     cout << "Team: player " << team.idPlayer1 << " - player " << team.idPlayer2 << endl
          << "Player " << team.idPlayer1 << " available partners: " << endl;
-    for (int p : playersPossiblePartners[team.idPlayer1]) {
-        cout << " Player " << p << endl;
-    }
+//    for (int p : playersPossiblePartners[team.idPlayer1]) {
+//        cout << " Player " << p << endl;
+//    }
 
     cout << "Player " << team.idPlayer2 << " available partners: " << endl;
-    for (int p : playersPossiblePartners[team.idPlayer2]) {
-        cout << " Player " << p << endl;
-    }
+//    for (int p : playersPossiblePartners[team.idPlayer2]) {
+//        cout << " Player " << p << endl;
+//    }
     removePlayerFromPossiblePartner(team.idPlayer1, team.idPlayer2);
     removePlayerFromPossiblePartner(team.idPlayer2, team.idPlayer1);
 }
@@ -134,6 +134,10 @@ void Manager::saveResult(int fieldId, int resultLocal, int resultVisitant) {
     freeFields[fieldId] = true;
     removePlayersFromPossiblePartners(teamsMatch.localTeam);
     removePlayersFromPossiblePartners(teamsMatch.visitTeam);
+    cout << "Match between " + to_string(teamsMatch.localTeam.idPlayer1) + " and " +
+            to_string(teamsMatch.localTeam.idPlayer2) + " vs " + to_string(teamsMatch.visitTeam.idPlayer1) +
+            " and " + to_string(teamsMatch.visitTeam.idPlayer2) + " result: " + to_string(resultLocal) +
+            " " +  to_string(resultVisitant) << endl;
     playersInGame = playersInGame - 4;
 
     auto idxLocalPlayer1 = static_cast<unsigned int>(idToVectorIndexMap[teamsMatch.localTeam.idPlayer1]);
@@ -283,37 +287,6 @@ void Manager::removeRandomWaitingPlayer() {
     int randomPlayer = getRandomInt(0, static_cast<int>(waitingPlayers.size()));
     sendMessageToPlayer(waitingPlayers[randomPlayer], OrgPlayerResponse{0, ENUM_LEAVE_STADIUM});
     waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), waitingPlayers[randomPlayer]));
-}
-
-/**
- * It will try to form teams with all the waiting players. It will try to assign fields to all the waiting teams.
- */
-void Manager::formTeamsAndAssignFields() {
-    bool teamFormed = true;
-    // Iterates this way, because removing elements in different places while iterating can cause crashes.
-    // So they iterate till they cant form a new team.
-    while (teamFormed) {
-        auto waitingPlayer = waitingPlayers.begin();
-        Team team{*waitingPlayer, 0};
-        teamFormed = false;
-        while (waitingPlayer != waitingPlayers.end() and !teamFormed) {
-            teamFormed = assignPartner(&team);
-            waitingPlayer++;
-        }
-        if (teamFormed) {
-            waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), team.idPlayer1));
-            waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), team.idPlayer2));
-            waitingTeams.push_back(team);
-        }
-    }
-    bool assignedField = true;
-    while (waitingTeams.size() >= 2 and assignedField) {
-        assignedField = assignField(waitingTeams[waitingTeams.size() - 1], waitingTeams[waitingTeams.size() - 2]);
-        if (assignedField) {
-            waitingTeams.pop_back();
-            waitingTeams.pop_back();
-        }
-    }
 }
 
 /**
