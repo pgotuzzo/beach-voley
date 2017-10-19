@@ -50,6 +50,7 @@ private:
     vector<bool> freeFields;
     Pipe *receiveTaskPipe;
     unsigned int rows, columns;
+    bool tournamentStart=false;
     vector<int> fieldPids;
     void findPartner(int playerPid);
 

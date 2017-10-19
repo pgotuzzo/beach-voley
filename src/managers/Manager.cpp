@@ -316,41 +316,46 @@ void Manager::removeRandomWaitingPlayer() {
  * @param playerId the id of the player.
  */
 void Manager::findPartner(int playerId) {
-    if (playerPlayAllGamesOrHasNoPossiblePartner(playerId)) {
-        // LEAVE TOURNAMENT - All matches played
-        // LEAVE TOURNAMENT - Or no more players to play
-        cout << TAG << "Player " << playerId
-             << " already played all the matches allowed or cant play more. Dismissing him from tournament!" << endl;
-        sendMessageToPlayer(playerId, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
-        removePlayerFromAllPossiblePartners(playerId);
-        totalPlayersInTournament--;
+    if (!tournamentStart) {
+        waitingPlayers.push_back(playerId);
+        tournamentStart = waitingPlayers.size() > 10;
     } else {
-        // FIND PARTNER - Matches to play
-        Team localTeam = Team{playerId, 0};
-        if (assignPartner(&localTeam)) {
-            // PARTNER FOUND - Local team ready
-            cout << TAG << "Player " << playerId << " now has a partner: Player " << localTeam.idPlayer2 << endl;
-            waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), localTeam.idPlayer2));
-            Team opponentTeam{};
-            if (findOpponents(&opponentTeam)) {
-                if (assignField(localTeam, opponentTeam)) {
-                    waitingTeams.erase(find(waitingTeams.begin(), waitingTeams.end(), opponentTeam));
+        if (playerPlayAllGamesOrHasNoPossiblePartner(playerId)) {
+            // LEAVE TOURNAMENT - All matches played
+            // LEAVE TOURNAMENT - Or no more players to play
+            cout << TAG << "Player " << playerId
+                 << " already played all the matches allowed or cant play more. Dismissing him from tournament!" << endl;
+            sendMessageToPlayer(playerId, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
+            removePlayerFromAllPossiblePartners(playerId);
+            totalPlayersInTournament--;
+        } else {
+            // FIND PARTNER - Matches to play
+            Team localTeam = Team{playerId, 0};
+            if (assignPartner(&localTeam)) {
+                // PARTNER FOUND - Local team ready
+                cout << TAG << "Player " << playerId << " now has a partner: Player " << localTeam.idPlayer2 << endl;
+                waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), localTeam.idPlayer2));
+                Team opponentTeam{};
+                if (findOpponents(&opponentTeam)) {
+                    if (assignField(localTeam, opponentTeam)) {
+                        waitingTeams.erase(find(waitingTeams.begin(), waitingTeams.end(), opponentTeam));
+                    } else {
+                        waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), localTeam.idPlayer2));
+                        waitingTeams.push_back(localTeam);
+                    }
                 } else {
-                    waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), localTeam.idPlayer2));
+                    cout << TAG << "Couldn't find an opponent" << endl;
                     waitingTeams.push_back(localTeam);
                 }
             } else {
-                cout << TAG << "Couldn't find an opponent" << endl;
-                waitingTeams.push_back(localTeam);
+                cout << TAG << "Player " << playerId << " don't have a partner available. :sad: " << endl;
+                // PARTNER NOT FOUND - Team ready
+                if (stadiumIsFull()) {
+                    cout << TAG << "Stadium is full...removing a (random) player!" << endl;
+                    removeRandomWaitingPlayer();
+                }
+                waitingPlayers.push_back(playerId);
             }
-        } else {
-            cout << TAG << "Player " << playerId << " don't have a partner available. :sad: " << endl;
-            // PARTNER NOT FOUND - Team ready
-            if (stadiumIsFull()) {
-                cout << TAG << "Stadium is full...removing a (random) player!" << endl;
-                removeRandomWaitingPlayer();
-            }
-            waitingPlayers.push_back(playerId);
         }
     }
 }
