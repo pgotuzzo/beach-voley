@@ -8,12 +8,14 @@ void TournamentBoard::printTableValues() {
     std::cout << "Pid\t | Puntos" << std::endl;
     lockForSharedVectors->tomarLock();
     for (unsigned int i = 0; i < numberOfPlayers; ++i) {
-        std::cout << pidsTable->leer(i) << "\t | " << pointsTable->leer(i);
+        std::cout << i << " | " << pointsTable->leer(i)<< std::endl;
     }
     lockForSharedVectors->liberarLock();
 }
 
 TournamentBoard::TournamentBoard(VectorCompartido<int> *pidsTable, VectorCompartido<int> *pointsTable,
-                                 LockFile *lockForSharedVectors) : pidsTable(pidsTable), pointsTable(pointsTable),
-                                                                   lockForSharedVectors(lockForSharedVectors) {
+                                 LockFile *lockForSharedVectors,
+                                 unsigned long numberOfPlayers) : pidsTable(pidsTable), pointsTable(pointsTable),
+                                                        lockForSharedVectors(lockForSharedVectors),
+                                                        numberOfPlayers(numberOfPlayers){
 }

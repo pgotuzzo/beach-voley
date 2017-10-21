@@ -26,7 +26,7 @@ public:
     TideMonitor(int checkTideMaxSeconds, int checkTideMinSeconds, float fallTideProb,
                 float riseTideProb, vector<vector<int>> columnFieldsPids);
 
-    void startMonitoring();
+    int startMonitoring();
 };
 
 

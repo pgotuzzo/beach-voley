@@ -108,7 +108,6 @@ void playTournament(Config config) {
     Manager manager{config.tournamentParams, idsTable, pointsTable, &lockForSharedVectors, &managerReceive,
                     playersIdPipeMap, fieldPids};
     manager.initManager();
-    TournamentBoard tournamentBoard{idsTable, pointsTable, &lockForSharedVectors};
 
     vector<vector<int>> fieldsInColumns;
     for (int i = 0; i < config.tournamentParams.columns; i++) {
@@ -118,8 +117,9 @@ void playTournament(Config config) {
         }
         fieldsInColumns.push_back(col);
     }
-    TideMonitor tideMonitor{2, 1, 0.3, 0.4, fieldsInColumns};
-    tideMonitor.startMonitoring();
+
+    TideMonitor tideMonitor{2, 1, 0, 0, fieldsInColumns};
+    int tidePid = tideMonitor.startMonitoring();
 
     // Players
     Semaforo *stadiumTurnstile = ResourceHandler::getInstance()->getSemaforo(SEM_TURNSTILE);
@@ -129,12 +129,37 @@ void playTournament(Config config) {
         player.initPlayer();
     }
     managerReceive.cerrar();
+
+
+    // Interrumption handler
+    SIGINT_Handler handler;
+    SignalHandler::getInstance()->registrarHandler(SIGINT, (EventHandler *) &handler);
+
+    auto processToWait = static_cast<int>(config.tournamentParams.players.size()
+                                          + config.tournamentParams.columns * config.tournamentParams.rows);
+    for (int i = 0; i < processToWait; i++) {
+        wait(nullptr);
+    }
+
+    TournamentBoard tournamentBoard{idsTable, pointsTable, &lockForSharedVectors,
+                                    config.tournamentParams.players.size()};
+    tournamentBoard.printTableValues();
+
+    kill(tidePid, SIGKILL);
+    // 3 = tide monitor, manager, game board
+    for (int i = 0; i < 2; i++) {
+        wait(nullptr);
+    }
+    cout << "FINALIZANDO...";
+
+    ResourceHandler::getInstance()->freeResources();
+    exit(0);
 }
 
 int main(int argc, char *argv[]) {
     Config config = parseArguments(argc, argv);
     validConfig(config);
-
+    int tidePid = 0;
     if (config.mode == MANUAL) {
         showHelp();
         exit(0);
@@ -143,20 +168,4 @@ int main(int argc, char *argv[]) {
         ResourceHandler::init(config);
         playTournament(config);
     }
-
-    // Interrumption handler
-    SIGINT_Handler handler;
-    SignalHandler::getInstance()->registrarHandler(SIGINT, (EventHandler *) &handler);
-
-    // 3 = tide monitor, manager, game board
-    auto processToWait = static_cast<int>(config.tournamentParams.players.size()
-                                          + config.tournamentParams.columns * config.tournamentParams.rows + 3);
-    for (int i = 0; i < processToWait; i++) {
-        wait(nullptr);
-    }
-
-    cout << "FINALIZANDO...";
-
-    ResourceHandler::getInstance()->freeResources();
-    exit(0);
 }

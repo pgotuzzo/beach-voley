@@ -45,9 +45,10 @@ TideMonitor::TideChange TideMonitor::simulateTide() {
  * Start checking for tide changes an send signals to the fields
  * if the tides rise or fall.
  */
-void TideMonitor::startMonitoring() {
+int TideMonitor::startMonitoring() {
     __pid_t pid = fork();
     if (pid == 0) {
+        cout<< getpid()<< " tide"<<endl;
         bool tournamentEnded = false;
         while (!tournamentEnded) {
             TideChange tideChange = simulateTide();
@@ -67,6 +68,6 @@ void TideMonitor::startMonitoring() {
                 }
             }
         }
-
     }
+    return pid;
 }

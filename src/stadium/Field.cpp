@@ -89,11 +89,11 @@ void Field::readyForGames() {
                 log("Se comunica el resultado");
                 sendResult();
                 log("Finalizo el partido");
+                releasePlayers();
             } else {
                 log("El partido se cancelo por inundacion");
             }
         }
-        releasePlayers();
     }
 }
 

@@ -26,6 +26,10 @@ Manager::Manager(TournamentParams tournamentParams, VectorCompartido<int> *idsTa
     for (int i = 0; i < totalPlayersInTournament; i++) {
         this->playersPossiblePartners.emplace(i, valuesPlayers);
     }
+
+    for (unsigned int i = 0; i < totalPlayersInTournament; ++i) {
+        pointsTable->escribir(0, i);
+    }
 }
 
 /**
@@ -34,8 +38,8 @@ Manager::Manager(TournamentParams tournamentParams, VectorCompartido<int> *idsTa
 void Manager::initManager() {
     int pid = fork();
     if (pid == 0) {
+        cout<< getpid()<< " cancha"<<endl;
         this->receiveTask();
-        ResourceHandler::getInstance()->freeResources();
         exit(0);
     }
 }
@@ -47,11 +51,12 @@ void Manager::initManager() {
  */
 void Manager::receiveTask() {
     ssize_t out = 0;
-    while (!checkTournamentEnd() or playersInGame > 0) {
+    while (!checkTournamentEnd()) {
         count++;
         TaskRequest task{};
         cout << TAG << "Trying to read a task" << endl;
         cout << "Players in tournament " << to_string(totalPlayersInTournament) << endl;
+        cout << "Players in game " << to_string(playersInGame) << endl;
         out = receiveTaskPipe->leer(static_cast<void *>(&task), sizeof(TaskRequest));
         cout << TAG << "Read something... :thinking: " << task.show() << " out: " << out << endl;
 
@@ -89,6 +94,10 @@ void Manager::receiveTask() {
     for (auto player: waitingPlayers) {
         sendMessageToPlayer(player, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
     }
+    for (auto team: waitingTeams) {
+        sendMessageToPlayer(team.idPlayer1, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
+        sendMessageToPlayer(team.idPlayer2, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
+    }
 }
 
 /**
@@ -98,6 +107,9 @@ void Manager::receiveTask() {
  * @param tideRise true if the tide rise or false if the tide fall.
  */
 void Manager::updateFieldList(int fieldId, bool tideRise) {
+    if (tideRise and !freeFields[fieldId]) {
+        playersInGame = playersInGame-4;
+    }
     freeFields[fieldId] = !tideRise;
 }
 
@@ -379,7 +391,7 @@ bool Manager::playerPlayAllGamesOrHasNoPossiblePartner(int playerId) {
  * @return true if the tournament ends.
  */
 bool Manager::checkTournamentEnd() {
-    return totalPlayersInTournament < 4;
+    return totalPlayersInTournament <= 0;
 }
 
 /**

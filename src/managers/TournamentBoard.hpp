@@ -9,11 +9,11 @@ private:
     VectorCompartido<int> *pidsTable;
     VectorCompartido<int> *pointsTable;
     LockFile *lockForSharedVectors;
-    unsigned int numberOfPlayers;
+    unsigned long numberOfPlayers;
 
 public:
     TournamentBoard(VectorCompartido<int> *pidsTable, VectorCompartido<int> *pointsTable,
-                    LockFile *lockForSharedVectors);
+                    LockFile *lockForSharedVectors, unsigned long numberOfPlayers);
 
     void printTableValues();
 };
