@@ -64,7 +64,7 @@ TaskRequest ManagerProcess::receiveTask() {
 
 void ManagerProcess::onFindPartnerRequest(int playerId) {
     int idx = findPlayerById(*vPlayers, playerId);
-    vPlayers->at(idx).setState(Player::State::WAITING);
+    vPlayers->at(idx).setState(Player::State::WAITING_FOR_PARTNER);
 
     // Player leaves TOURNAMENT
     //      Case 1: tournament ended. For example, because one existing player doesn't have a potential partner in the tournament
@@ -75,28 +75,37 @@ void ManagerProcess::onFindPartnerRequest(int playerId) {
     }
     //      Case 3: player don't have potential partners
     if (vPlayers->at(idx).getPotentialPartners().empty()) {
+        matchMaker->releasePlayersWithoutMatch();
         securityGuard->dismissPlayersWaitingFromTournament();
         tournamentEnded = true;
         return;
     }
 
-    // Random player leaves STADIUM
-    if (!matchMaker->findPartnerAvailable(playerId) and isStadiumFull()) {
-        securityGuard->dismissPlayerFromStadium();
+    if (!matchMaker->findPartnerAvailable(playerId)) {
+        // Partner not found
+        if (isStadiumFull()) {
+            // Random player leaves STADIUM
+            securityGuard->dismissPlayerFromStadium();
 
-        // FIXME - Remove Mock - Begin
-        if (mockCounter > 0) {
-            mockCounter--;
+            // FIXME - Remove Mock - Begin
+            // if (mockCounter > 0) {
+            //    mockCounter--;
+            //} else {
+            //    for (Player p : *vPlayers) {
+            //        vPlayers->at(idx).removePotentialPartner(p.getId());
+            //    }
+            //}
+            // FIXME - Remove Mock - End
+
         } else {
-            for (Player p : *vPlayers) {
-                vPlayers->at(idx).removePotentialPartner(p.getId());
-            }
+            // Player stays waiting for a partner to be assignated to him
+            Logger::d(TAG + vPlayers->at(idx).getName() + " esta esperando por un compañero");
         }
-        // FIXME - Remove Mock - End
-
-    } else {
-        Logger::d(TAG + vPlayers->at(idx).getName() + " esta esperando por un compañero");
+        return;
     }
+
+    // Check if there is a match already set up and an empty field
+    matchMaker->checkFieldAssignation();
 }
 
 void ManagerProcess::onMatchResultRequest(int fieldId, int localScore, int visitantScore) {
@@ -108,7 +117,6 @@ void ManagerProcess::onTideChangeRequest(bool rise) {
 }
 
 bool ManagerProcess::isStadiumFull() {
-    vector<Player> playersWaiting = findPlayersByState(*vPlayers, Player::State::WAITING);
-    vector<Player> playersPlaying = findPlayersByState(*vPlayers, Player::State::PLAYING);
-    return playersPlaying.size() + playersWaiting.size() == stadiumCapacity;
+    vector<Player> playersWaiting = findPlayersByState(*vPlayers, Player::State::OUTSIDE);
+    return vPlayers->size() - playersWaiting.size() == stadiumCapacity;
 }

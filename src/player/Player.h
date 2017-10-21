@@ -11,7 +11,7 @@ using namespace std;
 class Player {
 public:
     enum State {
-        OUTSIDE, WAITING, PLAYING
+        OUTSIDE, WAITING_FOR_PARTNER, PARTNER_ASSIGNED, READY_FOR_MATCH
     };
 
 private:

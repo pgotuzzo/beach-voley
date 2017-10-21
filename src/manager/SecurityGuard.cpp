@@ -10,7 +10,8 @@ SecurityGuard::SecurityGuard(vector<Player> *players) : vPlayers(players) {}
 void SecurityGuard::dismissPlayer(Player player, DismissAction action) {
     OrgPlayerResponse response{};
     response.fieldId = 0;
-    response.playerAction = (action == DismissAction::STADIUM ? PlayerAction::LEAVE_STADIUM : PlayerAction::LEAVE_TOURNAMENT);
+    response.playerAction = (action == DismissAction::STADIUM ? PlayerAction::LEAVE_STADIUM
+                                                              : PlayerAction::LEAVE_TOURNAMENT);
 
     Pipe *pipe = player.getPipe();
     pipe->setearModo(Pipe::ESCRITURA);
@@ -23,7 +24,7 @@ void SecurityGuard::dismissPlayer(Player player, DismissAction action) {
 }
 
 void SecurityGuard::dismissPlayerFromStadium() {
-    vector<Player> playersWaiting = findPlayersByState(*vPlayers, Player::State::WAITING);
+    vector<Player> playersWaiting = findPlayersByState(*vPlayers, Player::State::WAITING_FOR_PARTNER);
     int randomIdx = getRandomInt(0, static_cast<int>(playersWaiting.size() - 1));
     Player playerToDismiss = playersWaiting[randomIdx];
     Logger::d(TAG + "Se despide a " + playerToDismiss.getName() + " del predio");
@@ -51,11 +52,15 @@ void SecurityGuard::dismissPlayerFromTournament(int playerId) {
 }
 
 void SecurityGuard::dismissPlayersWaitingFromTournament() {
-    Logger::d(TAG + "Se despide a todos los jugadores en espera del torneo");
-    vector<Player> playersWaiting = findPlayersByState(*vPlayers, Player::State::WAITING);
-    for(Player p : playersWaiting){
-        if (p.getState() == Player::State::WAITING) {
-            dismissPlayerFromTournament(p.getId());
-        }
+    Logger::d(TAG + "Se despide a todos los jugadores en espera de pareja u oponente del torneo");
+    // Players who don't have a partner assigned
+    vector<Player> playersWaiting = findPlayersByState(*vPlayers, Player::State::WAITING_FOR_PARTNER);
+    for (Player p : playersWaiting) {
+        dismissPlayerFromTournament(p.getId());
+    }
+    // Players who have a partner (team made) but haven't found an opponent
+    vector<Player> playersWaitingForOpponent = findPlayersByState(*vPlayers, Player::State::PARTNER_ASSIGNED);
+    for (Player p : playersWaitingForOpponent) {
+        dismissPlayerFromTournament(p.getId());
     }
 }
