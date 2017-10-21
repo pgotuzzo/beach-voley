@@ -1,52 +1,54 @@
-#ifndef BEACH_VOLEY_PLAYER_H
-#define BEACH_VOLEY_PLAYER_H
+#ifndef BEACH_VOLEY_AUX_PLAYER_H
+#define BEACH_VOLEY_AUX_PLAYER_H
 
-#include <string>
-#include "../config/Definitions.h"
-#include "../stadium/Field.h"
-#include "../stadium/Stadium.h"
-#include "../../Logger/Logger.h"
-#include "PartnerRequester.h"
+
+#include "../ipc/Semaforo.h"
+#include "../ipc/Pipe.h"
+#include "../cons/Definition.h"
 
 using namespace std;
 
-
 class Player {
+public:
+    enum State {
+        OUTSIDE, WAITING, PLAYING
+    };
 
 private:
     int id;
     string name;
-    Stadium *stadium;
-    const Semaforo *stadiumTurnstile;
-    OrgPlayerResponse response;
-    PartnerRequester *requester;
-
-    Field getField();
-
-    SemaforoInfo getSemaforoInfoEntry();
-
-    void partnerRequest();
-
-    void goToPlayGame();
-
-    void leaveField();
-
-    void log(string message);
-
-    void enterStadium();
-
-    void leaveStadium();
-
-    SemaforoInfo getSemaforoInfoExit();
+    State state;
+    Pipe *pipe;
+    vector<int> potentialPartners;
+    int matchesCount = 0;
 
 public:
-    Player(int id, const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile,
-           Pipe *receiveResponsesPipe, Pipe *sendRequestPipe);
 
-    void play();
+    Player(int id, string name, Pipe *pipe);
 
-    void initPlayer();
+    bool operator==(const Player &player) const;
+
+    int getId();
+
+    string getName();
+
+    void setState(State state);
+
+    State getState();
+
+    Pipe *getPipe();
+
+    void addPotentialPartner(int id);
+
+    vector<int> getPotentialPartners();
+
+    void removePotentialPartner(int id);
+
+    int getMatchesCount();
+
+    void increaseMatchesCount();
+
 };
 
 
-#endif //BEACH_VOLEY_PLAYER_H
+#endif //BEACH_VOLEY_AUX_PLAYER_H

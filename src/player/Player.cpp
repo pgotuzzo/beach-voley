@@ -1,110 +1,54 @@
 
-#include <iostream>
 #include "Player.h"
 
-using namespace std;
+Player::Player(int id, string name, Pipe *pipe) : id(id), name(name), state(OUTSIDE), pipe(pipe), matchesCount(0) {}
 
-Player::Player(int id, const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile,
-               Pipe *receiveResponsesPipe, Pipe *sendRequestPipe) :
-        id(id), name(name), stadium(stadium), stadiumTurnstile(stadiumTurnstile) {
-    this->requester = new PartnerRequester(id, name, receiveResponsesPipe, sendRequestPipe);
+bool Player::operator==(const Player &player) const {
+    return this->id == player.id;
 }
 
-void Player::initPlayer() {
-    int pid = fork();
-    if (pid == 0) {
-        play();
-        exit(0);
+int Player::getId() {
+    return id;
+}
+
+string Player::getName() {
+    return name;
+}
+
+void Player::setState(Player::State state) {
+    this->state = state;
+}
+
+Player::State Player::getState() {
+    return state;
+}
+
+Pipe *Player::getPipe() {
+    return pipe;
+}
+
+void Player::addPotentialPartner(int playerId) {
+    auto match = find(potentialPartners.begin(), potentialPartners.end(), playerId);
+    if (match == potentialPartners.end()) {
+        potentialPartners.push_back(playerId);
     }
 }
 
-/**
- * The player starts playing.
- * The player will try to enter the stadium as long as the tournament doesn't finish.
- * Once inside the stadium he will search for a partner, go play the games, and search
- * for new partners again, till he couldn't have partner or the tournament ends.
- */
-void Player::play() {
-    bool leaveTournament = false;
-    while (!leaveTournament) {
-        log("Entrando al predio...");
-        enterStadium();
-        log("Buscando compañero...");
-        partnerRequest();
-        while (response.playerAction == ENUM_PLAY) {
-            log("Compañero asignado! Yendo a jugar");
-            goToPlayGame();
-            log("Dejando la cancha");
-            leaveField();
-            log("Buscando compañero...");
-            partnerRequest();
-        }
-        if (response.playerAction == ENUM_LEAVE_TOURNAMENT) {
-            leaveTournament = true;
-        }
-        log("Saliendo del predio...");
-        leaveStadium();
+vector<int> Player::getPotentialPartners() {
+    return potentialPartners;
+}
+
+void Player::removePotentialPartner(int playerId) {
+    auto match = find(potentialPartners.begin(), potentialPartners.end(), playerId);
+    if (match != potentialPartners.end()) {
+        potentialPartners.erase(match);
     }
-    log("Saliendo del torneo...");
 }
 
-/**
- * Player make the request to the Manager over fifo FIFO_FILE_MANAGER_RECEIVE_TASK
- * and waits for the response Manager in the other Fifo FIFO_FILE_PARTNER_RESPONSE + id
- * */
-void Player::partnerRequest() {
-    requester->request();
-    response = requester->waitResponse();
+int Player::getMatchesCount() {
+    return matchesCount;
 }
 
-/**
- * Enter in to the Field and .
- * */
-void Player::goToPlayGame() {
-    SemaforoInfo semInfo = getSemaforoInfoEntry();
-    string aux = "Yendo a la cancha: " + to_string(semInfo.id);
-    log(aux);
-    semInfo.s->v(semInfo.id);
-    log("Adentro de la cancha");
+void Player::increaseMatchesCount() {
+    matchesCount++;
 }
-
-/**
- * Leaves the field when the Field release the semaphore
- * */
-void Player::leaveField() {
-    SemaforoInfo semInfo = getSemaforoInfoExit();
-    semInfo.s->p(semInfo.id);
-}
-
-SemaforoInfo Player::getSemaforoInfoEntry() {
-    return getField().getEntry();
-}
-
-
-SemaforoInfo Player::getSemaforoInfoExit() {
-    return getField().getExit();
-}
-
-Field Player::getField() {
-    return this->stadium->getField(response.fieldId);
-}
-
-void Player::log(string message) {
-    string aux = "Player " + name + ": " + message;
-    Logger::getInstance()->logMessage(aux.c_str());
-}
-
-/**
- * It waits till there is place inside the stadium.
- */
-void Player::enterStadium() {
-    stadiumTurnstile->p(0);
-}
-
-/**
- * It leaves the stadium
- */
-void Player::leaveStadium() {
-    stadiumTurnstile->v(0);
-}
-
