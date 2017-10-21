@@ -5,7 +5,10 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(IPC
         src/ipc/Semaforo.cpp src/ipc/Semaforo.h
-        src/ipc/Pipe.cpp src/ipc/Pipe.h)
+        src/ipc/Pipe.cpp src/ipc/Pipe.h
+        src/ipc/signal/SignalHandler.cpp src/ipc/signal/SignalHandler.h
+        src/ipc/signal/EventHandler.h
+        src/ipc/signal/SIGINT_Handler.h)
 
 set(UTILS
         src/util/Logger.cpp src/util/Logger.h

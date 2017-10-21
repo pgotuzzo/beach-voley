@@ -9,6 +9,8 @@
 #include "util/ResourceHandler.h"
 #include "cons/Constants.h"
 #include "player/PlayerProcess.h"
+#include "ipc/signal/SignalHandler.h"
+#include "ipc/signal/SIGINT_Handler.h"
 
 int main() {
     // Remove any previous log
@@ -35,6 +37,9 @@ int main() {
 
     // Resource Handler initialization - Creates all the IPC objects
     ResourceHandler::init(config);
+    //      Signal handler in order to avoid ipc resources being wasted
+    SIGINT_Handler handler;
+    SignalHandler::getInstance()->registrarHandler(SIGINT, (EventHandler *) &handler);
 
     // Semaforos
     Semaforo *tournamentSubscription = ResourceHandler::getSemaforo(PATH_SEM_TOURNAMENT_SUBSCRIPTION);
