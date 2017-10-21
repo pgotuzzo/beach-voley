@@ -2,11 +2,11 @@
 #include <cstring>
 #include <utility>
 #include "Field.h"
-#include "../../util/RandomNumber.h"
-#include "../../util/ResourceHandler.h"
 
 #include "../../IPCClasses/signal/SignalHandler.h"
 #include "../../IPCClasses/signal/SIGINT_HandlerForField.h"
+#include "../util/RandomNumber.h"
+#include "../logger/Logger.h"
 
 
 Field::Field(unsigned short id, string name, Semaforo *entrance, Semaforo *exit, const int minGameDurationInMicro,

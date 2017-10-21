@@ -1,12 +1,19 @@
-#include <unistd.h>
-#include <signal.h>
-
-#include <utility>
-#include <iostream>
 #include "TideMonitor.h"
-#include "../../util/RandomNumber.h"
+#include "../util/RandomNumber.h"
+#include "../../IPCClasses/signal/SIGINT_Handler.h"
+#include "../../IPCClasses/signal/SignalHandler.h"
 
 using namespace std;
+
+/**
+ * Logs a message with aditional information about the process and class.
+ * @param message the message to log
+ */
+void logMessage(const string &message) {
+    string messageToLog = to_string(getpid()) + string(" Tide Monitor: ") + message;
+    Logger::getInstance()->logMessage(messageToLog.c_str());
+    cout<<messageToLog<<endl;
+}
 
 /**
  * Tide monitor constructor initialize the attributes.
@@ -16,11 +23,10 @@ using namespace std;
  * @param fallTideProb Probability that the tides fall.
  * @param riseTideProb Probability that the tides rise.
  */
-TideMonitor::TideMonitor(const int checkTideMaxSeconds, const int checkTideMinSeconds, const float fallTideProb,
-                         const float riseTideProb, vector<vector<int>> columnFieldsPids)
-        : checkTideMaxSeconds(checkTideMaxSeconds), checkTideMinSeconds(checkTideMinSeconds),
-          fallTideProb(fallTideProb), riseTideProb(riseTideProb), columnFieldsPids(move(columnFieldsPids)),
-          totalColumns(columnFieldsPids.size()) {
+TideMonitor::TideMonitor(const int checkTideMinMicroseconds, const int checkTideMaxMicroseconds, const float fallTideProb,
+                         const float riseTideProb, vector<vector<int>> columnsFieldsPids)
+        : checkTideMaxMicroseconds(checkTideMaxMicroseconds), checkTideMinMicroseconds(checkTideMinMicroseconds),
+          fallTideProb(fallTideProb), riseTideProb(riseTideProb), columnsFieldsPids(move(columnsFieldsPids)) {
 }
 
 /**
@@ -29,45 +35,48 @@ TideMonitor::TideMonitor(const int checkTideMaxSeconds, const int checkTideMinSe
  * @return return the status of the tides.
  */
 TideMonitor::TideChange TideMonitor::simulateTide() {
-    sleep(getRandomUnsignedInt(checkTideMinSeconds, checkTideMaxSeconds));
+    unsigned int waitMicroseconds = getRandomUnsignedInt(checkTideMinMicroseconds, checkTideMaxMicroseconds);
+    logMessage(string("sleeps ") + to_string(waitMicroseconds/1000) + string(" milliseconds to check for tides"));
+    usleep(waitMicroseconds);
     double p = getRandomDouble();
     if (p < riseTideProb) {
-        cout << "Tide rise"<< endl;
         return RISE;
     } else if (p < (riseTideProb + fallTideProb)) {
-        cout << "Tide fall"<< endl;
         return FALL;
     }
     return DONT_CHANGE;
 }
 
 /**
- * Start checking for tide changes an send signals to the fields
- * if the tides rise or fall.
+ * Start checking for tide changes an send signals to the corresponding fields
+ * if the tides rise or fall. It will check till it receives a SIGINT.
  */
-int TideMonitor::startMonitoring() {
-    __pid_t pid = fork();
-    if (pid == 0) {
-        cout<< getpid()<< " tide"<<endl;
-        bool tournamentEnded = false;
-        while (!tournamentEnded) {
-            TideChange tideChange = simulateTide();
-            if (tideChange == RISE) {
-                if (tideStatus + 1 < totalColumns - 1) {
-                    tideStatus++;
-                    for (auto fieldPid: columnFieldsPids[tideStatus]) {
-                        kill(fieldPid, SIGINT);
-                    }
+void TideMonitor::startMonitoring() {
+    SIGINT_Handler sigint_handler;
+    SignalHandler::getInstance()->registrarHandler(SIGINT, &sigint_handler);
+
+    while (sigint_handler.getGracefulQuit() == 0) {
+        TideChange tideChange = simulateTide();
+        if (tideChange == RISE) {
+            if (tideStatus + 1 < columnsFieldsPids.size() - 1) {
+                tideStatus++;
+                logMessage(string("the tide rises to the column ") + to_string(tideStatus));
+                for (auto fieldPid: columnsFieldsPids[tideStatus]) {
+                    kill(fieldPid, SIGINT);
+                    logMessage(string("send notification to field pid ") + to_string(fieldPid));
                 }
-            } else if (tideChange == FALL) {
-                if (tideStatus >= 0) {
-                    for (auto fieldPid: columnFieldsPids[tideStatus]) {
-                        kill(fieldPid, SIGINT);
-                    }
-                    tideStatus--;
+            }
+        } else if (tideChange == FALL) {
+            if (tideStatus >= 0) {
+                logMessage(string("the tide falls from the column ") + to_string(tideStatus));
+                for (auto fieldPid: columnsFieldsPids[tideStatus]) {
+                    kill(fieldPid, SIGINT);
+                    logMessage(string("send notification to field pid ") + to_string(fieldPid));
                 }
+                tideStatus--;
             }
         }
     }
-    return pid;
+
+    SignalHandler::destruir();
 }

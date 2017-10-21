@@ -3,11 +3,11 @@
 #include "config/Config.h"
 #include "config/Constants.h"
 #include "managers/Manager.h"
-#include "../util/StringUtils.h"
 #include "../IPCClasses/signal/SignalHandler.h"
 #include "../IPCClasses/signal/SIGINT_Handler.h"
 #include "managers/TournamentBoard.hpp"
 #include "monitor/TideMonitor.h"
+#include "util/StringUtils.h"
 
 void playTournament(Config config);
 
@@ -117,9 +117,13 @@ void playTournament(Config config) {
         }
         fieldsInColumns.push_back(col);
     }
+    __pid_t tideMonitorPid = fork();
 
-    TideMonitor tideMonitor{2, 1, 0, 0, fieldsInColumns};
-    int tidePid = tideMonitor.startMonitoring();
+    if (tideMonitorPid == 0) {
+        TideMonitor tideMonitor{2, 1, 0, 0, fieldsInColumns};
+        tideMonitor.startMonitoring();
+        exit(0);
+    }
 
     // Players
     Semaforo *stadiumTurnstile = ResourceHandler::getInstance()->getSemaforo(SEM_TURNSTILE);
@@ -145,7 +149,7 @@ void playTournament(Config config) {
                                     config.tournamentParams.players.size()};
     tournamentBoard.printTableValues();
 
-    kill(tidePid, SIGKILL);
+    kill(tideMonitorPid, SIGKILL);
     // 3 = tide monitor, manager, game board
     for (int i = 0; i < 2; i++) {
         wait(nullptr);

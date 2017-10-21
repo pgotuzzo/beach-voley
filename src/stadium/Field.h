@@ -2,7 +2,6 @@
 #define BEACH_VOLEY_FIELD_H
 
 #include "../../IPCClasses/Semaforo.h"
-#include "../../Logger/Logger.h"
 #include "../config/Definitions.h"
 #include "../../IPCClasses/Pipe.h"
 

@@ -1,8 +1,8 @@
-#ifndef BEACH_VOLEY_MONITORMAREA_H
-#define BEACH_VOLEY_MONITORMAREA_H
-
+#ifndef BEACH_VOLEY_TIDEMONITOR_H
+#define BEACH_VOLEY_TIDEMONITOR_H
 
 #include <vector>
+#include "../logger/Logger.h"
 
 using namespace std;
 
@@ -12,22 +12,23 @@ private:
         RISE, FALL, DONT_CHANGE
     };
 
-    const int checkTideMinSeconds;
-    const int checkTideMaxSeconds;
-    unsigned long totalColumns;
+    const int checkTideMinMicroseconds;
+    const int checkTideMaxMicroseconds;
     const float riseTideProb;
     const float fallTideProb;
-    vector<vector<int>> columnFieldsPids;
+    // Every vector inside the main vector is a column with field pids.
+    vector<vector<int>> columnsFieldsPids;
+    // This represents in what column is the tide. (-1 is in the sea).
     int tideStatus = -1;
 
     TideChange simulateTide();
 
 public:
-    TideMonitor(int checkTideMaxSeconds, int checkTideMinSeconds, float fallTideProb,
-                float riseTideProb, vector<vector<int>> columnFieldsPids);
+    TideMonitor(int checkTideMinMicroseconds, int checkTideMaxMicroseconds, float fallTideProb,
+                float riseTideProb, vector<vector<int>> columnsFieldsPids);
 
-    int startMonitoring();
+    void startMonitoring();
 };
 
 
-#endif //BEACH_VOLEY_MONITORMAREA_H
+#endif //BEACH_VOLEY_TIDEMONITOR_H

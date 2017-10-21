@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "ResourceHandler.h"
-#include "../src/config/Constants.h"
+#include "../config/Constants.h"
 
 // TODO - Move to a FileUtils class
 void createFileIfNotExist(const string &path) {

@@ -1,7 +1,7 @@
 #include <sstream>
 #include "Stadium.h"
 #include "../config/Constants.h"
-#include "../../util/ResourceHandler.h"
+#include "../util/ResourceHandler.h"
 
 Stadium::Stadium(int columns, int rows, int minGameDurationInMicro, int maxGameDurationInMicro, Pipe *managerReceive) {
     this->columns = columns;

@@ -8,6 +8,6 @@ using namespace std;
 
 string toString(const char *aCharPtr[], int count);
 
-string toString(const vector<string> v);
+string toString(vector<string> v);
 
 #endif //BEACH_VOLEY_STRINGUTILS_H

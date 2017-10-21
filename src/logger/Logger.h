@@ -5,7 +5,6 @@
 
 class Logger {
 private:
-    const char *fecha;
     static Logger *instance;
 
     Logger() = default;

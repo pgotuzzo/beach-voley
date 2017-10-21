@@ -1,10 +1,11 @@
 #include <cstring>
 
 #include <algorithm>
+#include <utility>
 #include <signal.h>
 #include "Manager.h"
-#include "../../util/ResourceHandler.h"
-#include "../../util/RandomNumber.h"
+#include "../logger/Logger.h"
+#include "../util/RandomNumber.h"
 
 const char *TAG = "Manager: ";
 

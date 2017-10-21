@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include "Player.h"
+#include "../logger/Logger.h"
 
 using namespace std;
 

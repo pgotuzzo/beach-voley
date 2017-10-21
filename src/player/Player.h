@@ -5,7 +5,6 @@
 #include "../config/Definitions.h"
 #include "../stadium/Field.h"
 #include "../stadium/Stadium.h"
-#include "../../Logger/Logger.h"
 #include "PartnerRequester.h"
 
 using namespace std;

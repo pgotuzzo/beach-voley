@@ -2,10 +2,10 @@
 #define BEACH_VOLEY_RESOURCEHANDLER_H
 
 #include <map>
-#include "../IPCClasses/Semaforo.h"
-#include "../IPCClasses/VectorCompartido.h"
-#include "../src/config/Config.h"
-#include "../IPCClasses/Pipe.h"
+#include "../../IPCClasses/Semaforo.h"
+#include "../../IPCClasses/VectorCompartido.h"
+#include "../config/Config.h"
+#include "../../IPCClasses/Pipe.h"
 
 using namespace std;
 

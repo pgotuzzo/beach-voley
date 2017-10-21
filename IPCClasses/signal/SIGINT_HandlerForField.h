@@ -5,7 +5,6 @@
 #include <cassert>
 
 #include "EventHandler.h"
-#include "../../util/ResourceHandler.h"
 #include "../../src/stadium/Field.h"
 
 class SIGINT_HandlerForField : public EventHandler {
