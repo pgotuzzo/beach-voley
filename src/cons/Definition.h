@@ -37,7 +37,7 @@ enum TaskType {
 };
 
 struct TaskRequest {
-    int id;
+    int pid;
     int resultLocal;
     int resultVisitant;
     bool tideRise;
@@ -60,7 +60,7 @@ struct TaskRequest {
 
         stringstream stream;
         stream << "Tarea: " << tarea << endl
-               << "\tId del solicitante: " << to_string(id) << endl
+               << "\tPid del solicitante: " << to_string(pid) << endl
                << "\tResultado del partido: " << endl
                << "\t\tLocal: " << to_string(resultLocal) << endl
                << "\t\tVisitante: " << to_string(resultVisitant);

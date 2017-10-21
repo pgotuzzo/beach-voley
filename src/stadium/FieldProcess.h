@@ -2,6 +2,7 @@
 #define BEACH_VOLEY_FIELDPROCESS_H
 
 
+#include <sstream>
 #include "../ipc/Semaforo.h"
 #include "../ipc/Pipe.h"
 
@@ -12,9 +13,17 @@ private:
     struct MatchResult {
         int localScore;
         int visitantScore;
+
+        string toString() {
+            stringstream stream;
+            stream << "Resultado del partido:" << endl
+                   << "\t\tLocal: " << localScore << " - " << visitantScore << ":Visitante";
+            return stream.str();
+        }
     };
 
     const string TAG;
+    int semId;
     Pipe *managerQueue;
     Semaforo *entrance;
     Semaforo *exit;
@@ -30,7 +39,7 @@ private:
     void sendResult(MatchResult matchResult);
 
 public:
-    FieldProcess(string name, Pipe *managerQueue, Semaforo *entrance, Semaforo *exit);
+    FieldProcess(string name, Pipe *managerQueue, int semId, Semaforo *entrance, Semaforo *exit);
 
     int start();
 };

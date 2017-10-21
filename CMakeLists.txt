@@ -32,7 +32,7 @@ set(STADIUM
         src/stadium/Field.cpp src/stadium/Field.h
         src/stadium/FieldProcess.cpp src/stadium/FieldProcess.h)
 
-set(SOURCE_FILES src/main.cpp src/LauncherProcess.cpp src/LauncherProcess.h)
+set(SOURCE_FILES src/main.cpp src/LauncherProcess.cpp src/LauncherProcess.h src/util/FieldUtils.cpp src/util/FieldUtils.h)
 add_executable(beach_voley ${SOURCE_FILES} ${IPC} ${UTILS} ${CONS} ${MANAGER} ${PLAYER} ${STADIUM})
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tmp)

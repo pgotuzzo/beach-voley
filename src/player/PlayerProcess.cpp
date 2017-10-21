@@ -55,7 +55,7 @@ void PlayerProcess::play() {
 
 void PlayerProcess::sendFindPartnerRequest() {
     TaskRequest request{};
-    request.id = getpid();
+    request.pid = getpid();
     request.task = FIND_PARTNER;
 
     pipeToManager->setearModo(Pipe::ESCRITURA);

@@ -33,10 +33,10 @@ int ManagerProcess::start() {
             TaskRequest task = receiveTask();
             switch (task.task) {
                 case FIND_PARTNER:
-                    onFindPartnerRequest(task.id);
+                    onFindPartnerRequest(task.pid);
                     break;
                 case MATCH_RESULT:
-                    onMatchResultRequest(task.id, task.resultLocal, task.resultVisitant);
+                    onMatchResultRequest(task.pid, task.resultLocal, task.resultVisitant);
                     break;
                 case TIDE_CHANGE:
                     onTideChangeRequest(task.tideRise);

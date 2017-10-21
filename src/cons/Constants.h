@@ -3,7 +3,7 @@
 
 const int TOURNAMENT_MIN_PLAYERS_TO_START = 10;
 
-// Pipe id
+// Pipe pid
 const string PIPE_ID_MANAGER_QUEUE = "managerQueue";
 const string PIPE_ID_RESPONSE_TO_PLYER_N = "responseToPlayer";
 

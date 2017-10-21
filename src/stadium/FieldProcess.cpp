@@ -1,12 +1,14 @@
 #include "FieldProcess.h"
 #include "../util/Logger.h"
 #include "../util/RandomNumber.h"
+#include "../cons/Definition.h"
 
 const int PLAYER_PER_MATCH = 4;
 const int SETS_TO_WIN = 3;
 
-FieldProcess::FieldProcess(string name, Pipe *managerQueue, Semaforo *entrance, Semaforo *exit) :
-        TAG("Cancha " + name + ": "), managerQueue(managerQueue), entrance(entrance), exit(exit), playersInField(0) {}
+FieldProcess::FieldProcess(string name, Pipe *managerQueue, int semId, Semaforo *entrance, Semaforo *exit) :
+        TAG("Cancha " + name + ": "), managerQueue(managerQueue), semId(semId), entrance(entrance), exit(exit),
+        playersInField(0) {}
 
 int FieldProcess::start() {
     int pid = fork();
@@ -23,7 +25,7 @@ int FieldProcess::start() {
 
 void FieldProcess::waitForPlayers() {
     for (int i = 0; i < PLAYER_PER_MATCH; i++) {
-        entrance->p(0);
+        entrance->p(semId);
 
         Logger::d(TAG + "Recibio un nuevo jugador. Total: " + to_string(playersInField));
 
@@ -34,7 +36,7 @@ void FieldProcess::waitForPlayers() {
 FieldProcess::MatchResult FieldProcess::playMatch() {
     Logger::d(TAG + "Comienza el partido!");
 
-    // TODO - Add sleep
+    sleep(getRandomUnsignedInt(1, 4));
 
     bool localWin = getRandomBool();
     int looserScore = getRandomInt(0, SETS_TO_WIN - 1);
@@ -48,17 +50,29 @@ FieldProcess::MatchResult FieldProcess::playMatch() {
         result.visitantScore = SETS_TO_WIN;
     }
 
-    Logger::d(TAG + "Finalizo el partido!");
+    Logger::d(TAG + "Finalizo el partido!\n" + result.toString());
     return result;
 }
 
 void FieldProcess::releasePlayers() {
     Logger::d(TAG + "Se despiden a los jugadores" + to_string(playersInField));
     for (int i = 0; i < playersInField; i++) {
-        exit->v(0);
+        exit->v(semId);
     }
 }
 
 void FieldProcess::sendResult(MatchResult matchResult) {
-    // TODO - Implement
+    TaskRequest request{};
+    request.task = MATCH_RESULT;
+    request.pid = getpid();
+    request.resultLocal = matchResult.localScore;
+    request.resultVisitant = matchResult.visitantScore;
+
+    managerQueue->setearModo(Pipe::ESCRITURA);
+    ssize_t out = managerQueue->escribir(&request, sizeof(TaskRequest));
+    if (out < 0) {
+        Logger::e(TAG + " fallo el envio de una tarea!!!");
+        throw runtime_error(TAG + " fallo el envio de una tarea!!!");
+    }
+    Logger::d(TAG + "tarea enviada correctamente.\n" + request.toString());
 }
