@@ -14,3 +14,8 @@ double getRandomDouble() {
     srand(std::random_device()());
     return drand48();
 }
+
+bool getRandomBool() {
+    int res = getRandomInt(0, 1);
+    return res == 0;
+}

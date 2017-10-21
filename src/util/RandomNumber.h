@@ -26,4 +26,6 @@ unsigned int getRandomUnsignedInt(int minValue, int maxValue);
  */
 double getRandomDouble();
 
+bool getRandomBool();
+
 #endif //BEACH_VOLEY_RANDOMNUMBER_H

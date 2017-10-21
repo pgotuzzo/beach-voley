@@ -27,8 +27,13 @@ set(PLAYER
         src/player/Player.cpp src/player/Player.h
         src/player/PlayerProcess.cpp src/player/PlayerProcess.h)
 
+set(STADIUM
+        src/stadium/Stadium.cpp src/stadium/Stadium.h
+        src/stadium/Field.cpp src/stadium/Field.h
+        src/stadium/FieldProcess.cpp src/stadium/FieldProcess.h)
+
 set(SOURCE_FILES src/main.cpp src/LauncherProcess.cpp src/LauncherProcess.h)
-add_executable(beach_voley ${SOURCE_FILES} ${IPC} ${UTILS} ${CONS} ${MANAGER} ${PLAYER})
+add_executable(beach_voley ${SOURCE_FILES} ${IPC} ${UTILS} ${CONS} ${MANAGER} ${PLAYER} ${STADIUM})
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tmp)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/logs)

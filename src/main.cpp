@@ -17,6 +17,7 @@ int main() {
     Logger::reset();
 
     // Read parameters
+    // FIXME - Rehuse previous code
     Logger::d("Se leen los parametros...");
     Logger::d("Configuracion valida!");
 

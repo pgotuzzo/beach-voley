@@ -32,10 +32,9 @@ int ManagerProcess::start() {
         while (!vPlayers->empty()) {
             TaskRequest task = receiveTask();
             switch (task.task) {
-                case FIND_PARTNER: {
+                case FIND_PARTNER:
                     onFindPartnerRequest(task.id);
                     break;
-                }
                 case MATCH_RESULT:
                     onMatchResultRequest(task.id, task.resultLocal, task.resultVisitant);
                     break;
