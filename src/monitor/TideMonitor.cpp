@@ -1,7 +1,7 @@
 #include "TideMonitor.h"
 #include "../util/RandomNumber.h"
-#include "../../IPCClasses/signal/SIGINT_Handler.h"
 #include "../../IPCClasses/signal/SignalHandler.h"
+#include "../../IPCClasses/signal/SIGTERM_Handler.h"
 
 using namespace std;
 
@@ -12,14 +12,13 @@ using namespace std;
 void logMessage(const string &message) {
     string messageToLog = to_string(getpid()) + string(" Tide Monitor: ") + message;
     Logger::getInstance()->logMessage(messageToLog.c_str());
-    cout<<messageToLog<<endl;
 }
 
 /**
  * Tide monitor constructor initialize the attributes.
  *
- * @param checkTideMaxSeconds Maximum quantity of seconds before checking the tides.
- * @param checkTideMinSeconds Minimum quantity of seconds before checking the tides.
+ * @param checkTideMinMicroseconds Maximum quantity of microseconds before checking the tides.
+ * @param checkTideMaxMicroseconds Minimum quantity of microseconds before checking the tides.
  * @param fallTideProb Probability that the tides fall.
  * @param riseTideProb Probability that the tides rise.
  */
@@ -52,10 +51,10 @@ TideMonitor::TideChange TideMonitor::simulateTide() {
  * if the tides rise or fall. It will check till it receives a SIGINT.
  */
 void TideMonitor::startMonitoring() {
-    SIGINT_Handler sigint_handler;
-    SignalHandler::getInstance()->registrarHandler(SIGINT, &sigint_handler);
+    SIGTERM_Handler sigterm_handler;
+    SignalHandler::getInstance()->registrarHandler(SIGTERM, &sigterm_handler);
 
-    while (sigint_handler.getGracefulQuit() == 0) {
+    while (sigterm_handler.getGracefulQuit() == 0) {
         TideChange tideChange = simulateTide();
         if (tideChange == RISE) {
             if (tideStatus + 1 < columnsFieldsPids.size() - 1) {

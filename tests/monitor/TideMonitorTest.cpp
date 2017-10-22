@@ -12,7 +12,7 @@ using namespace std;
 TEST_CASE("Integration tide monitor sends signals") {
     vector<vector<int>> columnsFieldsPids;
     int totalColumns = 4;
-    int timeoutSecondsForChildProcess = 10;
+    int timeoutSecondsForChildProcess = 2;
     for(int i = 0; i < totalColumns; i++) {
         pid_t childPid = fork();
         if (childPid == 0) {
@@ -44,12 +44,11 @@ TEST_CASE("Integration tide monitor sends signals") {
         wait(&status);
         REQUIRE(WEXITSTATUS(status) == 0);
     }
-    // Kill the last field that doesn't receives signals.
-    kill(columnsFieldsPids.back().back(), SIGINT);
+    // The last field doesn't receives signals.
     wait(&status);
-    REQUIRE(WEXITSTATUS(status) == 0);
-    // Kill the tide monitor
-    kill(childPid, SIGINT);
+    REQUIRE(WEXITSTATUS(status) == 1);
+    // Send term to the tide monitor
+    kill(childPid, SIGTERM);
     wait(&status);
     REQUIRE(WEXITSTATUS(status) == 0);
 }
