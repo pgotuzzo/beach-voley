@@ -4,7 +4,7 @@
 
 const string TAG = "Coordinador: ";
 
-MatchMaker::MatchMaker(vector<Player> *players) : vPlayers(players) {}
+MatchMaker::MatchMaker(vector<Player> *players, Stadium *stadium) : vPlayers(players), stadium(stadium) {}
 
 void MatchMaker::releasePlayersWithoutMatch() {
     // Release players from teams in construction
@@ -41,8 +41,10 @@ bool MatchMaker::findPartnerAvailable(int playerId) {
                 // Updates players state
                 vPlayers->at(findPlayerById(*vPlayers, local.firstPlayerId)).setState(Player::State::READY_FOR_MATCH);
                 vPlayers->at(findPlayerById(*vPlayers, local.secondPlayerId)).setState(Player::State::READY_FOR_MATCH);
-                vPlayers->at(findPlayerById(*vPlayers, visitant.firstPlayerId)).setState(Player::State::READY_FOR_MATCH);
-                vPlayers->at(findPlayerById(*vPlayers, visitant.secondPlayerId)).setState(Player::State::READY_FOR_MATCH);
+                vPlayers->at(findPlayerById(*vPlayers, visitant.firstPlayerId)).setState(
+                        Player::State::READY_FOR_MATCH);
+                vPlayers->at(findPlayerById(*vPlayers, visitant.secondPlayerId)).setState(
+                        Player::State::READY_FOR_MATCH);
                 // Free teams attributes
                 local.ready = false;
                 visitant.ready = false;
@@ -55,7 +57,6 @@ bool MatchMaker::findPartnerAvailable(int playerId) {
                 local.secondPlayerId = potentialPartnerId;
                 local.ready = true;
                 // Update players state
-                cout << " PUTO";
                 vPlayers->at(findPlayerById(*vPlayers, local.firstPlayerId)).setState(Player::State::PARTNER_ASSIGNED);
                 vPlayers->at(findPlayerById(*vPlayers, local.secondPlayerId)).setState(Player::State::PARTNER_ASSIGNED);
 
@@ -70,6 +71,51 @@ bool MatchMaker::findPartnerAvailable(int playerId) {
 }
 
 void MatchMaker::checkFieldAssignation() {
-    // TODO
+    // No matches to be played
+    if (matchesWaitingForField.empty()) {
+        Logger::d(TAG + "No hay partidos pendientes...");
+        return;
+    }
+
+    vector<Field> freeFields = stadium->getFieldsByState(Field::State::FREE);
+    if (!freeFields.empty()) {
+        int fieldId = freeFields[0].getId();
+        Logger::d(TAG + "Hay partidos pendientes, y al menos una cancha para utilizar!!! FIELD (PID): " + to_string(fieldId));
+        assignField(fieldId);
+    } else {
+        Logger::d(TAG + "Hay partidos pendientes, pero NINGUNA cancha disponible");
+    }
+}
+
+void MatchMaker::assignField(int fieldId) {
+    Logger::d(TAG + "Se asigna la cancha " + stadium->getFieldById(fieldId)->getName() + " para el partido pendiente!!!");
+    // Pop the first pending match
+    Match match = matchesWaitingForField[0];
+    // Remove from pending list
+    matchesWaitingForField.erase(matchesWaitingForField.begin());
+    // Send each player to the field
+    sendPlayerToField(fieldId, match.local.firstPlayerId);
+    sendPlayerToField(fieldId, match.local.secondPlayerId);
+    sendPlayerToField(fieldId, match.visitant.firstPlayerId);
+    sendPlayerToField(fieldId, match.visitant.secondPlayerId);
+    // Update stadium/field status
+    stadium->getFieldById(fieldId)->setState(Field::State::FULL);
+    stadium->getFieldById(fieldId)->setMatch(match);
+}
+
+void MatchMaker::sendPlayerToField(int fieldId, int playerId) {
+    OrgPlayerResponse response{};
+    response.fieldId = fieldId;
+    response.playerAction = PlayerAction::PLAY;
+
+    int idx = findPlayerById(*vPlayers, playerId);
+    Pipe *pipe = vPlayers->at(idx).getPipe();
+    pipe->setearModo(Pipe::ESCRITURA);
+    ssize_t out = pipe->escribir(&response, sizeof(OrgPlayerResponse));
+    if (out < 0) {
+        Logger::e(TAG + " fallo el envio de una respuesta!!!");
+        throw runtime_error(TAG + " fallo el envio de una respuesta!!!");
+    }
+    Logger::d(TAG + "Mensaje enviado correctamente a " + vPlayers->at(idx).getName() + ".\n" + response.toString());
 }
 

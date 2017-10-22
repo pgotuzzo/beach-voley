@@ -4,13 +4,11 @@
 
 static const string TAG = "Organizador: ";
 
-// FIXME - Remove Mock - Begin
-int mockCounter = 10;
-// FIXME - Remove Mock - End
-
-ManagerProcess::ManagerProcess(vector<Player> *players, Pipe *pipeFromClient, int maxMatches, int stadiumCapacity) :
+ManagerProcess::ManagerProcess(vector<Player> *players, Pipe *pipeFromClient, Stadium *stadium, int maxMatches,
+                               int stadiumCapacity) :
         vPlayers(players),
         taskQueue(pipeFromClient),
+        stadium(stadium),
         maxMatches(maxMatches),
         stadiumCapacity(stadiumCapacity),
         tournamentEnded(false) {
@@ -22,7 +20,7 @@ ManagerProcess::ManagerProcess(vector<Player> *players, Pipe *pipeFromClient, in
         }
     }
     securityGuard = new SecurityGuard(vPlayers);
-    matchMaker = new MatchMaker(vPlayers);
+    matchMaker = new MatchMaker(vPlayers, stadium);
 }
 
 int ManagerProcess::start() {
@@ -85,17 +83,6 @@ void ManagerProcess::onFindPartnerRequest(int playerId) {
         if (isStadiumFull()) {
             // Random player leaves STADIUM
             securityGuard->dismissPlayerFromStadium();
-
-            // FIXME - Remove Mock - Begin
-            // if (mockCounter > 0) {
-            //    mockCounter--;
-            //} else {
-            //    for (Player p : *vPlayers) {
-            //        vPlayers->at(idx).removePotentialPartner(p.getId());
-            //    }
-            //}
-            // FIXME - Remove Mock - End
-
         } else {
             // Player stays waiting for a partner to be assignated to him
             Logger::d(TAG + vPlayers->at(idx).getName() + " esta esperando por un compañero");
@@ -108,7 +95,29 @@ void ManagerProcess::onFindPartnerRequest(int playerId) {
 }
 
 void ManagerProcess::onMatchResultRequest(int fieldId, int localScore, int visitantScore) {
-    // TODO - Implement
+    stadium->getFieldById(fieldId)->setState(Field::State::FREE);
+
+    Match match = stadium->getFieldById(fieldId)->getMatch();
+    // Local team update
+    //      First player
+    int idx = findPlayerById(*vPlayers, match.local.firstPlayerId);
+    vPlayers->at(idx).increaseMatchesCount();
+    vPlayers->at(idx).removePotentialPartner(match.local.secondPlayerId);
+    //      Second player
+    idx = findPlayerById(*vPlayers, match.local.secondPlayerId);
+    vPlayers->at(idx).increaseMatchesCount();
+    vPlayers->at(idx).removePotentialPartner(match.local.firstPlayerId);
+    // Visitant team update
+    //      First player
+    idx = findPlayerById(*vPlayers, match.visitant.firstPlayerId);
+    vPlayers->at(idx).increaseMatchesCount();
+    vPlayers->at(idx).removePotentialPartner(match.visitant.secondPlayerId);
+    //      Second player
+    idx = findPlayerById(*vPlayers, match.visitant.secondPlayerId);
+    vPlayers->at(idx).increaseMatchesCount();
+    vPlayers->at(idx).removePotentialPartner(match.visitant.firstPlayerId);
+
+    // TODO - Implement - Score board
 }
 
 void ManagerProcess::onTideChangeRequest(bool rise) {
@@ -116,6 +125,8 @@ void ManagerProcess::onTideChangeRequest(bool rise) {
 }
 
 bool ManagerProcess::isStadiumFull() {
-    vector<Player> playersWaiting = findPlayersByState(*vPlayers, Player::State::OUTSIDE);
-    return vPlayers->size() - playersWaiting.size() == stadiumCapacity;
+    vector<Player> playersOutside = findPlayersByState(*vPlayers, Player::State::OUTSIDE);
+    int count = vPlayers->size() - playersOutside.size();
+    Logger::d(TAG + "Players in stadium: " + to_string(count));
+    return count == stadiumCapacity;
 }

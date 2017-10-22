@@ -4,13 +4,21 @@
 
 #include <string>
 #include "../ipc/Pipe.h"
+#include "../cons/Definition.h"
 
 using namespace std;
 
 class Field {
+public:
+    enum State {
+        FREE, FULL, FLOODED
+    };
+
 private:
     int id;
     string name;
+    State state;
+    Match match;
 
 public:
     Field();
@@ -20,6 +28,16 @@ public:
     bool operator==(const Field &field) const;
 
     int getId();
+
+    string getName();
+
+    State getState();
+
+    void setState(State state);
+
+    Match getMatch();
+
+    void setMatch(Match match);
 
 };
 

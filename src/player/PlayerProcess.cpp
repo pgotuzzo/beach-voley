@@ -2,14 +2,17 @@
 #include "../util/Logger.h"
 
 PlayerProcess::PlayerProcess(string playerName, Semaforo *tournamentSubscription, Semaforo *tournamentStart,
-                             Semaforo *stadiumEntrance,
-                             Pipe *pipeToManager, Pipe *pipeFromManager) :
+                             Semaforo *stadiumEntrance, Semaforo *fieldEntrance, Semaforo *fieldExit,
+                             Pipe *pipeToManager, Pipe *pipeFromManager, Stadium *stadium) :
         playerName(playerName),
         tournamentSubscription(tournamentSubscription),
         tournamentStart(tournamentStart),
         stadiumEntrance(stadiumEntrance),
+        fieldEntrance(fieldEntrance),
+        fieldExit(fieldExit),
         pipeToManager(pipeToManager),
-        pipeFromManager(pipeFromManager) {}
+        pipeFromManager(pipeFromManager),
+        stadium(stadium) {}
 
 int PlayerProcess::start() {
     int pid = fork();
@@ -43,6 +46,7 @@ void PlayerProcess::play() {
     OrgPlayerResponse response = receiveFindPartnerResponse();
     switch (response.playerAction) {
         case PLAY:
+            goToField(response.fieldId);
             break;
         case LEAVE_STADIUM:
             leaveStadium = true;
@@ -77,4 +81,12 @@ OrgPlayerResponse PlayerProcess::receiveFindPartnerResponse() {
     }
     Logger::d(playerName + " recibio una respuesta del Organizador:\n" + response.toString());
     return response;
+}
+
+void PlayerProcess::goToField(int fieldId) {
+    int semId = stadium->getFieldIndex(fieldId);
+    fieldEntrance->v(semId);
+    Logger::d(playerName + " ingreso a la cancha: " + stadium->getFieldById(fieldId)->getName());
+    fieldExit->p(semId);
+    Logger::d(playerName + " salio de la cancha: " + stadium->getFieldById(fieldId)->getName());
 }

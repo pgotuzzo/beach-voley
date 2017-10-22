@@ -6,7 +6,7 @@ Stadium::Stadium(int rows, int columns, vector<Field> vFields) :
 
 Field *Stadium::getFieldById(int fieldId) {
     int idx = findFieldById(vFields, fieldId);
-    if (idx > 0) {
+    if (idx >= 0) {
         return &vFields[idx];
     }
     return nullptr;
@@ -14,4 +14,14 @@ Field *Stadium::getFieldById(int fieldId) {
 
 int Stadium::getFieldIndex(int fieldId) {
     return findFieldById(vFields, fieldId);
+}
+
+vector<Field> Stadium::getFieldsByState(Field::State state) {
+    vector<int> fieldsIdxs = findFieldsByState(vFields, state);
+    vector<Field> fields;
+    for (int idx : fieldsIdxs) {
+        Field f = vFields[idx];
+        fields.push_back(f);
+    }
+    return fields;
 }

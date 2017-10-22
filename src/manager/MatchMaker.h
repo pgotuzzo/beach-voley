@@ -3,28 +3,22 @@
 
 
 #include "../player/Player.h"
+#include "../stadium/Stadium.h"
 
 class MatchMaker {
 private:
-    struct Team {
-        bool ready;
-        int firstPlayerId;
-        int secondPlayerId;
-    };
-
-    struct Match {
-        Team local;
-        Team visitant;
-    };
-
     vector<Player> *vPlayers;
-
+    Stadium *stadium;
     Team local;
     Team visitant;
     vector<Match> matchesWaitingForField;
 
+    void assignField(int fieldId);
+
+    void sendPlayerToField(int fieldId, int playerId);
+
 public:
-    MatchMaker(vector<Player> *players);
+    MatchMaker(vector<Player> *players, Stadium *stadium);
 
     void releasePlayersWithoutMatch();
 

@@ -18,6 +18,8 @@ public:
     Field* getFieldById(int fieldId);
 
     int getFieldIndex(int fieldId);
+
+    vector<Field> getFieldsByState(Field::State state);
 };
 
 

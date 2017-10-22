@@ -10,6 +10,7 @@
 class ManagerProcess {
 private:
     vector<Player> *vPlayers;
+    Stadium *stadium;
     SecurityGuard *securityGuard;
     MatchMaker *matchMaker;
     Pipe *taskQueue;
@@ -28,7 +29,7 @@ private:
     bool isStadiumFull();
 
 public:
-    ManagerProcess(vector<Player> *players, Pipe *pipeFromClient, int maxMatches, int stadiumCapacity);
+    ManagerProcess(vector<Player> *players, Pipe *pipeFromClient, Stadium* stadium, int maxMatches, int stadiumCapacity);
 
     int start();
 };

@@ -5,4 +5,6 @@
 
 int findFieldById(vector<Field> fields, int fieldId);
 
+vector<int> findFieldsByState(vector<Field> fields, Field::State state);
+
 #endif //BEACH_VOLEY_FIELDUTILS_H

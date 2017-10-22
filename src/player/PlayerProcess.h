@@ -5,6 +5,7 @@
 #include "../ipc/Semaforo.h"
 #include "../ipc/Pipe.h"
 #include "../cons/Definition.h"
+#include "../stadium/Stadium.h"
 
 using namespace std;
 
@@ -16,8 +17,11 @@ private:
     Semaforo *tournamentSubscription;
     Semaforo *tournamentStart;
     Semaforo *stadiumEntrance;
+    Semaforo *fieldEntrance;
+    Semaforo *fieldExit;
     Pipe *pipeToManager;
     Pipe *pipeFromManager;
+    Stadium *stadium;
 
     void subscribeToTournament();
 
@@ -27,9 +31,12 @@ private:
 
     void play();
 
+    void goToField(int fieldId);
+
 public:
     PlayerProcess(string playerName, Semaforo *tournamentSubscription, Semaforo *tournamentStart,
-                  Semaforo *stadiumEntrance, Pipe *pipeToManager, Pipe *pipeFromManager);
+                  Semaforo *stadiumEntrance, Semaforo *fieldEntrance, Semaforo *fieldExit, Pipe *pipeToManager,
+                  Pipe *pipeFromManager, Stadium *stadium);
 
     int start();
 };

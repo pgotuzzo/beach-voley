@@ -98,4 +98,15 @@ struct OrgPlayerResponse {
 
 };
 
+struct Team {
+    bool ready;
+    int firstPlayerId;
+    int secondPlayerId;
+};
+
+struct Match {
+    Team local;
+    Team visitant;
+};
+
 #endif //BEACH_VOLEY_AUX_DEFINITION_H

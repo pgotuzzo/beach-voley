@@ -2,6 +2,9 @@
 #include "RandomNumber.h"
 
 int getRandomInt(const int minValue, const int maxValue) {
+    if (minValue == maxValue) {
+        return minValue;
+    }
     srand(std::random_device()());
     return minValue + rand() % (maxValue - minValue);
 }

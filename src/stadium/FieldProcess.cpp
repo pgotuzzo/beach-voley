@@ -26,17 +26,15 @@ int FieldProcess::start() {
 void FieldProcess::waitForPlayers() {
     for (int i = 0; i < PLAYER_PER_MATCH; i++) {
         entrance->p(semId);
-
-        Logger::d(TAG + "Recibio un nuevo jugador. Total: " + to_string(playersInField));
-
         playersInField++;
+        Logger::d(TAG + "Recibio un nuevo jugador. Total: " + to_string(playersInField));
     }
 }
 
 FieldProcess::MatchResult FieldProcess::playMatch() {
     Logger::d(TAG + "Comienza el partido!");
 
-    sleep(getRandomUnsignedInt(1, 4));
+    sleep(getRandomUnsignedInt(1, 2));
 
     bool localWin = getRandomBool();
     int looserScore = getRandomInt(0, SETS_TO_WIN - 1);
@@ -55,7 +53,7 @@ FieldProcess::MatchResult FieldProcess::playMatch() {
 }
 
 void FieldProcess::releasePlayers() {
-    Logger::d(TAG + "Se despiden a los jugadores" + to_string(playersInField));
+    Logger::d(TAG + "Se despiden a los jugadores " + to_string(playersInField));
     for (int i = 0; i < playersInField; i++) {
         exit->v(semId);
     }

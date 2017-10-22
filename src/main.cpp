@@ -12,8 +12,6 @@
 #include "ipc/signal/SignalHandler.h"
 #include "ipc/signal/SIGINT_Handler.h"
 #include "stadium/FieldProcess.h"
-#include "stadium/Field.h"
-#include "stadium/Stadium.h"
 
 int main() {
     // Remove any previous log
@@ -27,8 +25,8 @@ int main() {
     Config config;
     config.rows = 2;
     config.columns = 2;
-    config.maxMatches = 3;
-    config.stadiumCapacity = 5;
+    config.maxMatches = 2;
+    config.stadiumCapacity = 9;
     config.vPlayerNames = {"Pablo", "Marta", "Pipo", "Lola", "Martin", "Gonzo", "Carla", "Charlie", "Morena", "Toto",
                            "Jazmin"};
     config.debugEnabled = true;
@@ -56,33 +54,6 @@ int main() {
     int tournamentPid = tournamentLauncher.start();
     Logger::d("Proceso - Recepcion: (PID) " + to_string(tournamentPid));
 
-    // Create Players Processes
-    vector<Player> vPlayers;
-    vector<int> vPlayersPid;
-    for (int i = 0; i < config.vPlayerNames.size(); i++) {
-        string playerName = config.vPlayerNames[i];
-
-        // Pipe - Response to player
-        Pipe *responseToPlayer = ResourceHandler::getPipe(PIPE_ID_RESPONSE_TO_PLYER_N + playerName);
-
-        PlayerProcess playerProcess(playerName,
-                                    tournamentSubscription,
-                                    tournamentStart,
-                                    stadiumTurnstile,
-                                    managerQueue,
-                                    responseToPlayer);
-        int playerPid = playerProcess.start();
-        Logger::d("Proceso - Jugador " + config.vPlayerNames[i] + ": (PID) " + to_string(playerPid));
-        Player player(playerPid, playerName, responseToPlayer);
-        vPlayers.push_back(player);
-        vPlayersPid.push_back(playerPid);
-    }
-
-    // Create Manager Process
-    ManagerProcess managerProcess = ManagerProcess(&vPlayers, managerQueue, config.maxMatches, config.stadiumCapacity);
-    int managerPid = managerProcess.start();
-    Logger::d("Proceso - Organizador: (PID) " + to_string(managerPid));
-
     // Create Stadium - Field Processes
     vector<int> vFieldsPid;
     vector<Field> vFields(config.rows * config.columns);
@@ -102,8 +73,41 @@ int main() {
     }
     Stadium stadium(config.rows, config.columns, vFields);
 
+    // Create Players Processes
+    vector<Player> vPlayers;
+    vector<int> vPlayersPid;
+    for (int i = 0; i < config.vPlayerNames.size(); i++) {
+        string playerName = config.vPlayerNames[i];
+
+        // Pipe - Response to player
+        Pipe *responseToPlayer = ResourceHandler::getPipe(PIPE_ID_RESPONSE_TO_PLYER_N + playerName);
+
+        PlayerProcess playerProcess(playerName,
+                                    tournamentSubscription,
+                                    tournamentStart,
+                                    stadiumTurnstile,
+                                    fieldEntrance,
+                                    fieldExit,
+                                    managerQueue,
+                                    responseToPlayer,
+                                    &stadium);
+        int playerPid = playerProcess.start();
+        Logger::d("Proceso - Jugador " + config.vPlayerNames[i] + ": (PID) " + to_string(playerPid));
+        Player player(playerPid, playerName, responseToPlayer);
+        vPlayers.push_back(player);
+        vPlayersPid.push_back(playerPid);
+    }
+
+    // Create Manager Process
+    ManagerProcess managerProcess = ManagerProcess(&vPlayers, managerQueue, &stadium, config.maxMatches, config.stadiumCapacity);
+    int managerPid = managerProcess.start();
+    Logger::d("Proceso - Organizador: (PID) " + to_string(managerPid));
+
     // Create Results Table
     // TODO - Implement!
+
+    // Create Tide Monitor
+    // TODO - Implement
 
     //      Signal handler in order to avoid ipc resources being wasted
     SIGINT_Handler handler;
