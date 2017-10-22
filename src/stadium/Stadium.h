@@ -15,9 +15,7 @@ private:
 public:
     Stadium(int rows, int columns, vector<Field> vFields);
 
-    Field* getFieldById(int fieldId);
-
-    int getFieldIndex(int fieldId);
+    Field *getFieldById(int fieldId);
 
     vector<Field> getFieldsByState(Field::State state);
 };

@@ -4,7 +4,10 @@
 
 const string TAG = "Coordinador: ";
 
-MatchMaker::MatchMaker(vector<Player> *players, Stadium *stadium) : vPlayers(players), stadium(stadium) {}
+MatchMaker::MatchMaker(vector<Player> *players, Stadium *stadium) : vPlayers(players), stadium(stadium) {
+    local.ready = false;
+    visitant.ready = false;
+}
 
 void MatchMaker::releasePlayersWithoutMatch() {
     // Release players from teams in construction
@@ -13,10 +16,6 @@ void MatchMaker::releasePlayersWithoutMatch() {
 }
 
 bool MatchMaker::findPartnerAvailable(int playerId) {
-    // FIXME - Mock begin
-    // return false;
-    // FIXME - Mock end
-
     int idx = findPlayerById(*vPlayers, playerId);
     Player player = vPlayers->at(idx);
 
@@ -49,7 +48,15 @@ bool MatchMaker::findPartnerAvailable(int playerId) {
                 local.ready = false;
                 visitant.ready = false;
 
-                Logger::d(TAG + "Se tienen dos parejas listas para jugar un partido");
+                // Log
+                stringstream streamMatch;
+                streamMatch << "\tPartido: " << endl
+                            << "\t\tLocal: " << vPlayers->at(findPlayerById(*vPlayers, local.firstPlayerId)).getName()
+                            << " - " << vPlayers->at(findPlayerById(*vPlayers, local.secondPlayerId)).getName() << endl
+                            << "\t\tVisitant: "
+                            << vPlayers->at(findPlayerById(*vPlayers, visitant.firstPlayerId)).getName() << " - "
+                            << vPlayers->at(findPlayerById(*vPlayers, visitant.secondPlayerId)).getName() << endl;
+                Logger::d(TAG + "Se tienen dos parejas listas para jugar un partido. \n" + streamMatch.str());
 
             } else {
                 // Create local team
@@ -80,7 +87,8 @@ void MatchMaker::checkFieldAssignation() {
     vector<Field> freeFields = stadium->getFieldsByState(Field::State::FREE);
     if (!freeFields.empty()) {
         int fieldId = freeFields[0].getId();
-        Logger::d(TAG + "Hay partidos pendientes, y al menos una cancha para utilizar!!! FIELD (PID): " + to_string(fieldId));
+        Logger::d(TAG + "Hay partidos pendientes, y al menos una cancha para utilizar!!! Cancha " +
+                  stadium->getFieldById(fieldId)->getName());
         assignField(fieldId);
     } else {
         Logger::d(TAG + "Hay partidos pendientes, pero NINGUNA cancha disponible");
@@ -88,19 +96,20 @@ void MatchMaker::checkFieldAssignation() {
 }
 
 void MatchMaker::assignField(int fieldId) {
-    Logger::d(TAG + "Se asigna la cancha " + stadium->getFieldById(fieldId)->getName() + " para el partido pendiente!!!");
+    Logger::d(
+            TAG + "Se asigna la Cancha " + stadium->getFieldById(fieldId)->getName() + " para el partido pendiente!!!");
     // Pop the first pending match
     Match match = matchesWaitingForField[0];
     // Remove from pending list
     matchesWaitingForField.erase(matchesWaitingForField.begin());
+    // Update stadium/field status
+    stadium->getFieldById(fieldId)->setState(Field::State::FULL);
+    stadium->getFieldById(fieldId)->setMatch(match);
     // Send each player to the field
     sendPlayerToField(fieldId, match.local.firstPlayerId);
     sendPlayerToField(fieldId, match.local.secondPlayerId);
     sendPlayerToField(fieldId, match.visitant.firstPlayerId);
     sendPlayerToField(fieldId, match.visitant.secondPlayerId);
-    // Update stadium/field status
-    stadium->getFieldById(fieldId)->setState(Field::State::FULL);
-    stadium->getFieldById(fieldId)->setMatch(match);
 }
 
 void MatchMaker::sendPlayerToField(int fieldId, int playerId) {

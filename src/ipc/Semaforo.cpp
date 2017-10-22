@@ -46,7 +46,7 @@ int Semaforo::p(const unsigned short numeroSemaforo) const {
 
     operacion.sem_num = numeroSemaforo;    // numero de semaforo
     operacion.sem_op = -1;    // restar 1 al semaforo
-    operacion.sem_flg = SEM_UNDO;
+//    operacion.sem_flg = SEM_UNDO;
 
     int resultado = semop(this->id, &operacion, 1);
     return resultado;
@@ -58,7 +58,7 @@ int Semaforo::v(const unsigned short numeroSemaforo) const {
 
     operacion.sem_num = numeroSemaforo;    // numero de semaforo
     operacion.sem_op = 1;    // sumar 1 al semaforo
-    operacion.sem_flg = SEM_UNDO;
+//    operacion.sem_flg = SEM_UNDO;
 
     int resultado = semop(this->id, &operacion, 1);
     return resultado;

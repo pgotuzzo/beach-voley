@@ -16,6 +16,7 @@ public:
 
 private:
     int id;
+    int semId;
     string name;
     State state;
     Match match;
@@ -23,11 +24,13 @@ private:
 public:
     Field();
 
-    Field(int id, string name);
+    Field(int id, int semId, string name);
 
     bool operator==(const Field &field) const;
 
     int getId();
+
+    int getSemId();
 
     string getName();
 

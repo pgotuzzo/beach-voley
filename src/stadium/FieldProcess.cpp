@@ -16,8 +16,8 @@ int FieldProcess::start() {
         while (true) {
             waitForPlayers();
             MatchResult matchResult = playMatch();
-            releasePlayers();
             sendResult(matchResult);
+            releasePlayers();
         }
     }
     return pid;
@@ -34,7 +34,7 @@ void FieldProcess::waitForPlayers() {
 FieldProcess::MatchResult FieldProcess::playMatch() {
     Logger::d(TAG + "Comienza el partido!");
 
-    sleep(getRandomUnsignedInt(1, 2));
+    usleep(getRandomUnsignedInt(1000, 5000));
 
     bool localWin = getRandomBool();
     int looserScore = getRandomInt(0, SETS_TO_WIN - 1);
@@ -57,6 +57,7 @@ void FieldProcess::releasePlayers() {
     for (int i = 0; i < playersInField; i++) {
         exit->v(semId);
     }
+    playersInField = 0;
 }
 
 void FieldProcess::sendResult(MatchResult matchResult) {

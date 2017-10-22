@@ -12,10 +12,6 @@ Field *Stadium::getFieldById(int fieldId) {
     return nullptr;
 }
 
-int Stadium::getFieldIndex(int fieldId) {
-    return findFieldById(vFields, fieldId);
-}
-
 vector<Field> Stadium::getFieldsByState(Field::State state) {
     vector<int> fieldsIdxs = findFieldsByState(vFields, state);
     vector<Field> fields;

@@ -63,4 +63,10 @@ void SecurityGuard::dismissPlayersWaitingFromTournament() {
     for (Player p : playersWaitingForOpponent) {
         dismissPlayerFromTournament(p.getId());
     }
+    // Log status
+    stringstream streamPlayers;
+    for (Player p : *vPlayers) {
+        streamPlayers << p.getName() << endl;
+    }
+    Logger::d(TAG + "Quedan en el torneo los jugadores que aun estan jugando: \n" + streamPlayers.str());
 }

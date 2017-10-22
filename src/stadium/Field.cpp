@@ -2,7 +2,7 @@
 
 Field::Field() = default;
 
-Field::Field(int id, string name) : id(id), name(name), state(FREE) {}
+Field::Field(int id, int semId, string name) : id(id), semId(semId), name(name), state(FREE) {}
 
 bool Field::operator==(const Field &field) const {
     return id == field.id;
@@ -10,6 +10,10 @@ bool Field::operator==(const Field &field) const {
 
 int Field::getId() {
     return id;
+}
+
+int Field::getSemId() {
+    return semId;
 }
 
 string Field::getName() {
@@ -31,4 +35,5 @@ void Field::setMatch(Match match) {
 Match Field::getMatch() {
     return match;
 }
+
 

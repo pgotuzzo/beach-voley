@@ -1,5 +1,6 @@
 #include "PlayerProcess.h"
 #include "../util/Logger.h"
+#include "../util/RandomNumber.h"
 
 PlayerProcess::PlayerProcess(string playerName, Semaforo *tournamentSubscription, Semaforo *tournamentStart,
                              Semaforo *stadiumEntrance, Semaforo *fieldEntrance, Semaforo *fieldExit,
@@ -27,6 +28,7 @@ int PlayerProcess::start() {
             }
             Logger::d(playerName + " abandona el predio");
             stadiumEntrance->v(0);
+            usleep(getRandomUnsignedInt(0, 2000));
         }
         Logger::d(playerName + " se retira del torneo");
         exit(0);
@@ -84,7 +86,8 @@ OrgPlayerResponse PlayerProcess::receiveFindPartnerResponse() {
 }
 
 void PlayerProcess::goToField(int fieldId) {
-    int semId = stadium->getFieldIndex(fieldId);
+    int semId = stadium->getFieldById(fieldId)->getSemId();
+
     fieldEntrance->v(semId);
     Logger::d(playerName + " ingreso a la cancha: " + stadium->getFieldById(fieldId)->getName());
     fieldExit->p(semId);

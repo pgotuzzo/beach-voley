@@ -25,10 +25,10 @@ int main() {
     Config config;
     config.rows = 2;
     config.columns = 2;
-    config.maxMatches = 2;
+    config.maxMatches = 5;
     config.stadiumCapacity = 9;
-    config.vPlayerNames = {"Pablo", "Marta", "Pipo", "Lola", "Martin", "Gonzo", "Carla", "Charlie", "Morena", "Toto",
-                           "Jazmin"};
+    config.vPlayerNames = {"Pablo", "Dani", "Marta", "Pipo", "Lola", "Martin", "Gonzo", "Carla", "Charlie", "Morena",
+                           "Toto", "Jazmin"};
     config.debugEnabled = true;
 
     Logger::d(config.toString());
@@ -67,7 +67,7 @@ int main() {
             vFieldsPid.push_back(fieldId);
             Logger::d("Proceso - Cancha: (PID) " + to_string(fieldId));
 
-            Field field(fieldId, fieldName);
+            Field field(fieldId, fieldIdx, fieldName);
             vFields[fieldIdx] = field;
         }
     }
@@ -99,7 +99,8 @@ int main() {
     }
 
     // Create Manager Process
-    ManagerProcess managerProcess = ManagerProcess(&vPlayers, managerQueue, &stadium, config.maxMatches, config.stadiumCapacity);
+    ManagerProcess managerProcess = ManagerProcess(&vPlayers, managerQueue, &stadium, config.maxMatches,
+                                                   config.stadiumCapacity);
     int managerPid = managerProcess.start();
     Logger::d("Proceso - Organizador: (PID) " + to_string(managerPid));
 
@@ -114,7 +115,7 @@ int main() {
     SignalHandler::getInstance()->registrarHandler(SIGINT, (EventHandler *) &handler);
 
     // Wait for children processes
-    for (int i = 0; i < (vPlayersPid.size() + 3); i++) {
+    for (int i = 0; i < (vPlayersPid.size() + 2); i++) {
         int res;
         int pid = wait(&res);
         string result = res == 0 ? "EXITOSAMENTE" : "MAL (Error: " + to_string(res) + ")";

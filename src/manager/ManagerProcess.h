@@ -28,8 +28,11 @@ private:
 
     bool isStadiumFull();
 
+    bool isPlayerOutside();
+
 public:
-    ManagerProcess(vector<Player> *players, Pipe *pipeFromClient, Stadium* stadium, int maxMatches, int stadiumCapacity);
+    ManagerProcess(vector<Player> *players, Pipe *pipeFromClient, Stadium *stadium, int maxMatches,
+                   int stadiumCapacity);
 
     int start();
 };

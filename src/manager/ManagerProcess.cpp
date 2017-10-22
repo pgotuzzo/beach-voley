@@ -80,7 +80,12 @@ void ManagerProcess::onFindPartnerRequest(int playerId) {
 
     if (!matchMaker->findPartnerAvailable(playerId)) {
         // Partner not found
-        if (isStadiumFull()) {
+        if (!isPlayerOutside()) {
+            // Case 4: player don't have potential partner available and none is waiting OUTSIDE
+            matchMaker->releasePlayersWithoutMatch();
+            securityGuard->dismissPlayersWaitingFromTournament();
+            tournamentEnded = true;
+        } else if (isStadiumFull()) {
             // Random player leaves STADIUM
             securityGuard->dismissPlayerFromStadium();
         } else {
@@ -95,25 +100,46 @@ void ManagerProcess::onFindPartnerRequest(int playerId) {
 }
 
 void ManagerProcess::onMatchResultRequest(int fieldId, int localScore, int visitantScore) {
-    stadium->getFieldById(fieldId)->setState(Field::State::FREE);
+    Field *field = stadium->getFieldById(fieldId);
 
-    Match match = stadium->getFieldById(fieldId)->getMatch();
+    // Update field state
+    field->setState(Field::State::FREE);
+
+    Match match = field->getMatch();
     // Local team update
     //      First player
     int idx = findPlayerById(*vPlayers, match.local.firstPlayerId);
+    if (idx == -1) {
+        Logger::e(TAG + "Jugador " + to_string(match.local.firstPlayerId) + "no se encuentra dentro del torneo");
+        throw runtime_error("Jugador " + to_string(match.local.firstPlayerId) + "no se encuentra dentro del torneo");
+    }
+
     vPlayers->at(idx).increaseMatchesCount();
     vPlayers->at(idx).removePotentialPartner(match.local.secondPlayerId);
     //      Second player
     idx = findPlayerById(*vPlayers, match.local.secondPlayerId);
+    if (idx == -1) {
+        Logger::e(TAG + "Jugador " + to_string(match.local.secondPlayerId) + "no se encuentra dentro del torneo");
+        throw runtime_error("Jugador " + to_string(match.local.secondPlayerId) + "no se encuentra dentro del torneo");
+    }
     vPlayers->at(idx).increaseMatchesCount();
     vPlayers->at(idx).removePotentialPartner(match.local.firstPlayerId);
     // Visitant team update
     //      First player
     idx = findPlayerById(*vPlayers, match.visitant.firstPlayerId);
+    if (idx == -1) {
+        Logger::e(TAG + "Jugador " + to_string(match.visitant.firstPlayerId) + "no se encuentra dentro del torneo");
+        throw runtime_error("Jugador " + to_string(match.visitant.firstPlayerId) + "no se encuentra dentro del torneo");
+    }
     vPlayers->at(idx).increaseMatchesCount();
     vPlayers->at(idx).removePotentialPartner(match.visitant.secondPlayerId);
     //      Second player
     idx = findPlayerById(*vPlayers, match.visitant.secondPlayerId);
+    if (idx == -1) {
+        Logger::e(TAG + "Jugador " + to_string(match.visitant.secondPlayerId) + "no se encuentra dentro del torneo");
+        throw runtime_error(
+                "Jugador " + to_string(match.visitant.secondPlayerId) + "no se encuentra dentro del torneo");
+    }
     vPlayers->at(idx).increaseMatchesCount();
     vPlayers->at(idx).removePotentialPartner(match.visitant.firstPlayerId);
 
@@ -127,6 +153,13 @@ void ManagerProcess::onTideChangeRequest(bool rise) {
 bool ManagerProcess::isStadiumFull() {
     vector<Player> playersOutside = findPlayersByState(*vPlayers, Player::State::OUTSIDE);
     int count = vPlayers->size() - playersOutside.size();
-    Logger::d(TAG + "Players in stadium: " + to_string(count));
+    Logger::d(TAG + "Jugadores dentro del predio: " + to_string(count));
     return count == stadiumCapacity;
+}
+
+bool ManagerProcess::isPlayerOutside() {
+    vector<Player> playersOutside = findPlayersByState(*vPlayers, Player::State::OUTSIDE);
+    int count = playersOutside.size();
+    Logger::d(TAG + "Jugadores fuera del predio: " + to_string(count));
+    return count > 0;
 }
