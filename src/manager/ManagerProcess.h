@@ -6,6 +6,8 @@
 #include "../player/Player.h"
 #include "SecurityGuard.h"
 #include "MatchMaker.h"
+#include "../ipc/VectorCompartido.h"
+#include "../ipc/LockFile.h"
 
 class ManagerProcess {
 private:
@@ -14,6 +16,9 @@ private:
     SecurityGuard *securityGuard;
     MatchMaker *matchMaker;
     Pipe *taskQueue;
+    LockFile *lock;
+    VectorCompartido<Player> *scoreBoard;
+    int scoreBoardSize;
     int maxMatches;
     int stadiumCapacity;
     bool tournamentEnded;
@@ -29,6 +34,8 @@ private:
     bool isStadiumFull();
 
     bool isPlayerOutside();
+
+    void refreshScoreBoard(Match match);
 
 public:
     ManagerProcess(vector<Player> *players, Pipe *pipeFromClient, Stadium *stadium, int maxMatches,

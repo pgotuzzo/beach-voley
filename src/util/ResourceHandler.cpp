@@ -9,6 +9,7 @@ static const string TAG = "Gestor de Recursos: ";
 
 map<string, Semaforo> ResourceHandler::mSemaforo;
 map<string, Pipe> ResourceHandler::mPipe;
+VectorCompartido<Player> *ResourceHandler::vectorCompartido = new VectorCompartido<Player>();
 
 void ResourceHandler::init(Config config) {
     Logger::d(TAG + "Inicializandose. Creando todos los recursos necesarios: Semaforos, Pipes, etc.");
@@ -23,6 +24,9 @@ void ResourceHandler::init(Config config) {
     for (const auto &playerName : config.vPlayerNames) {
         createPipe(PIPE_ID_RESPONSE_TO_PLYER_N + playerName);
     }
+    // Vector compartido
+    createFileIfNotExists(PATH_VEC_COMPARTIDO_SCOREBOARD);
+    vectorCompartido->crear(PATH_VEC_COMPARTIDO_SCOREBOARD, 'A', config.vPlayerNames.size());
 }
 
 void ResourceHandler::createSemaforo(string path, unsigned short initValue, int amount) {
@@ -50,6 +54,14 @@ Pipe *ResourceHandler::getPipe(string pipeId) {
     return &mPipe[pipeId];
 }
 
+LockFile *ResourceHandler::getLockFile() {
+    return new LockFile(PATH_LOCK_SCOREBOARD);
+}
+
+VectorCompartido<Player> *ResourceHandler::getVectorCompartido() {
+    return vectorCompartido;
+}
+
 void ResourceHandler::freeResources() {
     Logger::d(TAG + "Liberando todos los recursos creados");
     for (auto semaforo : mSemaforo) {
@@ -58,6 +70,7 @@ void ResourceHandler::freeResources() {
     for (auto pipe : mPipe) {
         pipe.second.cerrar();
     }
+    vectorCompartido->liberarForce();
 }
 
 

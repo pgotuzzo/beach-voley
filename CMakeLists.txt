@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(IPC
         src/ipc/Semaforo.cpp src/ipc/Semaforo.h
         src/ipc/Pipe.cpp src/ipc/Pipe.h
+        src/ipc/LockFile.cpp src/ipc/LockFile.h
+        src/ipc/VectorCompartido.h
         src/ipc/signal/SignalHandler.cpp src/ipc/signal/SignalHandler.h
         src/ipc/signal/EventHandler.h
         src/ipc/signal/SIGINT_Handler.h)
@@ -15,13 +17,15 @@ set(UTILS
         src/util/FileUtils.cpp src/util/FileUtils.h
         src/util/ResourceHandler.cpp src/util/ResourceHandler.h
         src/util/PlayerUtils.cpp src/util/PlayerUtils.h
-        src/util/RandomNumber.cpp src/util/RandomNumber.h)
+        src/util/RandomNumber.cpp src/util/RandomNumber.h
+        src/util/FieldUtils.cpp src/util/FieldUtils.h)
 
 set(CONS src/cons/Path.h src/cons/Definition.h src/cons/Constants.h)
 
 set(MANAGER
         src/manager/SecurityGuard.cpp src/manager/SecurityGuard.h
-        src/manager/ManagerProcess.cpp src/manager/ManagerProcess.h src/manager/MatchMaker.cpp src/manager/MatchMaker.h)
+        src/manager/ManagerProcess.cpp src/manager/ManagerProcess.h
+        src/manager/MatchMaker.cpp src/manager/MatchMaker.h)
 
 set(PLAYER
         src/player/Player.cpp src/player/Player.h
@@ -32,8 +36,12 @@ set(STADIUM
         src/stadium/Field.cpp src/stadium/Field.h
         src/stadium/FieldProcess.cpp src/stadium/FieldProcess.h)
 
-set(SOURCE_FILES src/main.cpp src/LauncherProcess.cpp src/LauncherProcess.h src/util/FieldUtils.cpp src/util/FieldUtils.h)
-add_executable(beach_voley ${SOURCE_FILES} ${IPC} ${UTILS} ${CONS} ${MANAGER} ${PLAYER} ${STADIUM})
+set(SCOREBOARD
+        src/scoreboard/ScoreBoardProcess.cpp src/scoreboard/ScoreBoardProcess.h
+        src/scoreboard/Scoreboard_SIGINT_Handler.h)
+
+set(SOURCE_FILES src/main.cpp src/LauncherProcess.cpp src/LauncherProcess.h)
+add_executable(beach_voley ${SOURCE_FILES} ${IPC} ${UTILS} ${CONS} ${MANAGER} ${PLAYER} ${STADIUM} ${SCOREBOARD})
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tmp)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/logs)

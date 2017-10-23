@@ -21,8 +21,11 @@ private:
     Pipe *pipe;
     vector<int> potentialPartners;
     int matchesCount = 0;
+    int points;
 
 public:
+
+    Player();
 
     Player(int id, string name, Pipe *pipe);
 
@@ -47,6 +50,12 @@ public:
     int getMatchesCount();
 
     void increaseMatchesCount();
+
+    int getPoints();
+
+    void increasePoints(int amount);
+
+    void setPoints(int points);
 
 };
 

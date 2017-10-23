@@ -12,6 +12,7 @@
 #include "ipc/signal/SignalHandler.h"
 #include "ipc/signal/SIGINT_Handler.h"
 #include "stadium/FieldProcess.h"
+#include "scoreboard/ScoreBoardProcess.h"
 
 int main() {
     // Remove any previous log
@@ -27,7 +28,7 @@ int main() {
     config.columns = 2;
     config.maxMatches = 5;
     config.stadiumCapacity = 9;
-    config.vPlayerNames = {"Pablo", "Dani", "Marta", "Pipo", "Lola", "Martin", "Gonzo", "Carla", "Charlie", "Morena",
+    config.vPlayerNames = {"Pablo", "Dani", "Marta", "Pipo", "Lola", "Martin", "Gonzo", "Carla", "Charly", "Morena",
                            "Toto", "Jazmin"};
     config.debugEnabled = true;
 
@@ -98,22 +99,35 @@ int main() {
         vPlayersPid.push_back(playerPid);
     }
 
+    // FIXME - Should be done in the ResourceHandler
+    VectorCompartido<Player> *scoreBoard = ResourceHandler::getVectorCompartido();
+    for (int i = 0; i < vPlayers.size(); i++) {
+        scoreBoard->escribir(vPlayers.at(i), i);
+    }
+
     // Create Manager Process
-    ManagerProcess managerProcess = ManagerProcess(&vPlayers, managerQueue, &stadium, config.maxMatches,
+    ManagerProcess managerProcess = ManagerProcess(&vPlayers,
+                                                   managerQueue,
+                                                   &stadium,
+                                                   config.maxMatches,
                                                    config.stadiumCapacity);
     int managerPid = managerProcess.start();
     Logger::d("Proceso - Organizador: (PID) " + to_string(managerPid));
 
-    // Create Results Table
-    // TODO - Implement!
+    // Create ScoreBoardProcess
+    ScoreBoardProcess scoreBoardProcess = ScoreBoardProcess(config.vPlayerNames.size());
+    int scoreBoardPid = scoreBoardProcess.start();
+    Logger::d("Proceso - Tabla de posiciones: (PID) " + to_string(scoreBoardPid));
 
     // Create Tide Monitor
     // TODO - Implement
 
-    //      Signal handler in order to avoid ipc resources being wasted
+    // Signal handler in order to avoid ipc resources being wasted
     SIGINT_Handler handler;
     SignalHandler::getInstance()->registrarHandler(SIGINT, (EventHandler *) &handler);
 
+
+    bool success = true;
     // Wait for children processes
     for (int i = 0; i < (vPlayersPid.size() + 2); i++) {
         int res;
@@ -124,12 +138,24 @@ int main() {
             Logger::d("Proceso - Jugador: (PID) " + to_string(pid) + " FINALIZO " + result);
         } else if (pid == managerPid) {
             Logger::d("Proceso - Organizador: (PID) " + to_string(pid) + " FINALIZO " + result);
+            if (res != 0) {
+                success = false;
+                string desc = strerror(res);
+                Logger::e("Algo salio mal! " + desc);
+            }
         } else if (pid == tournamentPid) {
             Logger::d("Proceso - Recepcion: (PID) " + to_string(pid) + " FINALIZO " + result);
         } else if (find(vFieldsPid.begin(), vFieldsPid.end(), pid) != vFieldsPid.end()) {
             Logger::e("Proceso - Cancha: (PID) " + to_string(pid) + " FINALIZO " + result);
             Logger::e(
-                    "Los procesos asigandos a cada cancha NO deben finalizar a menos que el toreo haya terminado. Algo salio (MUY) mal!");
+                    "Los procesos asigandos a cada cancha NO deben finalizar a menos que el torneo haya terminado. Algo salio (MUY) mal!");
+        } else if (pid == scoreBoardPid) {
+            Logger::d("Proceso - Tabla de posiciones: (PID) " + to_string(pid) + " FINALIZO " + result);
+            if (res != 0) {
+                success = false;
+                string desc = strerror(res);
+                Logger::e("Algo salio mal! " + desc);
+            }
         }
     }
 
@@ -138,8 +164,17 @@ int main() {
         kill(pid, SIGKILL);
     }
 
+    Logger::d("MATANDO al Proceso - Tabla de posiciones: (PID) " + to_string(scoreBoardPid));
+    kill(scoreBoardPid, SIGINT);
+
     // Free Resources
     ResourceHandler::freeResources();
+
+    if (success) {
+        cout << "=============  EXITO  =====================" << endl;
+    } else {
+        cout << "=============  FRACASO  =====================" << endl;
+    }
 
     Logger::i("===========================================================================================");
     Logger::i("============                    BEACH VOLEY - FINAL                             ===========");

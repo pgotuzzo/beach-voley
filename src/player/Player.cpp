@@ -1,7 +1,9 @@
-
 #include "Player.h"
 
-Player::Player(int id, string name, Pipe *pipe) : id(id), name(name), state(OUTSIDE), pipe(pipe), matchesCount(0) {}
+Player::Player() {}
+
+Player::Player(int id, string name, Pipe *pipe) : id(id), name(name), state(OUTSIDE), pipe(pipe), matchesCount(0),
+                                                  points(0) {}
 
 bool Player::operator==(const Player &player) const {
     return this->id == player.id;
@@ -52,3 +54,17 @@ int Player::getMatchesCount() {
 void Player::increaseMatchesCount() {
     matchesCount++;
 }
+
+int Player::getPoints() {
+    return points;
+}
+
+void Player::increasePoints(int amount) {
+    points += amount;
+}
+
+void Player::setPoints(int points) {
+    this->points = points;
+}
+
+
