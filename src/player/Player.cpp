@@ -1,22 +1,36 @@
-
-#include <iostream>
 #include "Player.h"
 #include "../logger/Logger.h"
+#include <cstring>
 
 using namespace std;
 
-Player::Player(int id, const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile,
-               Pipe *receiveResponsesPipe, Pipe *sendRequestPipe) :
-        id(id), name(name), stadium(stadium), stadiumTurnstile(stadiumTurnstile) {
-    this->requester = new PartnerRequester(id, name, receiveResponsesPipe, sendRequestPipe);
+/**
+ * Logs a message with aditional information about the process and class.
+ * @param message the message to log
+ */
+void Player::logMessage(const string &message) {
+    string messageToLog = to_string(getpid()) + string(" Player ") + to_string(id) +string(": ") + message;
+    Logger::getInstance()->logMessage(messageToLog.c_str());
 }
 
-void Player::initPlayer() {
-    int pid = fork();
-    if (pid == 0) {
-        play();
-        exit(0);
-    }
+/**
+ * Player constructor initialize the attributes.
+ *
+ * @param id the player identifier
+ * @param entranceToFields the semaphore that represent the entrance to the fields where players will announce that
+ *          they arrive to the field
+ * @param exitFromFields the semaphore that represent the exit of the field where players will wait till the game ends
+ * @param stadiumTurnstile the semaphore that represents the entrance to the stadium
+ * @param receiveResponsesPipe the pipe to receive the responses from the manager
+ * @param sendRequestPipe the pipe to send partner request to the manager
+ */
+Player::Player(int id, const Semaforo *entranceToFields, const Semaforo *exitFromFields,
+               const Semaforo *stadiumTurnstile, Pipe *receiveResponsesPipe, Pipe *sendRequestPipe):
+        id(id), entranceToFields(entranceToFields), exitFromFields(exitFromFields),
+        stadiumTurnstile(stadiumTurnstile), receiveResponsesPipe(receiveResponsesPipe),
+        sendRequestPipe(sendRequestPipe) {
+    sendRequestPipe->setearModo(Pipe::ESCRITURA);
+    receiveResponsesPipe->setearModo(Pipe::LECTURA);
 }
 
 /**
@@ -28,77 +42,58 @@ void Player::initPlayer() {
 void Player::play() {
     bool leaveTournament = false;
     while (!leaveTournament) {
-        log("Entrando al predio...");
         enterStadium();
-        log("Buscando compañero...");
-        partnerRequest();
+        OrgPlayerResponse response = partnerRequest();
         while (response.playerAction == ENUM_PLAY) {
-            log("Compañero asignado! Yendo a jugar");
-            goToPlayGame();
-            log("Dejando la cancha");
-            leaveField();
-            log("Buscando compañero...");
-            partnerRequest();
+            goToPlayGame(response.fieldId);
+            response = partnerRequest();
         }
         if (response.playerAction == ENUM_LEAVE_TOURNAMENT) {
             leaveTournament = true;
         }
-        log("Saliendo del predio...");
         leaveStadium();
     }
-    log("Saliendo del torneo...");
+    logMessage("Leaving the tournament");
 }
 
 /**
- * Player make the request to the Manager over fifo FIFO_FILE_MANAGER_RECEIVE_TASK
- * and waits for the response Manager in the other Fifo FIFO_FILE_PARTNER_RESPONSE + id
- * */
-void Player::partnerRequest() {
-    requester->request();
-    response = requester->waitResponse();
+ * Player make the request to the Manager over pipe where manager receives tasks
+ * and waits for the response from Manager in the other pipe.
+ *
+ */
+OrgPlayerResponse Player::partnerRequest() {
+    logMessage("Searching partner");
+    TaskRequest taskRequest = {id, 0, 0, false, FIND_PARTNER};
+    ssize_t out = this->sendRequestPipe->escribir(&taskRequest, sizeof(TaskRequest));
+    if (out < 0) {
+        std::cout << strerror(errno)<< std::endl;
+        throw runtime_error("Partner request pipe can't be write!");
+    }
+
+    OrgPlayerResponse response{};
+    out = receiveResponsesPipe->leer((&response), sizeof(OrgPlayerResponse));
+    if (out < 0) {
+        throw runtime_error("PartnerRequester: response couldn't be read! Error Number: " + errno);
+    }
+
+    return response;
 }
 
 /**
- * Enter in to the Field and .
- * */
-void Player::goToPlayGame() {
-    SemaforoInfo semInfo = getSemaforoInfoEntry();
-    string aux = "Yendo a la cancha: " + to_string(semInfo.id);
-    log(aux);
-    semInfo.s->v(semInfo.id);
-    log("Adentro de la cancha");
-}
-
-/**
- * Leaves the field when the Field release the semaphore
- * */
-void Player::leaveField() {
-    SemaforoInfo semInfo = getSemaforoInfoExit();
-    semInfo.s->p(semInfo.id);
-}
-
-SemaforoInfo Player::getSemaforoInfoEntry() {
-    return getField().getEntry();
-}
-
-
-SemaforoInfo Player::getSemaforoInfoExit() {
-    return getField().getExit();
-}
-
-Field Player::getField() {
-    return this->stadium->getField(response.fieldId);
-}
-
-void Player::log(string message) {
-    string aux = "Player " + name + ": " + message;
-    Logger::getInstance()->logMessage(aux.c_str());
+ * Enter in to the Field and plays the game.
+ */
+void Player::goToPlayGame(unsigned short fieldId) {
+    logMessage("Entering the field " + to_string(fieldId));
+    entranceToFields->v(fieldId);
+    exitFromFields->p(fieldId);
+    logMessage("Leaving the field " + to_string(fieldId));
 }
 
 /**
  * It waits till there is place inside the stadium.
  */
 void Player::enterStadium() {
+    logMessage("Waiting to enter the stadium");
     stadiumTurnstile->p(0);
 }
 
@@ -106,6 +101,7 @@ void Player::enterStadium() {
  * It leaves the stadium
  */
 void Player::leaveStadium() {
+    logMessage("Leaving the stadium");
     stadiumTurnstile->v(0);
 }
 

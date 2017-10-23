@@ -11,7 +11,7 @@ enum PlayerAction {
 };
 
 struct OrgPlayerResponse {
-    int fieldId;
+    unsigned short fieldId;
     PlayerAction playerAction;
 
     string show() {

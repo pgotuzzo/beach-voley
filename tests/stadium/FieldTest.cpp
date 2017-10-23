@@ -1,4 +1,3 @@
-#include <fcntl.h>
 #include "../catch.hpp"
 #include "../../src/monitor/TideMonitor.h"
 #include "../../IPCClasses/signal/SignalHandler.h"

@@ -5,7 +5,6 @@
 #include "../config/Definitions.h"
 #include "../stadium/Field.h"
 #include "../stadium/Stadium.h"
-#include "PartnerRequester.h"
 
 using namespace std;
 
@@ -14,37 +13,27 @@ class Player {
 
 private:
     int id;
-    string name;
-    Stadium *stadium;
+
     const Semaforo *stadiumTurnstile;
-    OrgPlayerResponse response;
-    PartnerRequester *requester;
 
-    Field getField();
+    const Semaforo *entranceToFields;
+    const Semaforo *exitFromFields;
 
-    SemaforoInfo getSemaforoInfoEntry();
+    Pipe *receiveResponsesPipe;
+    Pipe *sendRequestPipe;
 
-    void partnerRequest();
-
-    void goToPlayGame();
-
-    void leaveField();
-
-    void log(string message);
+    OrgPlayerResponse partnerRequest();
+    void goToPlayGame(unsigned short  fieldId);
 
     void enterStadium();
-
     void leaveStadium();
 
-    SemaforoInfo getSemaforoInfoExit();
-
+    void logMessage(const string &message);
 public:
-    Player(int id, const string &name, Stadium *stadium, const Semaforo *stadiumTurnstile,
-           Pipe *receiveResponsesPipe, Pipe *sendRequestPipe);
+    Player(int id, const Semaforo *entranceToFields, const Semaforo *exitFromFields,
+           const Semaforo *stadiumTurnstile, Pipe *receiveResponsesPipe, Pipe *sendRequestPipe);
 
     void play();
-
-    void initPlayer();
 };
 
 
