@@ -34,7 +34,6 @@ set(INIT_EXCEPTION src/InitException.cpp src/InitException.h)
 set(TIDE_MONITOR src/monitor/TideMonitor.cpp src/monitor/TideMonitor.h ${SIGQUIT_HANDLER} ${RANDOM_NUMBER} ${LOGGER})
 set(PLAYER src/player/Player.cpp src/player/Player.h ${PIPE})
 set(FIELD src/stadium/Field.cpp src/stadium/Field.h ${SEMAFORO} ${LOGGER} ${PIPE} ${RANDOM_NUMBER})
-set(STADIUM src/stadium/Stadium.cpp src/stadium/Stadium.h)
 set(MANAGER src/managers/Manager.cpp src/managers/Manager.h ${RESOURCE_HANDLER} ${VECTOR_COMPARTIDO})
 set(TOURNAMENT_BOARD src/managers/TournamentBoard.cpp src/managers/TournamentBoard.hpp)
 
@@ -43,7 +42,7 @@ set(CONFIG src/config/Config.cpp src/config/Config.h ${PARSE_EXCEPTION})
 
 # Main
 set(SOURCE_FILES src/main.cpp src/config/Constants.h ${CONFIG}
-        ${FIELD} ${PLAYER} ${STADIUM} ${MANAGER} ${TOURNAMENT_BOARD}
+        ${FIELD} ${PLAYER} ${MANAGER} ${TOURNAMENT_BOARD}
         ${STRING_UTILS} ${RESOURCE_HANDLER} ${LOCK_FILE} ${TIDE_MONITOR}
         ${SIGNAL_HANDLER} ${SIGNAL_HANDLER} src/config/InvalidConfigException.cpp src/config/InvalidConfigException.h)
 add_executable(beach-voley ${SOURCE_FILES})

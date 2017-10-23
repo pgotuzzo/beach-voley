@@ -4,7 +4,6 @@
 #include <string>
 #include "../config/Definitions.h"
 #include "../stadium/Field.h"
-#include "../stadium/Stadium.h"
 
 using namespace std;
 
