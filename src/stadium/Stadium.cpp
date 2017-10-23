@@ -46,7 +46,7 @@ vector<int> Stadium::initStadium() {
         Field field = this->getField(i);
         int pid = fork();
         if (pid == 0) {
-            field.readyForGames();
+            field.startPlayingGames();
             ResourceHandler::getInstance()->freeResources();
             exit(0);
         }

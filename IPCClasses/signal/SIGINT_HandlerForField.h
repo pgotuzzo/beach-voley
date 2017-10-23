@@ -23,7 +23,7 @@ public:
      */
     virtual int handleSignal(int signum) {
         assert (signum == SIGINT);
-        associatedField->releasePlayers();
+        associatedField->releasePlayersAndEndGame();
         associatedField->toggleFloodedAndSendNotification();
         return 0;
     }

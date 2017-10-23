@@ -40,12 +40,12 @@ void ResourceHandler::init(Config config) {
     createFileIfNotExist(path);
     Semaforo s(path, static_cast<ushort>(config.tournamentParams.capacity), 1);
     mSemaforo.emplace(path, s);
-    //      Field entrance
+    //      Field entranceSemaphore
     path = SEM_FILE_FIELD_ENTRANCE;
     createFileIfNotExist(path);
     s = Semaforo(path, 0, config.tournamentParams.rows * config.tournamentParams.columns);
     mSemaforo.emplace(path, s);
-    //      Field exit
+    //      Field exitSemahore
     path = SEM_FILE_FIELD_EXIT;
     createFileIfNotExist(path);
     s = Semaforo(path, 0, config.tournamentParams.rows * config.tournamentParams.columns);

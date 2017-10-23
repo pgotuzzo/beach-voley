@@ -7,48 +7,34 @@
 
 using namespace std;
 
-struct MatchResult {
-    int Team1, Team2;
-};
-
 class Field {
-
 public:
-    Field() = default;
+    ~Field() = default;
 
-    ~Field();
+    Field(unsigned short id, Semaforo *entranceSemaphore, Semaforo *exitSempahore, Pipe *taskToManagerPipe,
+          int minGameDurationInMicro, int maxGameDurationInMicro);
 
-    Field(unsigned short id, string name, Semaforo *entrance, Semaforo *exit, int minGameDurationInMicro,
-          int maxGameDurationInMicro, Pipe *taskToManagerPipe);
-
-    void readyForGames();
-
-    SemaforoInfo getEntry();
-
-    SemaforoInfo getExit();
-
-    void releasePlayers();
-
+    void startPlayingGames();
+    void releasePlayersAndEndGame();
     void toggleFloodedAndSendNotification();
 
 private:
     unsigned short id;
-    string name;
     bool flooded = false;
-    bool thereArePlayersToRelease = false;
-    SemaforoInfo entrance{};
-    SemaforoInfo exit{};
-    int minGameDurationInMicro{};
-    int maxGameDurationInMicro{};
-    Pipe *taskToManagerPipe;
+    bool inGame = false;
+    int minGameDurationInMicro;
+    int maxGameDurationInMicro;
 
-    void log(string message);
+    // semaphore that represent the entranceSemaphore to the field where players will announce that they arrive to the field
+    Semaforo *entranceSemaphore;
+    // semaphore that represent the exitSemahore of the field where players will wait till the game ends
+    Semaforo *exitSemahore;
+    // pipe to send task to the manager
+    Pipe *tasksToManagerPipe;
 
-    void waitForPlayers();
-
-    void setResult(TaskRequest *taskRequest);
-
+    void waitForPlayersAndStartGame();
     void sendResult();
+    void logMessage(const string &message);
 };
 
 #endif //BEACH_VOLEY_FIELD_H

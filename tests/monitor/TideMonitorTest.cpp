@@ -33,8 +33,8 @@ TEST_CASE("Integration tide monitor sends signals") {
         columnFieldsPids.push_back(childPid);
         columnsFieldsPids.push_back(columnFieldsPids);
     }
-    pid_t childPid = fork();
-    if (childPid == 0) {
+    pid_t tideMonitorPid = fork();
+    if (tideMonitorPid == 0) {
         TideMonitor tideMonitor{20000, 300000, 0, 1, columnsFieldsPids};
         tideMonitor.startMonitoring();
         exit(0);
@@ -48,7 +48,7 @@ TEST_CASE("Integration tide monitor sends signals") {
     wait(&status);
     REQUIRE(WEXITSTATUS(status) == 1);
     // Send term to the tide monitor
-    kill(childPid, SIGTERM);
+    kill(tideMonitorPid, SIGTERM);
     wait(&status);
     REQUIRE(WEXITSTATUS(status) == 0);
 }

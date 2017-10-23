@@ -9,39 +9,56 @@
 #include "../logger/Logger.h"
 
 
-Field::Field(unsigned short id, string name, Semaforo *entrance, Semaforo *exit, const int minGameDurationInMicro,
-             const int maxGameDurationInMicro, Pipe *taskToManagerPipe) :
-        name(std::move(name)), id(id), taskToManagerPipe(taskToManagerPipe),
-        minGameDurationInMicro(minGameDurationInMicro), maxGameDurationInMicro(maxGameDurationInMicro) {
-    this->entrance = {id, entrance};
-    this->exit = {id, exit};
-
-    SIGINT_HandlerForField sigint_handlerForField(this);
-    SignalHandler::getInstance()->registrarHandler(SIGINT, &sigint_handlerForField);
+/**
+ * Logs a message with aditional information about the process and class.
+ * @param message the message to log
+ */
+void Field::logMessage(const string &message) {
+    string messageToLog = to_string(getpid()) + string(" Field ") + to_string(id) +string(": ") + message;
+    Logger::getInstance()->logMessage(messageToLog.c_str());
 }
 
 /**
- * Waits for the players to be in the field.
+ * Field constructor initialize the attributes. Creates a handler to manage the tides.
+ *
+ * @param id the field identifier
+ * @param entranceSemaphore the semaphore that represent the entrance to the field where players will announce that
+ *          they arrive to the field
+ * @param exitSempahore the semaphore that represent the exit of the field where players will wait till the game ends
+ * @param taskToManagerPipe pipe to send task to the manager
+ * @param minGameDurationInMicro minimum quantity of microseconds for the game duration
+ * @param maxGameDurationInMicro maximum quantity of microseconds for the game duration
  */
-void Field::waitForPlayers() {
-    log("Esperando por los participantes...");
+Field::Field(unsigned short id, Semaforo *entranceSemaphore, Semaforo *exitSempahore, Pipe *taskToManagerPipe,
+             int minGameDurationInMicro, int maxGameDurationInMicro) :
+        id(id), tasksToManagerPipe(taskToManagerPipe), minGameDurationInMicro(minGameDurationInMicro),
+        maxGameDurationInMicro(maxGameDurationInMicro), entranceSemaphore(entranceSemaphore), exitSemahore(exitSempahore) {
+    taskToManagerPipe->setearModo(Pipe::ESCRITURA);
+}
+
+/**
+ * Waits for the players to be in the field, and start the game.
+ */
+void Field::waitForPlayersAndStartGame() {
+    logMessage("Waiting for players to arrive");
     for (int i = 0; i < 4; i++) {
-        entrance.s->p(entrance.id);
-        log("Llego un nuevo participante");
+        entranceSemaphore->p(id);
+        logMessage("A new player arrived");
     }
+    inGame = true;
 }
 
 /**
- * If there are players to release from the field it release them.
+ * If there are players playing it release them from the field.
  */
-void Field::releasePlayers() {
-    if (thereArePlayersToRelease) {
-        log("Liberando los participantes...");
+void Field::releasePlayersAndEndGame() {
+    if (inGame) {
+        logMessage("Releasing the players");
         for (int i = 0; i < 4; i++) {
-            exit.s->v(exit.id);
+            exitSemahore->v(id);
         }
+        inGame = false;
     }
-    thereArePlayersToRelease = false;
 }
 
 /**
@@ -49,7 +66,7 @@ void Field::releasePlayers() {
  * One of the team will win 3 sets, and the other a random number
  * between 0 and 2.
  */
-void Field::setResult(TaskRequest *taskRequest) {
+void setResult(TaskRequest *taskRequest) {
     unsigned int teamThatLose = getRandomUnsignedInt(0, 2);
     int teams[2] = {3, 3};
     teams[teamThatLose] = getRandomInt(0, 3);
@@ -59,15 +76,15 @@ void Field::setResult(TaskRequest *taskRequest) {
 }
 
 /**
- * Sends the result of the match to the manager.
+ * Sends the result of the match to the manager pipe.
  */
 void Field::sendResult() {
     TaskRequest taskRequest{id, 3, 3, false, MATCH_RESULT};
     setResult(&taskRequest);
-    log("Trying to write a response");
-    ssize_t out = taskToManagerPipe->escribir(&taskRequest, sizeof(TaskRequest));
+    logMessage("Sending result to manager");
+    ssize_t out = tasksToManagerPipe->escribir(&taskRequest, sizeof(TaskRequest));
     if (out < 0) {
-        throw runtime_error(string("Match return fifo can't be write! in sendResult for id: ") + to_string(id) +
+        throw runtime_error(string("Match return pipe can't be write! in sendResult for id: ") + to_string(id) +
                                     string(" Error: ") + strerror(errno));
     }
 }
@@ -75,44 +92,26 @@ void Field::sendResult() {
 /**
  * The field waits till the player arrive. Waits until the game ends.
  * Gets a random result from the match. Leaves the players free, and start again
- * until the tournament ends.
+ * until the tournament ends and sends a SIGTERM.
  */
-void Field::readyForGames() {
-    bool tournamentEnded = false;
-    while (!tournamentEnded) {
-        waitForPlayers();
-        thereArePlayersToRelease = true;
+void Field::startPlayingGames() {
+    SIGINT_HandlerForField sigint_handlerForField(this);
+    SignalHandler::getInstance()->registrarHandler(SIGINT, &sigint_handlerForField);
+    while (true) {
+        waitForPlayersAndStartGame();
         if (!flooded) {
-            log("Comenzo el partido");
+            logMessage("The players are in the field and the game began");
             usleep(getRandomUnsignedInt(minGameDurationInMicro, maxGameDurationInMicro));
             if (!flooded) {
-                log("Se comunica el resultado");
                 sendResult();
-                log("Finalizo el partido");
-                releasePlayers();
-            } else {
-                log("El partido se cancelo por inundacion");
+                releasePlayersAndEndGame();
             }
+        } else {
+            sleep(2);
+            logMessage("Cant play the game because the field is flooded");
+            releasePlayersAndEndGame();
         }
     }
-}
-
-SemaforoInfo Field::getEntry() {
-    return entrance;
-}
-
-SemaforoInfo Field::getExit() {
-    return exit;
-}
-
-/**
- * Logs a message with the aditional field info.
- *
- * @param message the message to log.
- */
-void Field::log(string message) {
-    string aux = "Cancha " + name + ": " + message;
-    Logger::getInstance()->logMessage(aux.c_str());
 }
 
 /**
@@ -120,16 +119,13 @@ void Field::log(string message) {
  */
 void Field::toggleFloodedAndSendNotification() {
     flooded = !flooded;
-    // if now is flooded then the tideRise
+    logMessage("The field flooded");
+    // if now is flooded then the tide rises
     TaskRequest taskRequest{id, 0, 0, flooded, TIDE_CHANGE};
-    log("Trying to write a response");
-    ssize_t out = taskToManagerPipe->escribir((&taskRequest), sizeof(TaskRequest));
+    logMessage("Sending flood notification to manager");
+    ssize_t out = tasksToManagerPipe->escribir((&taskRequest), sizeof(TaskRequest));
     if (out < 0) {
         throw runtime_error(string("Match return fifo can't be write! in toggleFloodedAndSendNotification for id: ")
                             + to_string(id) + string(" Error: ") + strerror(errno));
     }
-}
-
-Field::~Field() {
-    SignalHandler::destruir();
 }
