@@ -15,7 +15,7 @@ class ResourceHandler {
 private:
     static map<string, Semaforo> mSemaforo;
     static map<string, Pipe> mPipe;
-    static VectorCompartido<Player> *vectorCompartido;
+    static VectorCompartido<PlayerStats> *vectorCompartido;
 
     static void createSemaforo(string path, unsigned short initValue, int amount);
 
@@ -30,7 +30,7 @@ public:
 
     static LockFile *getLockFile();
 
-    static VectorCompartido<Player> *getVectorCompartido();
+    static VectorCompartido<PlayerStats> *getVectorCompartido();
 
     static void freeResources();
 };

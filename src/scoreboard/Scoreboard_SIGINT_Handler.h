@@ -21,7 +21,8 @@ public:
     virtual int handleSignal(int signum) {
         assert (signum == SIGINT);
         *quit = true;
-        exit(0);
+        Logger::d("Scoreboard Handler: Terminando!!");
+        return 0;
     }
 
 };

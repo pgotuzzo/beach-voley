@@ -28,7 +28,7 @@ int PlayerProcess::start() {
             }
             Logger::d(playerName + " abandona el predio");
             stadiumEntrance->v(0);
-            usleep(getRandomUnsignedInt(0, 2000));
+            usleep(getRandomUnsignedInt(5000, 10000));
         }
         Logger::d(playerName + " se retira del torneo");
         exit(0);

@@ -109,4 +109,11 @@ struct Match {
     Team visitant;
 };
 
+struct PlayerStats {
+    int id;
+    string name;
+    int points;
+    int matches;
+};
+
 #endif //BEACH_VOLEY_AUX_DEFINITION_H

@@ -18,13 +18,16 @@ class VectorCompartido {
 private:
     int shmId;
     T *ptrDatos;
+    int vectorSize;
 
     int cantidadProcesosAdosados() const;
 
 public:
     VectorCompartido();
 
-    int crear(const std::string &archivo, char letra, size_t vectorSize);
+    int size();
+
+    int crear(const std::string &archivo, char letra, int vectorSize);
 
     void liberar();
 
@@ -37,11 +40,16 @@ public:
 };
 
 template<class T>
-VectorCompartido<T>::VectorCompartido() : shmId(0), ptrDatos(NULL) {
+VectorCompartido<T>::VectorCompartido() : shmId(0), ptrDatos(NULL), vectorSize(0) {}
+
+template<class T>
+int VectorCompartido<T>::size() {
+    return vectorSize;
 }
 
 template<class T>
-int VectorCompartido<T>::crear(const std::string &archivo, const char letra, size_t vectorSize) {
+int VectorCompartido<T>::crear(const std::string &archivo, const char letra, int vectorSize) {
+    this->vectorSize = vectorSize;
     // generacion de la clave
     key_t clave = ftok(archivo.c_str(), letra);
     if (clave == -1) {
@@ -75,7 +83,7 @@ void VectorCompartido<T>::liberar() {
     int procAdosados = this->cantidadProcesosAdosados();
 
     if (procAdosados == 0) {
-        int res = shmctl(this->shmId, IPC_RMID, NULL);
+        shmctl(this->shmId, IPC_RMID, NULL);
     }
 }
 

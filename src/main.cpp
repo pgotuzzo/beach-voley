@@ -24,12 +24,18 @@ int main() {
     Logger::d("Configuracion valida!");
 
     Config config;
-    config.rows = 2;
-    config.columns = 2;
-    config.maxMatches = 5;
-    config.stadiumCapacity = 9;
-    config.vPlayerNames = {"Pablo", "Dani", "Marta", "Pipo", "Lola", "Martin", "Gonzo", "Carla", "Charly", "Morena",
-                           "Toto", "Jazmin"};
+    config.rows = 3;
+    config.columns = 3;
+    config.maxMatches = 20;
+    config.stadiumCapacity = 36;
+    config.vPlayerNames = {
+            "Pablo", "Dani", "Marta", "Pipo", "Lola", "Martin", "Gonzo", "Carla", "Charly", "Morena",
+            "Toto", "Jazmin", "Messi", "Riquelme", "Laspada", "ElChavoDel8", "Higuain", "LaPrincecita",
+            "Pampita", "Tuzzio", "Ameli", "Grondona", "Gandi", "Froyd", "Gallardo", "Caruso", "Ivano",
+            "LocomotoraCastro", "ChinaSuarez", "Harry", "Ron", "Phill", "Catupecu", "Peron", "Naruto",
+            "Monzon", "SanMartin", "Galileo", "Alan", "MoniArgento", "Quintana", "ElChe", "Maradona",
+            "Ronaldo", "Lucio", "DaniAlvez", "Tevez", "Karabatic", "Shevchenco", "Owen", "Kahn"
+    };
     config.debugEnabled = true;
 
     Logger::d(config.toString());
@@ -100,9 +106,13 @@ int main() {
     }
 
     // FIXME - Should be done in the ResourceHandler
-    VectorCompartido<Player> *scoreBoard = ResourceHandler::getVectorCompartido();
+    VectorCompartido<PlayerStats> *scoreBoard = ResourceHandler::getVectorCompartido();
     for (int i = 0; i < vPlayers.size(); i++) {
-        scoreBoard->escribir(vPlayers.at(i), i);
+        Player p = vPlayers.at(i);
+        scoreBoard->escribir(
+                {p.getId(), p.getName(), 0, 0},
+                i
+        );
     }
 
     // Create Manager Process
@@ -115,7 +125,7 @@ int main() {
     Logger::d("Proceso - Organizador: (PID) " + to_string(managerPid));
 
     // Create ScoreBoardProcess
-    ScoreBoardProcess scoreBoardProcess = ScoreBoardProcess(config.vPlayerNames.size());
+    ScoreBoardProcess scoreBoardProcess = ScoreBoardProcess();
     int scoreBoardPid = scoreBoardProcess.start();
     Logger::d("Proceso - Tabla de posiciones: (PID) " + to_string(scoreBoardPid));
 

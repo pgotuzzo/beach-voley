@@ -9,7 +9,7 @@ static const string TAG = "Gestor de Recursos: ";
 
 map<string, Semaforo> ResourceHandler::mSemaforo;
 map<string, Pipe> ResourceHandler::mPipe;
-VectorCompartido<Player> *ResourceHandler::vectorCompartido = new VectorCompartido<Player>();
+VectorCompartido<PlayerStats> *ResourceHandler::vectorCompartido = new VectorCompartido<PlayerStats>();
 
 void ResourceHandler::init(Config config) {
     Logger::d(TAG + "Inicializandose. Creando todos los recursos necesarios: Semaforos, Pipes, etc.");
@@ -26,7 +26,11 @@ void ResourceHandler::init(Config config) {
     }
     // Vector compartido
     createFileIfNotExists(PATH_VEC_COMPARTIDO_SCOREBOARD);
-    vectorCompartido->crear(PATH_VEC_COMPARTIDO_SCOREBOARD, 'A', config.vPlayerNames.size());
+    int res = vectorCompartido->crear(PATH_VEC_COMPARTIDO_SCOREBOARD, 'A', config.vPlayerNames.size());
+    if (res != 0) {
+        cout << "FALLO LA CREACION DE MEMORIA COMPARTIDA (" << res << ")" << endl;
+        throw "FALLO";
+    }
 }
 
 void ResourceHandler::createSemaforo(string path, unsigned short initValue, int amount) {
@@ -58,7 +62,7 @@ LockFile *ResourceHandler::getLockFile() {
     return new LockFile(PATH_LOCK_SCOREBOARD);
 }
 
-VectorCompartido<Player> *ResourceHandler::getVectorCompartido() {
+VectorCompartido<PlayerStats> *ResourceHandler::getVectorCompartido() {
     return vectorCompartido;
 }
 

@@ -17,8 +17,7 @@ private:
     MatchMaker *matchMaker;
     Pipe *taskQueue;
     LockFile *lock;
-    VectorCompartido<Player> *scoreBoard;
-    int scoreBoardSize;
+    VectorCompartido<PlayerStats> *scoreBoard;
     int maxMatches;
     int stadiumCapacity;
     bool tournamentEnded;
