@@ -47,10 +47,14 @@ int FieldProcess::start() {
 }
 
 void FieldProcess::waitForPlayers() {
-    for (int i = 0; i < PLAYER_PER_MATCH; i++) {
+    while (playersInField < PLAYER_PER_MATCH) {
         entrance->p(semId);
-        playersInField++;
-        Logger::d(TAG + "Recibio un nuevo jugador. Total: " + to_string(playersInField));
+        if (!abort) {
+            playersInField++;
+            Logger::d(TAG + "Recibio un nuevo jugador. Total: " + to_string(playersInField));
+        } else {
+            abort = false;
+        }
     }
 }
 
@@ -117,7 +121,7 @@ void FieldProcess::notifyTideChange(bool status) {
 void FieldProcess::toggleTide() {
     isFlood = !isFlood;
     if (state == WAITING_FOR_PLAYERS) {
-        entrance->p(semId);
+        abort = true;
     } else if (isFlood and state == GAME_IN_PROGRESS) {
         abort = true;
     }

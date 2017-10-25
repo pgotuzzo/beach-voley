@@ -25,8 +25,8 @@ int main() {
     Logger::d("Configuracion valida!");
 
     Config config;
-    config.rows = 3;
-    config.columns = 3;
+    config.rows = 2;
+    config.columns = 2;
     config.maxMatches = 20;
     config.stadiumCapacity = 36;
     config.vPlayerNames = {
@@ -131,7 +131,7 @@ int main() {
     Logger::d("Proceso - Tabla de posiciones: (PID) " + to_string(scoreBoardPid));
 
     // Create Tide Monitor
-    TideMonitorProcess tideMonitorProcess(40000, 100000, 0.2, 0.2, &stadium);
+    TideMonitorProcess tideMonitorProcess(10000, 20000, 0.2, 0.2, &stadium);
     int tideMonitorPid = tideMonitorProcess.start();
     Logger::d("Proceso - Monitor de marea: (PID) " + to_string(tideMonitorPid));
 

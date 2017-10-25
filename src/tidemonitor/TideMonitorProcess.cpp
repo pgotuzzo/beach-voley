@@ -13,7 +13,7 @@ using namespace std;
  * @param message the message to log
  */
 void logMessage(const string &message) {
-    string messageToLog = string(" Tide Monitor: ") + message;
+    string messageToLog = string("Monitor de Marea: ") + message;
     Logger::d(messageToLog.c_str());
 }
 
