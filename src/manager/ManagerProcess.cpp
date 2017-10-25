@@ -72,6 +72,7 @@ void ManagerProcess::onFindPartnerRequest(int playerId) {
     //      Case 2: played K matches
     if (tournamentEnded || vPlayers->at(idx).getMatchesCount() == maxMatches) {
         securityGuard->dismissPlayerFromTournament(playerId);
+        matchMaker->checkFieldAssignation();
         return;
     }
     //      Case 3: player don't have potential partners
@@ -180,6 +181,7 @@ void ManagerProcess::onTideChangeRequest(int fieldId, bool rise) {
         stadium->getFieldById(fieldId)->setState(Field::State::FLOODED);
     } else {
         stadium->getFieldById(fieldId)->setState(Field::State::FREE);
+        matchMaker->checkFieldAssignation();
     }
 }
 

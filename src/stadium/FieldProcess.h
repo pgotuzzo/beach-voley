@@ -47,7 +47,7 @@ private:
 
     void sendResult(MatchResult matchResult);
 
-    void notifyTideChange();
+    void notifyTideChange(bool status);
 
 public:
     FieldProcess(string name, Pipe *managerQueue, int semId, Semaforo *entrance, Semaforo *exit);

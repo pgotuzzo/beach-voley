@@ -131,7 +131,7 @@ int main() {
     Logger::d("Proceso - Tabla de posiciones: (PID) " + to_string(scoreBoardPid));
 
     // Create Tide Monitor
-    TideMonitorProcess tideMonitorProcess(90000, 100000, 0.2, 0.2, &stadium);
+    TideMonitorProcess tideMonitorProcess(40000, 100000, 0.2, 0.2, &stadium);
     int tideMonitorPid = tideMonitorProcess.start();
     Logger::d("Proceso - Monitor de marea: (PID) " + to_string(tideMonitorPid));
 

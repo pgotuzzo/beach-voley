@@ -26,23 +26,20 @@ int FieldProcess::start() {
         while (sigtermHandler.getGracefulQuit() == 0) {
             state = WAITING_FOR_PLAYERS;
             waitForPlayers();
-            abort = false;
             if (!isFlood) {
-                // Field not flood - Play a match
                 state = GAME_IN_PROGRESS;
                 matchResult = playMatch();
-            }
-            if (!isFlood && !abort) {
-                // Match ended well - notify result to Manager
-                state = NOTIFYING_RESULT;
-                sendResult(matchResult);
+                if (!abort) {
+                    state = NOTIFYING_RESULT;
+                    sendResult(matchResult);
+                } else {
+                    Logger::d(TAG + "Cancelando partido en curso...subio la marea");
+                }
             } else {
                 Logger::d(TAG + "Cancelando partido en curso...subio la marea");
             }
+            abort = false;
             releasePlayers();
-            if (tideChanged) {
-
-            }
         }
         Logger::d(TAG + "Terminando!");
     }
@@ -52,14 +49,8 @@ int FieldProcess::start() {
 void FieldProcess::waitForPlayers() {
     for (int i = 0; i < PLAYER_PER_MATCH; i++) {
         entrance->p(semId);
-        if (tideChanged) {
-            tideChanged = false;
-            // FIXME - Is it necessary
-//            entrance->p(semId);
-        } else {
-            playersInField++;
-            Logger::d(TAG + "Recibio un nuevo jugador. Total: " + to_string(playersInField));
-        }
+        playersInField++;
+        Logger::d(TAG + "Recibio un nuevo jugador. Total: " + to_string(playersInField));
     }
 }
 
@@ -108,11 +99,11 @@ void FieldProcess::sendResult(MatchResult matchResult) {
     Logger::d(TAG + "tarea enviada correctamente.\n" + request.toString());
 }
 
-void FieldProcess::notifyTideChange() {
+void FieldProcess::notifyTideChange(bool status) {
     TaskRequest request{};
     request.task = TIDE_CHANGE;
     request.pid = getpid();
-    request.tideRise = isFlood;
+    request.tideRise = status;
 
     managerQueue->setearModo(Pipe::ESCRITURA);
     ssize_t out = managerQueue->escribir(&request, sizeof(TaskRequest));
@@ -126,11 +117,10 @@ void FieldProcess::notifyTideChange() {
 void FieldProcess::toggleTide() {
     isFlood = !isFlood;
     if (state == WAITING_FOR_PLAYERS) {
-        tideChanged = true;
+        entrance->p(semId);
     } else if (isFlood and state == GAME_IN_PROGRESS) {
         abort = true;
-        releasePlayers();
     }
     Logger::d(TAG + "Ocurrio un cambio en la marea...notificando al Organizador!");
-    notifyTideChange();
+    notifyTideChange(isFlood);
 }

@@ -99,7 +99,7 @@ void MatchMaker::assignField(int fieldId) {
     Logger::d(
             TAG + "Se asigna la Cancha " + stadium->getFieldById(fieldId)->getName() + " para el partido pendiente!!!");
     // Pop the first pending match
-    Match match = matchesWaitingForField[0];
+    Match match = *matchesWaitingForField.begin();
     // Remove from pending list
     matchesWaitingForField.erase(matchesWaitingForField.begin());
     // Update stadium/field status
