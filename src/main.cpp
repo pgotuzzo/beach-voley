@@ -25,8 +25,8 @@ int main() {
     Logger::d("Configuracion valida!");
 
     Config config;
-    config.rows = 2;
-    config.columns = 2;
+    config.rows = 4;
+    config.columns = 4;
     config.maxMatches = 20;
     config.stadiumCapacity = 36;
     config.vPlayerNames = {

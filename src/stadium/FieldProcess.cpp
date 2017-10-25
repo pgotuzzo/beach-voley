@@ -40,6 +40,11 @@ int FieldProcess::start() {
             }
             abort = false;
             releasePlayers();
+            if (tideChanged) {
+                tideChanged = false;
+                Logger::d(TAG + "Ocurrio un cambio en la marea...notificando al Organizador!");
+                notifyTideChange(isFlood);
+            }
         }
         Logger::d(TAG + "Terminando!");
     }
@@ -120,11 +125,10 @@ void FieldProcess::notifyTideChange(bool status) {
 
 void FieldProcess::toggleTide() {
     isFlood = !isFlood;
+    tideChanged = !tideChanged;
     if (state == WAITING_FOR_PLAYERS) {
         abort = true;
     } else if (isFlood and state == GAME_IN_PROGRESS) {
         abort = true;
     }
-    Logger::d(TAG + "Ocurrio un cambio en la marea...notificando al Organizador!");
-    notifyTideChange(isFlood);
 }
