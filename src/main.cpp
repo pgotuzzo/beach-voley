@@ -14,17 +14,29 @@
 #include "stadium/FieldProcess.h"
 #include "scoreboard/ScoreBoardProcess.h"
 #include "tidemonitor/TideMonitorProcess.h"
+#include "config/Config.h"
 
-int main() {
-    // Remove any previous log
-    Logger::reset();
+void showHelp() {
+    FILE *pHelpFile;
+    const int countMax = 100;
+    char buffer[countMax];
 
-    // Read parameters
-    // FIXME - Reuse previous code
-    Logger::d("Se leen los parametros...");
-    Logger::d("Configuracion valida!");
+    pHelpFile = fopen("help", "r");
+    if (pHelpFile == nullptr) {
+        perror("Error opening help file");
+    } else {
+        while (!feof(pHelpFile)) {
+            char *res = fgets(buffer, countMax, pHelpFile);
+            if (res != nullptr) {
+                fputs(buffer, stdout);
+            }
+        }
+        fclose(pHelpFile);
+    }
+}
 
-    Config config;
+void initTournament(TournamentConfig config) {
+    /* FIXME - Mock - Remove
     config.rows = 4;
     config.columns = 4;
     config.maxMatches = 20;
@@ -38,6 +50,9 @@ int main() {
             "Ronaldo", "Lucio", "DaniAlvez", "Tevez", "Karabatic", "Shevchenco", "Owen", "Kahn"
     };
     config.debugEnabled = true;
+    // TODO - Save this commando for testing
+    ./beach_voley -debug -c 2 -r 2 -m 25 -k 21 -player Pablo Dani Marta Pipo Lola Martin Gonzo Carla Charly Morena Toto Jazmin Messi Riquelme Laspada ElChavoDel8 Higuain LaPrincecita Pampita Tuzzio Ameli Grondona Gandi Froyd Gallardo Caruso Ivano LocomotoraCastro ChinaSuarez Harry Ron Phill Catupecu Peron Naruto Monzon SanMartin Galileo Alan MoniArgento Quintana ElChe Maradona Ronaldo Lucio DaniAlvez Tevez Karabatic Shevchenco Owen Kahn
+    */
 
     Logger::d(config.toString());
 
@@ -205,5 +220,35 @@ int main() {
     Logger::i("===========================================================================================");
     Logger::i("============                    BEACH VOLEY - FINAL                             ===========");
     Logger::i("===========================================================================================");
+}
+
+int main(int argc, char **argv) {
+    // Remove any previous log
+    Logger::reset();
+
+    // Read parameters
+    Logger::d("Se leen los parametros...");
+    vector<string> vParams;
+    for (int i = 1; i < argc; i++) {
+        string param(argv[i]);
+        vParams.push_back(param);
+    }
+    // Parse
+    Logger::d("Parseando la configuration...");
+    Config generalConfig;
+    try {
+        generalConfig = parseConfig(vParams);
+    } catch (ParseException &e) {
+        cout << e.what() << endl;
+        exit(1);
+    }
+
+    Logger::d("Configuracion valida!");
+    if (generalConfig.mode == Mode::MANUAL) {
+        showHelp();
+        exit(0);
+    } else {
+        initTournament(generalConfig.tournamentConfig);
+    }
     return 0;
 }

@@ -20,6 +20,7 @@ set(UTILS
         src/util/ResourceHandler.cpp src/util/ResourceHandler.h
         src/util/PlayerUtils.cpp src/util/PlayerUtils.h
         src/util/RandomNumber.cpp src/util/RandomNumber.h
+        src/util/StringUtils.cpp src/util/StringUtils.h
         src/util/FieldUtils.cpp src/util/FieldUtils.h)
 
 set(CONS src/cons/Path.h src/cons/Definition.h src/cons/Constants.h)
@@ -44,8 +45,26 @@ set(SCOREBOARD
 set(TIDEMONITOR
         src/tidemonitor/TideMonitorProcess.cpp src/tidemonitor/TideMonitorProcess.h)
 
+set(CONFIG
+        src/config/Config.cpp src/config/Config.h
+        src/config/InvalidConfigException.cpp src/config/InvalidConfigException.h
+        src/config/ParseException.cpp src/config/ParseException.h)
+
 set(SOURCE_FILES src/main.cpp src/LauncherProcess.cpp src/LauncherProcess.h)
-add_executable(beach_voley ${SOURCE_FILES} ${IPC} ${UTILS} ${CONS} ${MANAGER} ${PLAYER} ${STADIUM} ${SCOREBOARD} ${TIDEMONITOR})
+
+add_executable(beach_voley
+        ${SOURCE_FILES}
+        ${IPC}
+        ${UTILS}
+        ${CONS}
+        ${CONFIG}
+        ${MANAGER}
+        ${PLAYER}
+        ${STADIUM}
+        ${SCOREBOARD}
+        ${TIDEMONITOR})
+
+configure_file(help ${CMAKE_CURRENT_BINARY_DIR}/help COPYONLY)
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tmp)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/logs)

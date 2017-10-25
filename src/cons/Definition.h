@@ -7,7 +7,12 @@
 
 using namespace std;
 
-struct Config {
+enum Mode {
+    TOURNAMENT,
+    MANUAL
+};
+
+struct TournamentConfig {
     unsigned short int rows;
     unsigned short int columns;
     unsigned short int stadiumCapacity;
@@ -30,6 +35,11 @@ struct Config {
                << "\tDebug habilitado? " << (debugEnabled ? "Si" : "No");
         return stream.str();
     }
+};
+
+struct Config {
+    Mode mode;
+    TournamentConfig tournamentConfig;
 };
 
 enum TaskType {

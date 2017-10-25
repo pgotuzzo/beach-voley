@@ -11,7 +11,7 @@ map<string, Semaforo> ResourceHandler::mSemaforo;
 map<string, Pipe> ResourceHandler::mPipe;
 VectorCompartido<PlayerStats> *ResourceHandler::vectorCompartido = new VectorCompartido<PlayerStats>();
 
-void ResourceHandler::init(Config config) {
+void ResourceHandler::init(TournamentConfig config) {
     Logger::d(TAG + "Inicializandose. Creando todos los recursos necesarios: Semaforos, Pipes, etc.");
     // Semaforos
     createSemaforo(PATH_SEM_TOURNAMENT_SUBSCRIPTION, 0, 1);

@@ -22,7 +22,7 @@ private:
     static void createPipe(string pipeId);
 
 public:
-    static void init(Config config);
+    static void init(TournamentConfig config);
 
     static Semaforo *getSemaforo(string path);
 
