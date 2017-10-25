@@ -1,97 +1,88 @@
 #include <cstring>
 
 #include <algorithm>
-#include <utility>
-#include <signal.h>
 #include "Manager.h"
 #include "../logger/Logger.h"
 #include "../util/RandomNumber.h"
 
-const char *TAG = "Manager: ";
+using namespace std;
 
-Manager::Manager(TournamentParams tournamentParams, VectorCompartido<int> *idsTable, VectorCompartido<int> *pointsTable,
-                 LockFile *lockForSharedVectors, Pipe *receiveTaskPipe, map<int, Pipe *> playersIdPipeMap,
-                 vector<int> fieldPids) :
-        stadiumSize(tournamentParams.capacity), totalGames(tournamentParams.matches),
-        totalPlayersInTournament(tournamentParams.players.size()), rows(tournamentParams.rows),
-        columns(tournamentParams.columns), idsTable(idsTable), pointsTable(pointsTable),
-        receiveTaskPipe(receiveTaskPipe), lockForSharedVectors(lockForSharedVectors), fieldPids(fieldPids),
-        playersIdPipeMap(playersIdPipeMap), initialPlayersInTournament(tournamentParams.players.size()) {
-    this->freeFields = vector<bool>(rows * columns, true);
-    this->teamsOnFields = vector<TeamsMatch>(rows * columns);
+/**
+ * Logs a message with aditional information about the process and class.
+ * @param message the message to log
+ */
+void logMessage(const string &message) {
+    string messageToLog = to_string(getpid()) + string(" Manager: ") + message;
+    Logger::getInstance()->logMessage(messageToLog.c_str());
+}
 
-    vector<int> valuesPlayers;
-    for (int i = 0; i < totalPlayersInTournament; i++) {
-        valuesPlayers.push_back(i);
+/**
+ * Manager constructor initialize the attributes.
+ *
+ * @param totalFields the total number of fields
+ * @param capacity the maximum number of players inside the stadium
+ * @param matches the maximum number of matches a player can play before leaving the tournament
+ * @param players the number of players registered the tournament
+ * @param lockForSharedMemory lock to write or read in the shared memory
+ * @param pointsTable shared vector with the points for every player
+ * @param receiveTaskPipe pipe where the manager receives the tasks
+ * @param playersIdPipeMap vector with the pipe where the manager send responses for the players
+ */
+Manager::Manager(unsigned int totalFields, unsigned int capacity, unsigned int matches, unsigned int players,
+                 LockFile *lockForSharedMemory, VectorCompartido<int> *pointsTable, Pipe *receiveTaskPipe,
+                 vector<Pipe *> playersIdPipeMap) :
+        playersInTournament(players), receiveTaskPipe(receiveTaskPipe), playersGames(vector<int>(players, 0)),
+        totalMatchesPerPlayer(matches), fieldsInformation(vector<FieldInformation>(totalFields)),
+        stadiumSize(capacity), lockForSharedMemory(lockForSharedMemory), pointsTable(pointsTable) {
+
+    for (unsigned long i = 0; i < playersInTournament; i++) {
+//        playersAvailablePartners.push_back(vector<bool>(playersInTournament, true));
+        playersAvailablePartners.emplace_back(playersInTournament, true);
+        playersAvailablePartners[i][i] = false;
     }
-    for (int i = 0; i < totalPlayersInTournament; i++) {
-        this->playersPossiblePartners.emplace(i, valuesPlayers);
-    }
 
-    for (unsigned int i = 0; i < totalPlayersInTournament; ++i) {
+    for (auto playerPipe: playersIdPipeMap) {
+        playerPipe->setearModo(Pipe::ESCRITURA);
+    }
+    receiveTaskPipe->setearModo(Pipe::LECTURA);
+
+    for (unsigned int i = 0; i < playersInTournament; ++i) {
         pointsTable->escribir(0, i);
     }
 }
 
 /**
- * Creates a separated process and starts to receive tasks.
- */
-void Manager::initManager() {
-    int pid = fork();
-    if (pid == 0) {
-        cout<< getpid()<< " cancha"<<endl;
-        this->receiveTask();
-        exit(0);
-    }
-}
-
-/**
- * Start receiving tasks till the end of the tournament.
- * Reads messages from the task fifo, then tries to solve the task,
- * check if the tournament finishes and reads a new task.
+ * Start receiving tasks till the end of the tournament. Reads messages from the task pipe, then tries to solve
+ * the task, check if there are still players in the tournament or games in play and reads a new task.
  */
 void Manager::receiveTask() {
     ssize_t out = 0;
-    while (!checkTournamentEnd()) {
-        count++;
+    while (playersInTournament >= 4 or gamesInPlay > 0 or !playersReturningFromField.empty()) {
         TaskRequest task{};
-        cout << TAG << "Trying to read a task" << endl;
-        cout << "Players in tournament " << to_string(totalPlayersInTournament) << endl;
-        cout << "Players in game " << to_string(playersInGame) << endl;
+        logMessage("Trying to read a task");
         out = receiveTaskPipe->leer(static_cast<void *>(&task), sizeof(TaskRequest));
-        cout << TAG << "Read something... :thinking: " << task.show() << " out: " << out << endl;
-
         if (out > 0) {
-            cout << TAG << "Read a task successfully!" << endl;
+            logMessage(string("Received a task: ") + task.show());
             switch (task.task) {
                 case (FIND_PARTNER):
-                    cout << TAG << "Task: FIND PARTNER" << endl;
-                    findPartner(task.id);
+                    findMatch(task.id);
                     break;
                 case (TIDE_CHANGE):
-                    cout << TAG << "Task: TIDE CHANGE" << endl;
                     updateFieldList(task.id, task.tideRise);
                     break;
                 case (MATCH_RESULT):
-                    cout << TAG << "Task: MATCH RESULT" << endl;
                     saveResult(task.id, task.resultLocal, task.resultVisitant);
                     break;
                 default:
                     throw runtime_error("Task handler not defined.");
             }
-            cout << TAG << "Task completed! Going for a new one" << endl;
+            logMessage(string("Task completed"));
         } else {
-            cout << strerror(errno)<< endl;
+            cout << strerror(errno) << endl;
         }
         removePlayersThatCantPlay();
-        cout << "Players in game " << to_string(playersInGame) << endl;
     }
-    if (checkTournamentEnd()) {
-        for (auto fieldPid: fieldPids) {
-            kill(fieldPid, SIGKILL);
-        }
-    }
-    cout << "Tournament ended!" << endl;
+    logMessage(string("Tournament finish"));
     for (auto player: waitingPlayers) {
         sendMessageToPlayer(player, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
     }
@@ -102,51 +93,191 @@ void Manager::receiveTask() {
 }
 
 /**
+ * Tries to find a partner for a given player.
+ * If the player already played all his games it tells him to leave the tournament.
+ * If the player still have games to play it tries to assign him a partner, if it founds a partner
+ * tries to assign an opponent team and send them to a field.
+ * If it can't found a partner and the stadium is full, removes one waiting player from the stadium
+ * and leave this player waiting, after that tries to form new teams to play.
+ *
+ * @param playerId the id of the player.
+ */
+void Manager::findMatch(int playerId) {
+    if (!tournamentStart) {
+        waitingPlayers.push_back(playerId);
+        tournamentStart = waitingPlayers.size() >= 9;
+    } else {
+        auto playerReturnsFromField = find(playersReturningFromField.begin(), playersReturningFromField.end(),
+                                           playerId);
+        if (playerReturnsFromField != playersReturningFromField.end()) {
+            playersReturningFromField.erase(playerReturnsFromField);
+        }
+        if (playersGames[playerId] == totalMatchesPerPlayer or countAvailablePartners(playerId) == 0) {
+            logMessage(string("Player ") + to_string(playerId) +
+                       string("already played all the matches allowed or cant play more."));
+            sendMessageToPlayer(playerId, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
+            removePlayerFromAllAvailablePartners(playerId);
+            playersInTournament--;
+        } else {
+            Team localTeam = Team{playerId, -1};
+            if (assignPartner(&localTeam)) {
+                logMessage(string("Player ") + to_string(playerId) + string(" now has a partner: Player ") +
+                           to_string(localTeam.idPlayer2));
+                waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), localTeam.idPlayer2));
+                if (!waitingTeams.empty()) {
+                    if (assignField(localTeam, waitingTeams.back())) {
+                        waitingTeams.pop_back();
+                    } else {
+                        logMessage("Couldn't find a field");
+                        waitingTeams.push_back(localTeam);
+                    }
+                } else {
+                    logMessage("Couldn't find an opponent");
+                    waitingTeams.push_back(localTeam);
+                }
+            } else {
+                logMessage(string("Player ") + to_string(playerId) + string(" don't have a partner available"));
+                waitingPlayers.push_back(playerId);
+                if (stadiumIsFull()) {
+                    logMessage("Stadium is full removing a random player");
+                    removeRandomWaitingPlayer();
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Counts the number of available partners for that player.
+ *
+ * @param playerId the player to consult the available partners.
+ * @return the number of available partners.
+ */
+int Manager::countAvailablePartners(int playerId) {
+    int countAvailablePartners = 0;
+    for (auto availablePartner: playersAvailablePartners[playerId]) {
+        if (availablePartner) {
+            countAvailablePartners++;
+        }
+    }
+    return countAvailablePartners;
+}
+
+/**
+ * Sends a message to a particular player.
+ *
+ * @param playerId the id of the player.
+ * @param orgPlayerResponse the message to send.
+ */
+void Manager::sendMessageToPlayer(int playerId, OrgPlayerResponse orgPlayerResponse) {
+    ssize_t out = playersIdPipeMap[playerId]->escribir(static_cast<const void *> (&orgPlayerResponse),
+                                                       sizeof(OrgPlayerResponse));
+    if (out < 0) {
+        throw runtime_error("Partner response fifo can't be write!");
+    }
+}
+
+/**
+ * Removes the player from all the lists of possible partners.
+ *
+ * @param playerId the player id to be removed.
+ */
+void Manager::removePlayerFromAllAvailablePartners(int playerId) {
+    for (auto availablePartners: playersAvailablePartners) {
+        availablePartners[playerId] = false;
+    }
+}
+
+/**
+ * Tries to find a partner for a player.
+ * Iterates over all the waiting players and checks if any of them can play with the searching team player.
+ *
+ * @param teamProject a team with the first player as the player searching for team. If the partner is found
+ *                      it will be added as player2 in this struct.
+ * @return true if a partner was found.
+ */
+bool Manager::assignPartner(Team *teamProject) {
+    vector<bool> &playerAvailablePartners = playersAvailablePartners[teamProject->idPlayer1];
+    for (auto waitingPlayer: waitingPlayers) {
+        if (playerAvailablePartners[waitingPlayer]) {
+            teamProject->idPlayer2 = waitingPlayer;
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * If there is a free field, it's assigned to the teams and sends the players to play the game.
+ *
+ * @param localTeam the local team for the game
+ * @param visitTeam the visit team for the game
+ */
+bool Manager::assignField(Team localTeam, Team visitTeam) {
+    unsigned short i = 0;
+    bool assignedField = false;
+    while (i < fieldsInformation.size() and !assignedField) {
+        if (fieldsInformation[i].isFree) {
+            logMessage(string("Sending players to field ") + to_string(i) + string(" Local team: players ") +
+                       to_string(localTeam.idPlayer1) + string(" and ") + to_string(localTeam.idPlayer2) +
+                       string(" Visit team: players ") + to_string(visitTeam.idPlayer1) + string(" and ") +
+                       to_string(visitTeam.idPlayer2));
+            fieldsInformation[i].isFree = false;
+            fieldsInformation[i].localTeam = localTeam;
+            fieldsInformation[i].visitTeam = visitTeam;
+            sendPlayersToField(i);
+            gamesInPlay++;
+            assignedField = true;
+        }
+        i++;
+    }
+    return assignedField;
+}
+
+/**
+ * Sends message to every player to play in the given field.
+ *
+ * @param fieldId the id of the field to send the players, the field information must be updated
+ */
+void Manager::sendPlayersToField(unsigned short fieldId) {
+    OrgPlayerResponse orgPlayerResponse = OrgPlayerResponse{fieldId, ENUM_PLAY};
+    sendMessageToPlayer(fieldsInformation[fieldId].localTeam.idPlayer1, orgPlayerResponse);
+    sendMessageToPlayer(fieldsInformation[fieldId].localTeam.idPlayer2, orgPlayerResponse);
+    sendMessageToPlayer(fieldsInformation[fieldId].visitTeam.idPlayer1, orgPlayerResponse);
+    sendMessageToPlayer(fieldsInformation[fieldId].visitTeam.idPlayer2, orgPlayerResponse);
+}
+
+/**
+ * Checks if the stadium is full.
+ *
+ * @return returns true if the stadium is full.
+ */
+bool Manager::stadiumIsFull() {
+    return waitingPlayers.size() + playersReturningFromField.size() + 2 * waitingTeams.size() + 4 * gamesInPlay ==
+           stadiumSize;
+}
+
+/**
+ * Picks a random player from the waiting players and send him out of the stadium.
+ */
+void Manager::removeRandomWaitingPlayer() {
+    int randomPlayer = getRandomInt(0, static_cast<int>(waitingPlayers.size()));
+    sendMessageToPlayer(waitingPlayers[randomPlayer], OrgPlayerResponse{0, ENUM_LEAVE_STADIUM});
+    waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), waitingPlayers[randomPlayer]));
+}
+
+/**
  * Updates the field list for a tide change.
  *
  * @param fieldId the id of the field to update.
  * @param tideRise true if the tide rise or false if the tide fall.
  */
 void Manager::updateFieldList(int fieldId, bool tideRise) {
-    if (tideRise and !freeFields[fieldId]) {
-        playersInGame = playersInGame-4;
+    // If the tide rises in a field that was in a game, the game was interrupted.
+    if (tideRise and !fieldsInformation[fieldId].isFree) {
+        gamesInPlay--;
     }
-    freeFields[fieldId] = !tideRise;
-}
-
-/**
- * Removes a player from the possible partner of other player.
- *
- * @param targetPlayer the player from whom the possible partner will be removed.
- * @param playerToRemove the player to remove from the other player partner.
- */
-void Manager::removePlayerFromPossiblePartner(int targetPlayer, int playerToRemove) {
-    auto playerToRemoveReference = find(playersPossiblePartners[targetPlayer].begin(),
-                                        playersPossiblePartners[targetPlayer].end(), playerToRemove);
-    if (playerToRemoveReference != playersPossiblePartners[targetPlayer].end()) {
-        playersPossiblePartners[targetPlayer].erase(playerToRemoveReference);
-    }
-}
-
-
-/**
- * Removes the players of a team from their respective possible partner lists.
- *
- * @param team the team to erase their partners.
- */
-void Manager::removePlayersFromPossiblePartners(Team team) {
-    cout << "Team: player " << team.idPlayer1 << " - player " << team.idPlayer2 << endl
-         << "Player " << team.idPlayer1 << " available partners: " << endl;
-//    for (int p : playersPossiblePartners[team.idPlayer1]) {
-//        cout << " Player " << p << endl;
-//    }
-
-    cout << "Player " << team.idPlayer2 << " available partners: " << endl;
-//    for (int p : playersPossiblePartners[team.idPlayer2]) {
-//        cout << " Player " << p << endl;
-//    }
-    removePlayerFromPossiblePartner(team.idPlayer1, team.idPlayer2);
-    removePlayerFromPossiblePartner(team.idPlayer2, team.idPlayer1);
+    fieldsInformation[fieldId].isFree = !tideRise;
 }
 
 /**
@@ -159,22 +290,31 @@ void Manager::removePlayersFromPossiblePartners(Team team) {
  * @param resultVisitant the number of sets won by the visit team.
  */
 void Manager::saveResult(int fieldId, int resultLocal, int resultVisitant) {
-    TeamsMatch teamsMatch = teamsOnFields[fieldId];
-    freeFields[fieldId] = true;
-    removePlayersFromPossiblePartners(teamsMatch.localTeam);
-    removePlayersFromPossiblePartners(teamsMatch.visitTeam);
-    cout << "Match between " + to_string(teamsMatch.localTeam.idPlayer1) + " and " +
-            to_string(teamsMatch.localTeam.idPlayer2) + " vs " + to_string(teamsMatch.visitTeam.idPlayer1) +
-            " and " + to_string(teamsMatch.visitTeam.idPlayer2) + " result: " + to_string(resultLocal) +
-            " " +  to_string(resultVisitant) << endl;
-    playersInGame = playersInGame - 4;
+    fieldsInformation[fieldId].isFree = true;
+    Team localTeam = fieldsInformation[fieldId].localTeam;
+    Team visitTeam = fieldsInformation[fieldId].visitTeam;
+    removePlayersFromAvailablePartners(localTeam);
+    removePlayersFromAvailablePartners(visitTeam);
+    gamesInPlay--;
+    playersGames[localTeam.idPlayer1]++;
+    playersGames[localTeam.idPlayer2]++;
+    playersGames[visitTeam.idPlayer1]++;
+    playersGames[visitTeam.idPlayer2]++;
+    playersReturningFromField.push_back(localTeam.idPlayer1);
+    playersReturningFromField.push_back(localTeam.idPlayer2);
+    playersReturningFromField.push_back(visitTeam.idPlayer1);
+    playersReturningFromField.push_back(visitTeam.idPlayer2);
 
-    auto idxLocalPlayer1 = static_cast<unsigned int>(idToVectorIndexMap[teamsMatch.localTeam.idPlayer1]);
-    auto idxLocalPlayer2 = static_cast<unsigned int>(idToVectorIndexMap[teamsMatch.localTeam.idPlayer2]);
-    auto idxVisitPlayer1 = static_cast<unsigned int>(idToVectorIndexMap[teamsMatch.visitTeam.idPlayer1]);
-    auto idxVisitPlayer2 = static_cast<unsigned int>(idToVectorIndexMap[teamsMatch.visitTeam.idPlayer2]);
+    logMessage("Match between " + to_string(localTeam.idPlayer1) + " and " + to_string(localTeam.idPlayer2) +
+               " vs " + to_string(visitTeam.idPlayer1) + " and " + to_string(visitTeam.idPlayer2) +
+               " result: " + to_string(resultLocal) + " " + to_string(resultVisitant));
 
-    lockForSharedVectors->tomarLock();
+    auto idxLocalPlayer1 = static_cast<unsigned int>(localTeam.idPlayer1);
+    auto idxLocalPlayer2 = static_cast<unsigned int>(localTeam.idPlayer2);
+    auto idxVisitPlayer1 = static_cast<unsigned int>(visitTeam.idPlayer1);
+    auto idxVisitPlayer2 = static_cast<unsigned int>(visitTeam.idPlayer2);
+
+    lockForSharedMemory->tomarLock();
     if (resultLocal == 3) {
         if (resultVisitant == 2) {
             pointsTable->escribir(pointsTable->leer(idxLocalPlayer1) + 2, idxLocalPlayer1);
@@ -194,240 +334,35 @@ void Manager::saveResult(int fieldId, int resultLocal, int resultVisitant) {
         pointsTable->escribir(pointsTable->leer(idxVisitPlayer1) + 3, idxVisitPlayer1);
         pointsTable->escribir(pointsTable->leer(idxVisitPlayer2) + 3, idxVisitPlayer2);
     }
-    lockForSharedVectors->liberarLock();
-    matchHistory.push_back(MatchResult{teamsMatch, resultLocal, resultVisitant});
+    lockForSharedMemory->liberarLock();
 }
 
 /**
- * Sends a message to a particular player.
+ * Removes the available partners from both players in team.
  *
- * @param playerId the id of the player.
- * @param orgPlayerResponse the message to send.
+ * @param team the team to remove their available partners.
  */
-void Manager::sendMessageToPlayer(int playerId, OrgPlayerResponse orgPlayerResponse) {
-    cout << TAG << "Trying to write a response" << endl;
-    ssize_t out = playersIdPipeMap[playerId]->escribir(static_cast<const void *> (&orgPlayerResponse),
-                                                       sizeof(OrgPlayerResponse));
-    if (out < 0) {
-        throw runtime_error("Partner response fifo can't be write!");
-    }
-    cout << TAG << "Response written successfully" << endl;
-}
-
-/**
- * Sends message to every player to play in the given field.
- *
- * @param teamsMatch the teams to play the game.
- * @param column the column of the assigned field.
- * @param row the row of the assigned field.
- */
-void Manager::sendPlayersToField(TeamsMatch teamsMatch, int fieldId) {
-    OrgPlayerResponse orgPlayerResponse = OrgPlayerResponse{fieldId, ENUM_PLAY};
-    sendMessageToPlayer(teamsMatch.localTeam.idPlayer1, orgPlayerResponse);
-    sendMessageToPlayer(teamsMatch.localTeam.idPlayer2, orgPlayerResponse);
-    sendMessageToPlayer(teamsMatch.visitTeam.idPlayer1, orgPlayerResponse);
-    sendMessageToPlayer(teamsMatch.visitTeam.idPlayer2, orgPlayerResponse);
-}
-
-/**
- * Tries to find a partner for a player.
- * Iterates over all the waiting players and checks if any of them can play with the searching team player.
- *
- * @param teamProject a team with the first player as the player searching for team. If the partner is found
- *                      it will be added as player2 in this struct.
- * @return true if a partner was found.
- */
-bool Manager::assignPartner(Team *teamProject) {
-    auto waitingPlayer = waitingPlayers.begin();
-    while (waitingPlayer != waitingPlayers.end()) {
-        auto partnerId = find(playersPossiblePartners[teamProject->idPlayer1].begin(),
-                              playersPossiblePartners[teamProject->idPlayer1].end(), *waitingPlayer);
-        // If its the player do the search again from the player on.
-        if (*partnerId == teamProject->idPlayer1) {
-            partnerId = find(partnerId, playersPossiblePartners[teamProject->idPlayer1].end(), *waitingPlayer);
-        }
-        if (partnerId != playersPossiblePartners[teamProject->idPlayer1].end()) {
-            teamProject->idPlayer2 = *partnerId;
-            return true;
-        }
-        waitingPlayer++;
-    }
-    return false;
-}
-
-/**
- * If there is any waiting team returns this team as opponent.
- *
- * @param teamProject an team struct to fill the opponents.
- * @return true if it found any team.
- */
-bool Manager::findOpponents(Team *teamProject) {
-    if (waitingTeams.empty()) {
-        return false;
-    }
-    teamProject->idPlayer1 = waitingTeams[0].idPlayer1;
-    teamProject->idPlayer2 = waitingTeams[0].idPlayer2;
-    return true;
-}
-
-/**
- * If there is a free field, it's assigned to the teams and sends the players to play the game.
- *
- * @param localTeam the local team for the game
- * @param visitTeam the visit team for the game
- */
-bool Manager::assignField(Team localTeam, Team visitTeam) {
-    int i = 0;
-    bool assignedField = false;
-    while (i < rows * columns and !assignedField) {
-        if (freeFields[i]) {
-            freeFields[i] = false;
-            TeamsMatch teamsMatch = TeamsMatch{localTeam, visitTeam};
-            stringstream m;
-            m << "===========================================================================" << endl
-              << "Enaviando Equipos a la cancha: " << i << endl
-              << "Local: Jugador " << localTeam.idPlayer1 << " - Jugador " << localTeam.idPlayer2 << endl
-              << "Visitante: Jugador " << visitTeam.idPlayer1 << " - Jugador " << visitTeam.idPlayer2 << endl
-              << "===========================================================================" << endl;
-            Logger::getInstance()->logMessage(m.str().c_str());
-            teamsOnFields[i] = teamsMatch;
-            sendPlayersToField(teamsMatch, i);
-            playersInGame = playersInGame + 4;
-            assignedField = true;
-        }
-        i++;
-    }
-    return assignedField;
-}
-
-/**
- * Checks if the stadium is full.
- *
- * @return returns true if the stadium is full.
- */
-bool Manager::stadiumIsFull() {
-    return waitingPlayers.size() + 2 * waitingTeams.size() + playersInGame + 1 == stadiumSize;
-}
-
-/**
- * Picks a random player from the waiting players and send him out of the stadium.
- */
-void Manager::removeRandomWaitingPlayer() {
-    int randomPlayer = getRandomInt(0, static_cast<int>(waitingPlayers.size()));
-    sendMessageToPlayer(waitingPlayers[randomPlayer], OrgPlayerResponse{0, ENUM_LEAVE_STADIUM});
-    waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), waitingPlayers[randomPlayer]));
-}
-
-/**
- * Tries to find a partner for a given player.
- * If the player already played all his games it tells him to leave the tournament.
- * If the player still have games to play it tries to assign him a partner, if it founds a partner
- * tries to assign an opponent team and send them to a field.
- * If it can't found a partner and the stadium is full, removes one waiting player from the stadium
- * and leave this player waiting, after that tries to form new teams to play.
- *
- * @param playerId the id of the player.
- */
-void Manager::findPartner(int playerId) {
-    if (!tournamentStart) {
-        waitingPlayers.push_back(playerId);
-        tournamentStart = waitingPlayers.size() > 10;
-    } else {
-        if (playerPlayAllGamesOrHasNoPossiblePartner(playerId)) {
-            // LEAVE TOURNAMENT - All matches played
-            // LEAVE TOURNAMENT - Or no more players to play
-            cout << TAG << "Player " << playerId
-                 << " already played all the matches allowed or cant play more. Dismissing him from tournament!" << endl;
-            sendMessageToPlayer(playerId, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
-            removePlayerFromAllPossiblePartners(playerId);
-            totalPlayersInTournament--;
-        } else {
-            // FIND PARTNER - Matches to play
-            Team localTeam = Team{playerId, 0};
-            if (assignPartner(&localTeam)) {
-                // PARTNER FOUND - Local team ready
-                cout << TAG << "Player " << playerId << " now has a partner: Player " << localTeam.idPlayer2 << endl;
-                waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), localTeam.idPlayer2));
-                Team opponentTeam{};
-                if (findOpponents(&opponentTeam)) {
-                    if (assignField(localTeam, opponentTeam)) {
-                        waitingTeams.erase(find(waitingTeams.begin(), waitingTeams.end(), opponentTeam));
-                    } else {
-                        waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), localTeam.idPlayer2));
-                        waitingTeams.push_back(localTeam);
-                    }
-                } else {
-                    cout << TAG << "Couldn't find an opponent" << endl;
-                    waitingTeams.push_back(localTeam);
-                }
-            } else {
-                cout << TAG << "Player " << playerId << " don't have a partner available. :sad: " << endl;
-                // PARTNER NOT FOUND - Team ready
-                if (stadiumIsFull()) {
-                    cout << TAG << "Stadium is full...removing a (random) player!" << endl;
-                    removeRandomWaitingPlayer();
-                }
-                waitingPlayers.push_back(playerId);
-            }
-        }
-    }
-}
-
-/**
- * Checks if the given player have played all his games.
- *
- * @param playerId the player to check.
- * @return true if the player played all his games.
- */
-bool Manager::playerPlayAllGamesOrHasNoPossiblePartner(int playerId) {
-    bool playedAllGames = initialPlayersInTournament - 1 - playersPossiblePartners[playerId].size() >= totalGames;
-    // has no possible partner if the only possible partner is himself.
-    bool hasNoPossiblePartner = playersPossiblePartners[playerId].size() == 1;
-    return playedAllGames or hasNoPossiblePartner;
-}
-
-/**
- * Checks if the remaining players cant play more games.
- *
- * @return true if the tournament ends.
- */
-bool Manager::checkTournamentEnd() {
-    return totalPlayersInTournament <= 0;
-}
-
-/**
- * Removes the player for all the lists of possible partners.
- *
- * @param playerId the player id to be removed.
- */
-void Manager::removePlayerFromAllPossiblePartners(int playerId) {
-    for (auto player: playersPossiblePartners) {
-        removePlayerFromPossiblePartner(player.first, playerId);
-    }
+void Manager::removePlayersFromAvailablePartners(Team team) {
+    playersAvailablePartners[team.idPlayer2][team.idPlayer1] = false;
+    playersAvailablePartners[team.idPlayer1][team.idPlayer2] = false;
 }
 
 /**
  * Removes from the waiting players all players that cant play more games in the tournament.
- *
- * @return true if it removes some player.
  */
-bool Manager::removePlayersThatCantPlay() {
-    cout << "Check if waiting players cant play more games." << endl;
-    bool playerRemoved = false;
+void Manager::removePlayersThatCantPlay() {
     vector<int> removePlayers;
     for (auto player: waitingPlayers) {
-        if (playerPlayAllGamesOrHasNoPossiblePartner(player)) {
+        if (playersGames[player] == totalMatchesPerPlayer or countAvailablePartners(player) == 0) {
             removePlayers.push_back(player);
-            playerRemoved = true;
         }
     }
     for (auto player: removePlayers) {
-        cout << TAG << "Player " << player
-             << " already played all the matches allowed or cant play more. Dismissing him from tournament!" << endl;
+        logMessage(string("Player ") + to_string(player) +
+                   string("already played all the matches allowed or cant play more."));
         sendMessageToPlayer(player, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
-        removePlayerFromAllPossiblePartners(player);
-        totalPlayersInTournament--;
+        removePlayerFromAllAvailablePartners(player);
         waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), player));
+        playersInTournament--;
     }
-    return playerRemoved;
 }

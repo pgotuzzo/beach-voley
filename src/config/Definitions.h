@@ -34,9 +34,28 @@ struct TaskRequest {
     TaskType task;
 
     string show() {
-        return string("id: ") + to_string(id) + string(" resultLocal: ") + to_string(resultLocal) +
-               string(" resultVisitant: ") +
-               to_string(resultVisitant) + string(" task: ") + to_string(task);
+        string taskDescription = string("Task: ") + to_string(task);
+        switch(task) {
+            case FIND_PARTNER:
+                taskDescription = taskDescription + string(" user id: ") + to_string(id);
+                break;
+            case TIDE_CHANGE:
+                taskDescription = taskDescription + string(" field id: ") + to_string(id) +
+                        string(" tide ");
+                if(tideRise) {
+                    taskDescription = taskDescription + string("rise");
+                } else {
+                    taskDescription = taskDescription + string("fall");
+                }
+                break;
+            case MATCH_RESULT:
+                taskDescription = taskDescription + string(" field id: ") + to_string(id) +
+                        string(" resultLocal: ") + to_string(resultLocal) +
+                        string(" resultVisitant: ") + to_string(resultVisitant);
+                break;
+        }
+
+        return taskDescription;
     }
 };
 

@@ -1,11 +1,11 @@
 #ifndef BEACH_VOLEY_MANAGER_H
 #define BEACH_VOLEY_MANAGER_H
 
-#include <map>
 #include <vector>
 #include "../player/Player.h"
 #include "../../IPCClasses/VectorCompartido.h"
 #include "../config/Config.h"
+#include "../../IPCClasses/LockFile.h"
 
 using namespace std;
 
@@ -20,77 +20,72 @@ private:
         }
     };
 
-    struct TeamsMatch {
-        Team localTeam;
-        Team visitTeam;
+    struct FieldInformation {
+        bool isFree = true;
+        Team localTeam{};
+        Team visitTeam{};
     };
 
-    struct MatchResult {
-        TeamsMatch teamsInMatch;
-        int localScore;
-        int visitScore;
-    };
-
-    vector<MatchResult> matchHistory;
-    VectorCompartido<int> *idsTable;
-    map<int, int> idToVectorIndexMap;
-    VectorCompartido<int> *pointsTable;
-    LockFile *lockForSharedVectors;
-    int count = 0;
+    // The number of players in the tournament
+    unsigned long playersInTournament;
+    // The number of games in play
+    int gamesInPlay = 0;
+    // If the tournament already start, so there is more than 10 players inside the stadium
+    bool tournamentStart = false;
+    // The maximum number of matches a player can play before leaving the tournament
+    unsigned int totalMatchesPerPlayer;
+    // The maximum number of players inside the stadium
     unsigned int stadiumSize;
-    unsigned int totalGames;
-    unsigned int playersInGame = 0;
-    unsigned long totalPlayersInTournament;
-    unsigned long initialPlayersInTournament;
-    map<int, Pipe *> playersIdPipeMap;
-    vector<TeamsMatch> teamsOnFields;
-    vector<Team> waitingTeams;
+
+    // A vector that represents if the field is free and if not what teams are in it.
+    vector<FieldInformation> fieldsInformation;
+
+    // The players that ended the game and are returning to the manager for a new match
+    vector<int> playersReturningFromField;
+    // The players waiting for a match
     vector<int> waitingPlayers;
-    map<int, vector<int>> playersPossiblePartners;
-    vector<bool> freeFields;
+    // The teams waiting for a match
+    vector<Team> waitingTeams;
+
+    // The number of games that played every player
+    vector<int> playersGames;
+    // For every player there is a vector that represent if every other player in the tournament is an available
+    // partner for him
+    vector<vector<bool>> playersAvailablePartners;
+
+    // The pipe where the manager receives the tasks
     Pipe *receiveTaskPipe;
-    unsigned int rows, columns;
-    bool tournamentStart=false;
-    vector<int> fieldPids;
-    void findPartner(int playerPid);
+    // A vector with the pipe where the manager send responses for the players
+    vector<Pipe *> playersIdPipeMap;
 
-    void receiveTask();
-
-    bool checkTournamentEnd();
-
-    void updateFieldList(int fieldPid, bool tideRise);
-
-    void saveResult(int fieldPid, int resultLocal, int resultVisitant);
-
-    void sendPlayersToField(TeamsMatch teamsMatch, int fieldId);
+    // Lock to write or read in the shared memory
+    LockFile *lockForSharedMemory;
+    // A shared vector with the points for every player
+    VectorCompartido<int> *pointsTable;
 
     void sendMessageToPlayer(int playerId, OrgPlayerResponse orgPlayerResponse);
 
+    void findMatch(int playerPid);
     bool assignPartner(Team *teamProject);
-
-    bool findOpponents(Team *teamProject);
-
     bool assignField(Team localTeam, Team visitTeam);
+    void sendPlayersToField(unsigned short fieldId);
 
     bool stadiumIsFull();
-
     void removeRandomWaitingPlayer();
 
-    void removePlayersFromPossiblePartners(Team team);
+    int countAvailablePartners(int id);
+    void removePlayersThatCantPlay();
+    void removePlayerFromAllAvailablePartners(int playerId);
+    void removePlayersFromAvailablePartners(Team team);
 
-    bool playerPlayAllGamesOrHasNoPossiblePartner(int playerId);
-
-    void removePlayerFromPossiblePartner(int targetPlayer, int playerToRemove);
-
-    bool removePlayersThatCantPlay();
+    void updateFieldList(int fieldPid, bool tideRise);
+    void saveResult(int fieldPid, int resultLocal, int resultVisitant);
 public:
-    Manager(TournamentParams tournamentParams, VectorCompartido<int> *idsTable, VectorCompartido<int> *pointsTable,
-            LockFile *lockForSharedVectors, Pipe *receiveTaskPipe, map<int, Pipe *> playersIdPipeMap,
-            vector<int> fieldPids);
+    Manager(unsigned int totalFields, unsigned int capacity, unsigned int matches, unsigned int players,
+            LockFile *lockForSharedMemory, VectorCompartido<int> *pointsTable, Pipe *receiveTaskPipe,
+            vector<Pipe*> playersIdPipeMap);
 
-    void initManager();
-
-    void removePlayerFromAllPossiblePartners(int playerId);
+    void receiveTask();
 };
 
 
