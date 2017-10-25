@@ -18,6 +18,10 @@ public:
     Field *getFieldById(int fieldId);
 
     vector<Field> getFieldsByState(Field::State state);
+
+    int getColumnsCount();
+
+    vector<Field> getFieldByColumn(int column);
 };
 
 

@@ -10,6 +10,10 @@ using namespace std;
 
 class FieldProcess {
 private:
+    enum State {
+        WAITING_FOR_PLAYERS, GAME_IN_PROGRESS, NOTIFYING_RESULT
+    };
+
     struct MatchResult {
         int localScore;
         int visitantScore;
@@ -29,6 +33,11 @@ private:
     Semaforo *exit;
     int playersInField;
 
+    bool isFlood;
+    bool tideChanged;
+
+    bool abort;
+    State state;
 
     void waitForPlayers();
 
@@ -38,8 +47,12 @@ private:
 
     void sendResult(MatchResult matchResult);
 
+    void notifyTideChange();
+
 public:
     FieldProcess(string name, Pipe *managerQueue, int semId, Semaforo *entrance, Semaforo *exit);
+
+    void toggleTide();
 
     int start();
 };

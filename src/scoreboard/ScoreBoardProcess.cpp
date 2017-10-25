@@ -1,8 +1,8 @@
 #include "ScoreBoardProcess.h"
 #include "../util/Logger.h"
 #include "../ipc/signal/SignalHandler.h"
-#include "Scoreboard_SIGINT_Handler.h"
 #include "../util/ResourceHandler.h"
+#include "../ipc/signal/SIGTERM_Handler.h"
 
 const string TAG = "Tabla de Posiciones: ";
 
@@ -21,13 +21,14 @@ int ScoreBoardProcess::start() {
         lock = ResourceHandler::getLockFile();
 
         // Signal handler in order to avoid ipc resources being wasted
-        Scoreboard_SIGINT_Handler handler(&quit);
-        SignalHandler::getInstance()->registrarHandler(SIGINT, (EventHandler *) &handler);
+        SIGTERM_Handler termHandler;
+        SignalHandler::getInstance()->registrarHandler(SIGTERM, (EventHandler *) &termHandler);
 
-        while (!quit) {
+        while (termHandler.getGracefulQuit() == 0) {
             show();
             usleep(5000);
         }
+        Logger::d(TAG + "Terminando!!");
         exit(0);
     }
     return pid;

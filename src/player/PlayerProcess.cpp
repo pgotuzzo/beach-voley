@@ -89,7 +89,7 @@ void PlayerProcess::goToField(int fieldId) {
     int semId = stadium->getFieldById(fieldId)->getSemId();
 
     fieldEntrance->v(semId);
-    Logger::d(playerName + " ingreso a la cancha: " + stadium->getFieldById(fieldId)->getName());
+    Logger::d(playerName + " ingreso a la Cancha " + stadium->getFieldById(fieldId)->getName());
     fieldExit->p(semId);
-    Logger::d(playerName + " salio de la cancha: " + stadium->getFieldById(fieldId)->getName());
+    Logger::d(playerName + " salio de la Cancha " + stadium->getFieldById(fieldId)->getName());
 }

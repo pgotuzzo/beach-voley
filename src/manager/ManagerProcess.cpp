@@ -41,7 +41,7 @@ int ManagerProcess::start() {
                     onMatchResultRequest(task.pid, task.resultLocal, task.resultVisitant);
                     break;
                 case TIDE_CHANGE:
-                    onTideChangeRequest(task.tideRise);
+                    onTideChangeRequest(task.pid, task.tideRise);
                     break;
             }
         }
@@ -175,8 +175,12 @@ void ManagerProcess::onMatchResultRequest(int fieldId, int localScore, int visit
     refreshScoreBoard(match);
 }
 
-void ManagerProcess::onTideChangeRequest(bool rise) {
-    // TODO - Implement
+void ManagerProcess::onTideChangeRequest(int fieldId, bool rise) {
+    if (rise) {
+        stadium->getFieldById(fieldId)->setState(Field::State::FLOODED);
+    } else {
+        stadium->getFieldById(fieldId)->setState(Field::State::FREE);
+    }
 }
 
 bool ManagerProcess::isStadiumFull() {
@@ -205,8 +209,10 @@ void ManagerProcess::refreshScoreBoard(Match match) {
         if (p.id == match.local.firstPlayerId) {
             int idx = findPlayerById(*vPlayers, match.local.firstPlayerId);
             if (idx == -1) {
-                Logger::e(TAG + "Jugador " + to_string(match.local.firstPlayerId) + "no se encuentra dentro del torneo");
-                throw runtime_error("Jugador " + to_string(match.local.firstPlayerId) + "no se encuentra dentro del torneo");
+                Logger::e(
+                        TAG + "Jugador " + to_string(match.local.firstPlayerId) + "no se encuentra dentro del torneo");
+                throw runtime_error(
+                        "Jugador " + to_string(match.local.firstPlayerId) + "no se encuentra dentro del torneo");
             }
             real = vPlayers->at(idx);
             p.matches = real.getMatchesCount();
@@ -215,8 +221,10 @@ void ManagerProcess::refreshScoreBoard(Match match) {
         } else if (p.id == match.local.secondPlayerId) {
             int idx = findPlayerById(*vPlayers, match.local.secondPlayerId);
             if (idx == -1) {
-                Logger::e(TAG + "Jugador " + to_string(match.local.secondPlayerId) + "no se encuentra dentro del torneo");
-                throw runtime_error("Jugador " + to_string(match.local.secondPlayerId) + "no se encuentra dentro del torneo");
+                Logger::e(
+                        TAG + "Jugador " + to_string(match.local.secondPlayerId) + "no se encuentra dentro del torneo");
+                throw runtime_error(
+                        "Jugador " + to_string(match.local.secondPlayerId) + "no se encuentra dentro del torneo");
             }
             real = vPlayers->at(idx);
             p.matches = real.getMatchesCount();
@@ -225,8 +233,10 @@ void ManagerProcess::refreshScoreBoard(Match match) {
         } else if (p.id == match.visitant.firstPlayerId) {
             int idx = findPlayerById(*vPlayers, match.visitant.firstPlayerId);
             if (idx == -1) {
-                Logger::e(TAG + "Jugador " + to_string(match.visitant.firstPlayerId) + "no se encuentra dentro del torneo");
-                throw runtime_error("Jugador " + to_string(match.visitant.firstPlayerId) + "no se encuentra dentro del torneo");
+                Logger::e(TAG + "Jugador " + to_string(match.visitant.firstPlayerId) +
+                          "no se encuentra dentro del torneo");
+                throw runtime_error(
+                        "Jugador " + to_string(match.visitant.firstPlayerId) + "no se encuentra dentro del torneo");
             }
             real = vPlayers->at(idx);
             p.matches = real.getMatchesCount();
@@ -235,8 +245,10 @@ void ManagerProcess::refreshScoreBoard(Match match) {
         } else if (p.id == match.visitant.secondPlayerId) {
             int idx = findPlayerById(*vPlayers, match.visitant.secondPlayerId);
             if (idx == -1) {
-                Logger::e(TAG + "Jugador " + to_string(match.visitant.secondPlayerId) + "no se encuentra dentro del torneo");
-                throw runtime_error("Jugador " + to_string(match.visitant.secondPlayerId) + "no se encuentra dentro del torneo");
+                Logger::e(TAG + "Jugador " + to_string(match.visitant.secondPlayerId) +
+                          "no se encuentra dentro del torneo");
+                throw runtime_error(
+                        "Jugador " + to_string(match.visitant.secondPlayerId) + "no se encuentra dentro del torneo");
             }
             real = vPlayers->at(idx);
             p.matches = real.getMatchesCount();

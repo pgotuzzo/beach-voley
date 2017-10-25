@@ -10,7 +10,9 @@ set(IPC
         src/ipc/VectorCompartido.h
         src/ipc/signal/SignalHandler.cpp src/ipc/signal/SignalHandler.h
         src/ipc/signal/EventHandler.h
-        src/ipc/signal/SIGINT_Handler.h)
+        src/ipc/signal/SIGINT_Handler.h
+        src/ipc/signal/SIGINT_HandlerForField.h
+        src/ipc/signal/SIGTERM_Handler.h)
 
 set(UTILS
         src/util/Logger.cpp src/util/Logger.h
@@ -37,11 +39,13 @@ set(STADIUM
         src/stadium/FieldProcess.cpp src/stadium/FieldProcess.h)
 
 set(SCOREBOARD
-        src/scoreboard/ScoreBoardProcess.cpp src/scoreboard/ScoreBoardProcess.h
-        src/scoreboard/Scoreboard_SIGINT_Handler.h)
+        src/scoreboard/ScoreBoardProcess.cpp src/scoreboard/ScoreBoardProcess.h)
+
+set(TIDEMONITOR
+        src/tidemonitor/TideMonitorProcess.cpp src/tidemonitor/TideMonitorProcess.h)
 
 set(SOURCE_FILES src/main.cpp src/LauncherProcess.cpp src/LauncherProcess.h)
-add_executable(beach_voley ${SOURCE_FILES} ${IPC} ${UTILS} ${CONS} ${MANAGER} ${PLAYER} ${STADIUM} ${SCOREBOARD})
+add_executable(beach_voley ${SOURCE_FILES} ${IPC} ${UTILS} ${CONS} ${MANAGER} ${PLAYER} ${STADIUM} ${SCOREBOARD} ${TIDEMONITOR})
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tmp)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/logs)

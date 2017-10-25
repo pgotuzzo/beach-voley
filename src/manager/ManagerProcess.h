@@ -28,7 +28,7 @@ private:
 
     void onMatchResultRequest(int fieldId, int localScore, int visitantScore);
 
-    void onTideChangeRequest(bool rise);
+    void onTideChangeRequest(int fieldId, bool rise);
 
     bool isStadiumFull();
 

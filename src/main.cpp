@@ -13,6 +13,7 @@
 #include "ipc/signal/SIGINT_Handler.h"
 #include "stadium/FieldProcess.h"
 #include "scoreboard/ScoreBoardProcess.h"
+#include "tidemonitor/TideMonitorProcess.h"
 
 int main() {
     // Remove any previous log
@@ -72,7 +73,7 @@ int main() {
             FieldProcess fieldProcess(fieldName, managerQueue, fieldIdx, fieldEntrance, fieldExit);
             int fieldId = fieldProcess.start();
             vFieldsPid.push_back(fieldId);
-            Logger::d("Proceso - Cancha: (PID) " + to_string(fieldId));
+            Logger::d("Proceso - Cancha " + fieldName + " (PID) " + to_string(fieldId));
 
             Field field(fieldId, fieldIdx, fieldName);
             vFields[fieldIdx] = field;
@@ -130,12 +131,13 @@ int main() {
     Logger::d("Proceso - Tabla de posiciones: (PID) " + to_string(scoreBoardPid));
 
     // Create Tide Monitor
-    // TODO - Implement
+    TideMonitorProcess tideMonitorProcess(90000, 100000, 0.2, 0.2, &stadium);
+    int tideMonitorPid = tideMonitorProcess.start();
+    Logger::d("Proceso - Monitor de marea: (PID) " + to_string(tideMonitorPid));
 
     // Signal handler in order to avoid ipc resources being wasted
     SIGINT_Handler handler;
     SignalHandler::getInstance()->registrarHandler(SIGINT, (EventHandler *) &handler);
-
 
     bool success = true;
     // Wait for children processes
@@ -166,25 +168,39 @@ int main() {
                 string desc = strerror(res);
                 Logger::e("Algo salio mal! " + desc);
             }
+        } else if (pid == tideMonitorPid) {
+            Logger::d("Proceso - Monitor de marea: (PID) " + to_string(pid) + " FINALIZO " + result);
+            if (res != 0) {
+                success = false;
+                string desc = strerror(res);
+                Logger::e("Algo salio mal! " + desc);
+            }
         }
     }
 
     for (int pid : vFieldsPid) {
-        Logger::d("MATANDO al Proceso - Cancha: (PID) " + to_string(pid));
+        Logger::d("Terminanda al Proceso - Cancha: (PID) " + to_string(pid));
         kill(pid, SIGKILL);
     }
 
-    Logger::d("MATANDO al Proceso - Tabla de posiciones: (PID) " + to_string(scoreBoardPid));
-    kill(scoreBoardPid, SIGINT);
+    Logger::d("Terminanda al Proceso - Tabla de posiciones: (PID) " + to_string(scoreBoardPid));
+    kill(scoreBoardPid, SIGTERM);
+
+    Logger::d("Terminanda al Proceso - Monitor de marea: (PID) " + to_string(tideMonitorPid));
+    kill(tideMonitorPid, SIGTERM);
+
+    if (handler.getGracefulQuit() != 0) {
+        cout << "=============  INTERRUMPIDO  =====================" << endl;
+    } else {
+        if (success) {
+            cout << "=============  EXITO  =====================" << endl;
+        } else {
+            cout << "=============  FRACASO  =====================" << endl;
+        }
+    }
 
     // Free Resources
     ResourceHandler::freeResources();
-
-    if (success) {
-        cout << "=============  EXITO  =====================" << endl;
-    } else {
-        cout << "=============  FRACASO  =====================" << endl;
-    }
 
     Logger::i("===========================================================================================");
     Logger::i("============                    BEACH VOLEY - FINAL                             ===========");

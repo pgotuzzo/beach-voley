@@ -21,3 +21,15 @@ vector<Field> Stadium::getFieldsByState(Field::State state) {
     }
     return fields;
 }
+
+int Stadium::getColumnsCount() {
+    return columns;
+}
+
+vector<Field> Stadium::getFieldByColumn(int column) {
+    vector<Field> fields(rows);
+    for (int i = 0; i < rows; i++) {
+        fields[i] = vFields[i * columns + column];
+    }
+    return fields;
+}
