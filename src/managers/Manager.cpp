@@ -11,7 +11,7 @@ using namespace std;
  * Logs a message with aditional information about the process and class.
  * @param message the message to log
  */
-void logMessage(const string &message) {
+void logMessageManager(const string &message) {
     string messageToLog = to_string(getpid()) + string(" Manager: ") + message;
     Logger::getInstance()->logMessage(messageToLog.c_str());
 }
@@ -59,10 +59,10 @@ void Manager::receiveTask() {
     ssize_t out = 0;
     while (playersInTournament >= 4 or gamesInPlay > 0 or !playersReturningFromField.empty()) {
         TaskRequest task{};
-        logMessage("Trying to read a task");
+        logMessageManager("Trying to read a task");
         out = receiveTaskPipe->leer(static_cast<void *>(&task), sizeof(TaskRequest));
         if (out > 0) {
-            logMessage(string("Received a task: ") + task.show());
+            logMessageManager(string("Received a task: ") + task.show());
             switch (task.task) {
                 case (FIND_PARTNER):
                     findMatch(task.id);
@@ -76,13 +76,13 @@ void Manager::receiveTask() {
                 default:
                     throw runtime_error("Task handler not defined.");
             }
-            logMessage(string("Task completed"));
+            logMessageManager(string("Task completed"));
         } else {
             cout << strerror(errno) << endl;
         }
         removePlayersThatCantPlay();
     }
-    logMessage(string("Tournament finish"));
+    logMessageManager(string("Tournament finish"));
     for (auto player: waitingPlayers) {
         sendMessageToPlayer(player, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
     }
@@ -113,33 +113,33 @@ void Manager::findMatch(int playerId) {
             playersReturningFromField.erase(playerReturnsFromField);
         }
         if (playersGames[playerId] == totalMatchesPerPlayer or countAvailablePartners(playerId) == 0) {
-            logMessage(string("Player ") + to_string(playerId) +
-                       string("already played all the matches allowed or cant play more."));
+            logMessageManager(string("Player ") + to_string(playerId) +
+                              string("already played all the matches allowed or cant play more."));
             sendMessageToPlayer(playerId, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
             removePlayerFromAllAvailablePartners(playerId);
             playersInTournament--;
         } else {
             Team localTeam = Team{playerId, -1};
             if (assignPartner(&localTeam)) {
-                logMessage(string("Player ") + to_string(playerId) + string(" now has a partner: Player ") +
-                           to_string(localTeam.idPlayer2));
+                logMessageManager(string("Player ") + to_string(playerId) + string(" now has a partner: Player ") +
+                                  to_string(localTeam.idPlayer2));
                 waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), localTeam.idPlayer2));
                 if (!waitingTeams.empty()) {
                     if (assignField(localTeam, waitingTeams.back())) {
                         waitingTeams.pop_back();
                     } else {
-                        logMessage("Couldn't find a field");
+                        logMessageManager("Couldn't find a field");
                         waitingTeams.push_back(localTeam);
                     }
                 } else {
-                    logMessage("Couldn't find an opponent");
+                    logMessageManager("Couldn't find an opponent");
                     waitingTeams.push_back(localTeam);
                 }
             } else {
-                logMessage(string("Player ") + to_string(playerId) + string(" don't have a partner available"));
+                logMessageManager(string("Player ") + to_string(playerId) + string(" don't have a partner available"));
                 waitingPlayers.push_back(playerId);
                 if (stadiumIsFull()) {
-                    logMessage("Stadium is full removing a random player");
+                    logMessageManager("Stadium is full removing a random player");
                     removeRandomWaitingPlayer();
                 }
             }
@@ -218,10 +218,10 @@ bool Manager::assignField(Team localTeam, Team visitTeam) {
     bool assignedField = false;
     while (i < fieldsInformation.size() and !assignedField) {
         if (fieldsInformation[i].isFree) {
-            logMessage(string("Sending players to field ") + to_string(i) + string(" Local team: players ") +
-                       to_string(localTeam.idPlayer1) + string(" and ") + to_string(localTeam.idPlayer2) +
-                       string(" Visit team: players ") + to_string(visitTeam.idPlayer1) + string(" and ") +
-                       to_string(visitTeam.idPlayer2));
+            logMessageManager(string("Sending players to field ") + to_string(i) + string(" Local team: players ") +
+                              to_string(localTeam.idPlayer1) + string(" and ") + to_string(localTeam.idPlayer2) +
+                              string(" Visit team: players ") + to_string(visitTeam.idPlayer1) + string(" and ") +
+                              to_string(visitTeam.idPlayer2));
             fieldsInformation[i].isFree = false;
             fieldsInformation[i].localTeam = localTeam;
             fieldsInformation[i].visitTeam = visitTeam;
@@ -305,9 +305,9 @@ void Manager::saveResult(int fieldId, int resultLocal, int resultVisitant) {
     playersReturningFromField.push_back(visitTeam.idPlayer1);
     playersReturningFromField.push_back(visitTeam.idPlayer2);
 
-    logMessage("Match between " + to_string(localTeam.idPlayer1) + " and " + to_string(localTeam.idPlayer2) +
-               " vs " + to_string(visitTeam.idPlayer1) + " and " + to_string(visitTeam.idPlayer2) +
-               " result: " + to_string(resultLocal) + " " + to_string(resultVisitant));
+    logMessageManager("Match between " + to_string(localTeam.idPlayer1) + " and " + to_string(localTeam.idPlayer2) +
+                      " vs " + to_string(visitTeam.idPlayer1) + " and " + to_string(visitTeam.idPlayer2) +
+                      " result: " + to_string(resultLocal) + " " + to_string(resultVisitant));
 
     auto idxLocalPlayer1 = static_cast<unsigned int>(localTeam.idPlayer1);
     auto idxLocalPlayer2 = static_cast<unsigned int>(localTeam.idPlayer2);
@@ -358,8 +358,8 @@ void Manager::removePlayersThatCantPlay() {
         }
     }
     for (auto player: removePlayers) {
-        logMessage(string("Player ") + to_string(player) +
-                   string("already played all the matches allowed or cant play more."));
+        logMessageManager(string("Player ") + to_string(player) +
+                          string("already played all the matches allowed or cant play more."));
         sendMessageToPlayer(player, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
         removePlayerFromAllAvailablePartners(player);
         waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), player));

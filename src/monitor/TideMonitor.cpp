@@ -9,7 +9,7 @@ using namespace std;
  * Logs a message with aditional information about the process and class.
  * @param message the message to log
  */
-void logMessage(const string &message) {
+void logMessageTideMonitor(const string &message) {
     string messageToLog = to_string(getpid()) + string(" Tide Monitor: ") + message;
     Logger::getInstance()->logMessage(messageToLog.c_str());
 }
@@ -22,7 +22,8 @@ void logMessage(const string &message) {
  * @param fallTideProb Probability that the tides fall.
  * @param riseTideProb Probability that the tides rise.
  */
-TideMonitor::TideMonitor(const int checkTideMinMicroseconds, const int checkTideMaxMicroseconds, const float fallTideProb,
+TideMonitor::TideMonitor(const int checkTideMinMicroseconds, const int checkTideMaxMicroseconds,
+                         const float fallTideProb,
                          const float riseTideProb, vector<vector<int>> columnsFieldsPids)
         : checkTideMaxMicroseconds(checkTideMaxMicroseconds), checkTideMinMicroseconds(checkTideMinMicroseconds),
           fallTideProb(fallTideProb), riseTideProb(riseTideProb), columnsFieldsPids(move(columnsFieldsPids)) {
@@ -35,7 +36,8 @@ TideMonitor::TideMonitor(const int checkTideMinMicroseconds, const int checkTide
  */
 TideMonitor::TideChange TideMonitor::simulateTide() {
     unsigned int waitMicroseconds = getRandomUnsignedInt(checkTideMinMicroseconds, checkTideMaxMicroseconds);
-    logMessage(string("sleeps ") + to_string(waitMicroseconds/1000) + string(" milliseconds to check for tides"));
+    logMessageTideMonitor(
+            string("sleeps ") + to_string(waitMicroseconds / 1000) + string(" milliseconds to check for tides"));
     usleep(waitMicroseconds);
     double p = getRandomDouble();
     if (p < riseTideProb) {
@@ -59,18 +61,18 @@ void TideMonitor::startMonitoring() {
         if (tideChange == RISE) {
             if (tideStatus + 1 < columnsFieldsPids.size() - 1) {
                 tideStatus++;
-                logMessage(string("the tide rises to the column ") + to_string(tideStatus));
+                logMessageTideMonitor(string("the tide rises to the column ") + to_string(tideStatus));
                 for (auto fieldPid: columnsFieldsPids[tideStatus]) {
                     kill(fieldPid, SIGINT);
-                    logMessage(string("send notification to field pid ") + to_string(fieldPid));
+                    logMessageTideMonitor(string("send notification to field pid ") + to_string(fieldPid));
                 }
             }
         } else if (tideChange == FALL) {
             if (tideStatus >= 0) {
-                logMessage(string("the tide falls from the column ") + to_string(tideStatus));
+                logMessageTideMonitor(string("the tide falls from the column ") + to_string(tideStatus));
                 for (auto fieldPid: columnsFieldsPids[tideStatus]) {
                     kill(fieldPid, SIGINT);
-                    logMessage(string("send notification to field pid ") + to_string(fieldPid));
+                    logMessageTideMonitor(string("send notification to field pid ") + to_string(fieldPid));
                 }
                 tideStatus--;
             }
