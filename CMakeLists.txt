@@ -34,7 +34,7 @@ set(INIT_EXCEPTION src/InitException.cpp src/InitException.h)
 set(TIDE_MONITOR src/monitor/TideMonitor.cpp src/monitor/TideMonitor.h ${SIGQUIT_HANDLER} ${RANDOM_NUMBER} ${LOGGER})
 set(PLAYER src/player/Player.cpp src/player/Player.h ${PIPE})
 set(FIELD src/stadium/Field.cpp src/stadium/Field.h ${SEMAFORO} ${LOGGER} ${PIPE} ${RANDOM_NUMBER})
-set(MANAGER src/managers/Manager.cpp src/managers/Manager.h ${RESOURCE_HANDLER} ${VECTOR_COMPARTIDO})
+set(MANAGER src/managers/Manager.cpp src/managers/Manager.h ${RESOURCE_HANDLER} ${VECTOR_COMPARTIDO} ${LOCK_FILE})
 set(TOURNAMENT_BOARD src/managers/TournamentBoard.cpp src/managers/TournamentBoard.hpp)
 
 # Configs
@@ -53,6 +53,7 @@ set(TIDE_MONITOR_TEST tests/monitor/TideMonitorTest.cpp ${TEST_CATCH} ${TIDE_MON
         ${SIGINT_HANDLER})
 set(FIELD_TEST tests/stadium/FieldTest.cpp ${TEST_CATCH} ${FIELD})
 set(PLAYER_TEST tests/player/PlayerTest.cpp ${TEST_CATCH} ${PLAYER})
+set(PLAYER_TEST tests/managers/ManagerTest.cpp ${TEST_CATCH} ${MANAGER})
 add_executable(beach-voley-tests ${TIDE_MONITOR_TEST} ${FIELD_TEST} ${PLAYER_TEST})
 
 configure_file(help ${CMAKE_CURRENT_BINARY_DIR}/help COPYONLY)

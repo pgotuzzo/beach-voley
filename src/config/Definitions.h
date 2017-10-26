@@ -34,13 +34,13 @@ struct TaskRequest {
     TaskType task;
 
     string show() {
-        string taskDescription = string("Task: ") + to_string(task);
+        string taskDescription = string("Task: ");
         switch(task) {
             case FIND_PARTNER:
-                taskDescription = taskDescription + string(" user id: ") + to_string(id);
+                taskDescription = taskDescription + string("FIND_PARTNER") + string(" user id: ") + to_string(id);
                 break;
             case TIDE_CHANGE:
-                taskDescription = taskDescription + string(" field id: ") + to_string(id) +
+                taskDescription = taskDescription + string("TIDE_CHANGE") + string(" field id: ") + to_string(id) +
                         string(" tide ");
                 if(tideRise) {
                     taskDescription = taskDescription + string("rise");
@@ -49,7 +49,7 @@ struct TaskRequest {
                 }
                 break;
             case MATCH_RESULT:
-                taskDescription = taskDescription + string(" field id: ") + to_string(id) +
+                taskDescription = taskDescription + string("MATCH_RESULT") + string(" field id: ") + to_string(id) +
                         string(" resultLocal: ") + to_string(resultLocal) +
                         string(" resultVisitant: ") + to_string(resultVisitant);
                 break;

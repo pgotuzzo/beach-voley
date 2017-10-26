@@ -36,6 +36,8 @@ private:
     unsigned int totalMatchesPerPlayer;
     // The maximum number of players inside the stadium
     unsigned int stadiumSize;
+    // Number of players inside the stadium before the tournament starts
+    int playersToStartTournament;
 
     // A vector that represents if the field is free and if not what teams are in it.
     vector<FieldInformation> fieldsInformation;
@@ -83,7 +85,7 @@ private:
 public:
     Manager(unsigned int totalFields, unsigned int capacity, unsigned int matches, unsigned int players,
             LockFile *lockForSharedMemory, VectorCompartido<int> *pointsTable, Pipe *receiveTaskPipe,
-            vector<Pipe*> playersIdPipeMap);
+            Pipe *playersIdPipeDir, int playersToStartTournament);
 
     void receiveTask();
 };

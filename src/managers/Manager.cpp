@@ -26,14 +26,15 @@ void logMessageManager(const string &message) {
  * @param lockForSharedMemory lock to write or read in the shared memory
  * @param pointsTable shared vector with the points for every player
  * @param receiveTaskPipe pipe where the manager receives the tasks
- * @param playersIdPipeMap vector with the pipe where the manager send responses for the players
+ * @param playersIdPipeDir vector with the pipe where the manager send responses for the players
  */
 Manager::Manager(unsigned int totalFields, unsigned int capacity, unsigned int matches, unsigned int players,
                  LockFile *lockForSharedMemory, VectorCompartido<int> *pointsTable, Pipe *receiveTaskPipe,
-                 vector<Pipe *> playersIdPipeMap) :
+                 Pipe *playersIdPipeDir, int playersToStartTournament) :
         playersInTournament(players), receiveTaskPipe(receiveTaskPipe), playersGames(vector<int>(players, 0)),
         totalMatchesPerPlayer(matches), fieldsInformation(vector<FieldInformation>(totalFields)),
-        stadiumSize(capacity), lockForSharedMemory(lockForSharedMemory), pointsTable(pointsTable) {
+        stadiumSize(capacity), lockForSharedMemory(lockForSharedMemory), pointsTable(pointsTable),
+        playersToStartTournament(playersToStartTournament) {
 
     for (unsigned long i = 0; i < playersInTournament; i++) {
 //        playersAvailablePartners.push_back(vector<bool>(playersInTournament, true));
@@ -41,10 +42,11 @@ Manager::Manager(unsigned int totalFields, unsigned int capacity, unsigned int m
         playersAvailablePartners[i][i] = false;
     }
 
-    for (auto playerPipe: playersIdPipeMap) {
-        playerPipe->setearModo(Pipe::ESCRITURA);
+    for (unsigned long i = 0; i < playersInTournament; i++) {
+        playersIdPipeDir[i].setearModo(Pipe::ESCRITURA);
+        this->playersIdPipeMap.push_back(&(playersIdPipeDir[i]));
     }
-    receiveTaskPipe->setearModo(Pipe::LECTURA);
+    this->receiveTaskPipe->setearModo(Pipe::LECTURA);
 
     for (unsigned int i = 0; i < playersInTournament; ++i) {
         pointsTable->escribir(0, i);
@@ -61,6 +63,7 @@ void Manager::receiveTask() {
         TaskRequest task{};
         logMessageManager("Trying to read a task");
         out = receiveTaskPipe->leer(static_cast<void *>(&task), sizeof(TaskRequest));
+        logMessageManager(string("Players in tournament ") + to_string(playersInTournament));
         if (out > 0) {
             logMessageManager(string("Received a task: ") + task.show());
             switch (task.task) {
@@ -104,8 +107,14 @@ void Manager::receiveTask() {
  */
 void Manager::findMatch(int playerId) {
     if (!tournamentStart) {
-        waitingPlayers.push_back(playerId);
-        tournamentStart = waitingPlayers.size() >= 9;
+        Team localTeam = Team{playerId, -1};
+        if (assignPartner(&localTeam)) {
+            waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), localTeam.idPlayer2));
+            waitingTeams.push_back(localTeam);
+        } else {
+            waitingPlayers.push_back(playerId);
+        }
+        tournamentStart = waitingPlayers.size() + waitingTeams.size()*2 >= playersToStartTournament - 1;
     } else {
         auto playerReturnsFromField = find(playersReturningFromField.begin(), playersReturningFromField.end(),
                                            playerId);
@@ -114,7 +123,7 @@ void Manager::findMatch(int playerId) {
         }
         if (playersGames[playerId] == totalMatchesPerPlayer or countAvailablePartners(playerId) == 0) {
             logMessageManager(string("Player ") + to_string(playerId) +
-                              string("already played all the matches allowed or cant play more."));
+                              string(" already played all the matches allowed or cant play more."));
             sendMessageToPlayer(playerId, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
             removePlayerFromAllAvailablePartners(playerId);
             playersInTournament--;
@@ -173,7 +182,7 @@ void Manager::sendMessageToPlayer(int playerId, OrgPlayerResponse orgPlayerRespo
     ssize_t out = playersIdPipeMap[playerId]->escribir(static_cast<const void *> (&orgPlayerResponse),
                                                        sizeof(OrgPlayerResponse));
     if (out < 0) {
-        throw runtime_error("Partner response fifo can't be write!");
+        throw runtime_error(string("Partner response pipe can't be write!") + string(" Error: ") + strerror(errno));
     }
 }
 
@@ -359,7 +368,7 @@ void Manager::removePlayersThatCantPlay() {
     }
     for (auto player: removePlayers) {
         logMessageManager(string("Player ") + to_string(player) +
-                          string("already played all the matches allowed or cant play more."));
+                          string(" already played all the matches allowed or cant play more."));
         sendMessageToPlayer(player, OrgPlayerResponse{0, ENUM_LEAVE_TOURNAMENT});
         removePlayerFromAllAvailablePartners(player);
         waitingPlayers.erase(find(waitingPlayers.begin(), waitingPlayers.end(), player));

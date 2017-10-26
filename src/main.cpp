@@ -87,6 +87,7 @@ void playTournament(Config config) {
     int maxGameDurationInMili = 500;
     int minCheckTideInMili = 100000;
     int maxCheckTideInMili = 500000;
+    int playersToStartTournament = 10;
 
     Pipe managerReceive;
 
@@ -95,10 +96,6 @@ void playTournament(Config config) {
     LockFile lockForSharedVectors(LOCK_FILE_SHARED_VECTORS);
 
     Pipe pipesToPlayers[config.tournamentParams.players.size()];
-    vector<Pipe *> playersIdPipeVector;
-    for (int i = 0; i < config.tournamentParams.players.size(); i++) {
-        playersIdPipeVector.push_back(&pipesToPlayers[i]);
-    }
     Semaforo *stadiumTurnstile = ResourceHandler::getInstance()->getSemaforo(SEM_TURNSTILE);
     Semaforo *entranceToFields = ResourceHandler::getInstance()->getSemaforo(SEM_FILE_FIELD_ENTRANCE);
     Semaforo *exitFromField = ResourceHandler::getInstance()->getSemaforo(SEM_FILE_FIELD_EXIT);
@@ -120,15 +117,6 @@ void playTournament(Config config) {
         fieldsInColumnsPids.push_back(fieldPidsColumn);
     }
 
-    __pid_t managerPid = fork();
-    if (managerPid == 0) {
-        Manager manager{config.tournamentParams.rows*config.tournamentParams.columns, config.tournamentParams.capacity,
-                        config.tournamentParams.matches,
-                        static_cast<unsigned int>(config.tournamentParams.players.size()), &lockForSharedVectors,
-                        pointsTable, &managerReceive, playersIdPipeVector};
-        manager.receiveTask();
-        exit(0);
-    }
 
     __pid_t tideMonitorPid = fork();
     if (tideMonitorPid == 0) {
@@ -141,16 +129,22 @@ void playTournament(Config config) {
     for(int i = 0; i < config.tournamentParams.players.size(); i++) {
         __pid_t playerPid = fork();
         if (playerPid == 0) {
-            Player player(i, entranceToFields, exitFromField, stadiumTurnstile, playersIdPipeVector[i],
-                          &managerReceive);
+            Player player(i, entranceToFields, exitFromField, stadiumTurnstile, &(pipesToPlayers[i]), &managerReceive);
             player.play();
             exit(0);
         }
     }
-    managerReceive.cerrar();
-    for (auto playerPipe: playersIdPipeVector) {
-        playerPipe->cerrar();
+
+    __pid_t managerPid = fork();
+    if (managerPid == 0) {
+        Manager manager{config.tournamentParams.rows*config.tournamentParams.columns, config.tournamentParams.capacity,
+                        config.tournamentParams.matches,
+                        static_cast<unsigned int>(config.tournamentParams.players.size()), &lockForSharedVectors,
+                        pointsTable, &managerReceive, pipesToPlayers, playersToStartTournament};
+        manager.receiveTask();
+        exit(0);
     }
+
     // Interrumption handler
     SIGINT_Handler handler;
     SignalHandler::getInstance()->registrarHandler(SIGINT, (EventHandler *) &handler);
